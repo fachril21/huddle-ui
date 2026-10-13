@@ -1,8 +1,8 @@
 .tile {
   position: relative;
   flex: none;
-  width: var(--tile-w);
-  height: var(--tile-h);
+  width: 100%;
+  height: 100%;
   border-radius: var(--radius-tile);
   container-type: size;
   /* base: ink with a very dim personal mesh (Design.md 7.1 z0). No overflow clip: neon glow lives outside. */

@@ -81,3 +81,6 @@
   opacity: calc(var(--o) * 1.4 * (1 + 0.3 * var(--crosstalk, 0)));
   transition-duration: 250ms;
 }
+
+/* Share screen: the mesh dims to 60% so the shared content stays the focus (Design.md 5.3) */
+:global([data-sharing='true']) .blob { --o-scale: 0.6; opacity: calc(var(--o) * 0.6 * (1 + 0.3 * var(--crosstalk, 0))); }

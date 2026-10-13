@@ -3,25 +3,46 @@
   position: absolute;
   inset: 56px var(--space-4) 104px;
   z-index: var(--z-stage);
-  display: grid;
-  place-items: center;
 }
 
-.grid {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 12px;
+.field {
+  position: absolute;
+  inset: 0;
   user-select: none;
 }
 
 .cell {
-  position: relative;
-  flex: none;
-  width: var(--tile-w);
-  height: var(--tile-h);
-  border-radius: var(--radius-tile);
+  position: absolute;
   cursor: grab;
   touch-action: none;
 }
+.stage[data-sharing='true'] .cell { cursor: default; }
 .cell:focus-visible { box-shadow: var(--focus-ring); }
+
+.pager {
+  position: absolute;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-1);
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-1);
+  font-variant-numeric: tabular-nums;
+}
+.pager button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-1);
+}
+.pager button:hover:not(:disabled) { background: var(--veil-hover); }
+.pager button:disabled { color: var(--text-3); cursor: not-allowed; }
+.pager button:focus-visible { box-shadow: var(--focus-ring); }

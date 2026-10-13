@@ -109,9 +109,9 @@ export function Room({ state, dispatch }: RoomProps) {
   const style = { '--crosstalk': voice.crosstalk ? 1 : 0 } as CSSProperties
 
   return (
-    <div className={styles.room} data-motion={reducedMotion ? 'reduced' : 'full'} style={style}>
+    <div className={styles.room} data-motion={reducedMotion ? 'reduced' : 'full'} data-sharing={state.sharerId !== null} style={style}>
       <Ambient />
-      <TileGrid participants={state.participants} offers={offers} dispatch={dispatch} />
+      <TileGrid participants={state.participants} offers={offers} sharerId={state.sharerId} dispatch={dispatch} />
       <TopBar />
       <MutedBanner visible={voice.mutedSpeaking && !self.micOn} onUnmute={() => dispatch({ type: 'setMic', id: SELF_ID, on: true })} />
       <HighFiveToasts
@@ -120,7 +120,7 @@ export function Room({ state, dispatch }: RoomProps) {
         participants={state.participants}
         onRespond={(fromId) => dispatch({ type: 'hfRespond', fromId, byId: SELF_ID, now: performance.now() })}
       />
-      <HighFiveStage matches={matches} participants={state.participants} sharing={state.toggles.share} onDone={(id) => dispatch({ type: 'hfMatchDone', id })} />
+      <HighFiveStage matches={matches} participants={state.participants} sharing={state.sharerId !== null} onDone={(id) => dispatch({ type: 'hfMatchDone', id })} />
       <div className="sr-only" aria-live="polite">{announcement}</div>
       <ReactionLayer reactions={state.reactions} participants={state.participants} />
       <InfoPill />
@@ -134,6 +134,9 @@ export function Room({ state, dispatch }: RoomProps) {
         onClose={onClose}
         onReact={onReact}
         onHighFive={onHighFive}
+        onShare={() => dispatch(state.sharerId === SELF_ID ? { type: 'stopShare' } : { type: 'startShare', id: SELF_ID })}
+        shareActive={state.sharerId === SELF_ID}
+        shareDisabledReason={state.sharerId !== null && state.sharerId !== SELF_ID ? 'Peserta lain sedang berbagi layar. Tunggu sampai selesai.' : undefined}
         highFiveActive={offers.some((o) => o.fromId === SELF_ID)}
         highFiveDisabledReason={performance.now() < selfCooldownUntil ? 'Tunggu sebentar sebelum mengajak lagi' : undefined}
       />

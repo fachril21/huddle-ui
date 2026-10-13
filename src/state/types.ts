@@ -26,7 +26,7 @@ export interface VoiceSource {
   readonly natural: boolean
 }
 
-export type DockToggle = 'share' | 'reaction' | 'soundboard' | 'more'
+export type DockToggle = 'reaction' | 'soundboard' | 'more'
 
 export type PanelName = 'peserta' | 'chat' | 'polling' | 'host'
 
@@ -89,6 +89,8 @@ export interface RoomState {
   readonly panel: PanelName | null
   readonly reactions: readonly ReactionItem[]
   readonly highFive: HighFiveState
+  /** Participant currently sharing their screen, if any */
+  readonly sharerId: string | null
 }
 
 export const SELF_ID = 'anda'

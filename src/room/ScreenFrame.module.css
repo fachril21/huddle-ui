@@ -1,0 +1,70 @@
+.frame {
+  position: absolute;
+  padding: var(--space-2);
+  border-radius: 20px;
+  border: 1px solid var(--glass-border);
+  background: var(--ink-950);
+  box-shadow: var(--glass-edge), var(--glass-shadow);
+  z-index: 1;
+}
+
+/* letterbox in ink-950 around a 16:9 screen */
+.letterbox {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  overflow: hidden;
+  container-type: size;
+}
+
+.screenBox {
+  position: relative;
+  width: min(100cqw, calc(100cqh * 16 / 9));
+  height: min(100cqh, calc(100cqw * 9 / 16));
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.chip {
+  position: absolute;
+  left: var(--space-5);
+  top: var(--space-5);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 28px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+
+.self {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  color: var(--text-2);
+}
+.self p { margin: 0; font-family: var(--font-display); font-size: 20px; line-height: 28px; font-weight: 600; color: var(--text-1); }
+
+.stop {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 40px;
+  padding: 0 var(--space-5);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--danger);
+  color: var(--on-danger);
+  font-size: 14px;
+  font-weight: 600;
+  transition: background-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+}
+.stop:hover { background: color-mix(in srgb, var(--danger) 86%, var(--text-1)); }
+.stop:active { transform: scale(0.97); }
+.stop:focus-visible { box-shadow: var(--focus-ring); }

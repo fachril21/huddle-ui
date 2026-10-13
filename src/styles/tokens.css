@@ -94,3 +94,12 @@
 [data-palette='abyss']    { --c1: var(--pal-abyss-1);    --c2: var(--pal-abyss-2);    --cm: var(--pal-abyss-mix); }
 [data-palette='orchid']   { --c1: var(--pal-orchid-1);   --c2: var(--pal-orchid-2);   --cm: var(--pal-orchid-mix); }
 [data-palette='verdant']  { --c1: var(--pal-verdant-1);  --c2: var(--pal-verdant-2);  --cm: var(--pal-verdant-mix); }
+
+/* Mock "shared screen" content: a light, abstract dashboard (no real data) */
+:root {
+  --paper-50: #f5f7fd;
+  --paper-100: #e9edf8;
+  --paper-300: #c7d0e6;
+  --paper-500: #8b97b8;
+  --paper-800: #2c3558;
+}

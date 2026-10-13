@@ -27,6 +27,8 @@ export type RoomAction =
   | { type: 'applyVoicePreset'; preset: VoicePreset }
   | { type: 'react'; senderId: string; name: ReactionName; x: number; now: number }
   | { type: 'expireReactions'; now: number }
+  | { type: 'startShare'; id: string }
+  | { type: 'stopShare' }
   | { type: 'hfOffer'; fromId: string; now: number }
   | { type: 'hfCancel'; fromId: string }
   | { type: 'hfRespond'; fromId: string; byId: string; now: number }
@@ -53,10 +55,11 @@ const participants = ALL_PARTICIPANTS.slice(0, VISIBLE_COUNT)
 export const initialRoomState: RoomState = {
   participants,
   voice: Object.fromEntries(participants.map((p) => [p.id, IDLE_VOICE])),
-  toggles: { share: false, reaction: false, soundboard: false, more: false },
+  toggles: { reaction: false, soundboard: false, more: false },
   panel: null,
   reactions: [],
   highFive: { offers: [], matches: [], claims: [], cooldowns: {} },
+  sharerId: null,
 }
 
 /** Who talks in each mass preset, and how loudly. */
@@ -119,6 +122,10 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
     }
     case 'react':
       return addReaction(state, action)
+    case 'startShare':
+      return state.sharerId === null ? { ...state, sharerId: action.id } : state
+    case 'stopShare':
+      return { ...state, sharerId: null }
     case 'hfOffer': {
       const hf = state.highFive
       const busy = hf.offers.some((o) => o.fromId === action.fromId)

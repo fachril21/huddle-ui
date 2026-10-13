@@ -178,6 +178,14 @@ function QuickEvents({ state, dispatch }: { state: RoomState; dispatch: Dispatch
           Peserta lain menyambut
         </button>
       </div>
+      <div className={styles.presets} role="group" aria-label="Berbagi layar dari peserta">
+        <button type="button" className={styles.btn} onClick={() => dispatch({ type: 'startShare', id: who })}>
+          Peserta berbagi layar
+        </button>
+        <button type="button" className={styles.btn} onClick={() => dispatch({ type: 'stopShare' })}>
+          Berhenti berbagi
+        </button>
+      </div>
     </section>
   )
 }

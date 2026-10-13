@@ -21,10 +21,12 @@ interface TileProps {
   isSelf: boolean
   /** Open high-five offer from this participant */
   offer: { startedAt: number; expiresAt: number } | null
+  /** Tile is small (under 160px tall): aurora gives way to a static glow (Design.md 7.5) */
+  compact: boolean
 }
 
 /** Participant card. Layer order follows Design.md 7.1: base, media, aurora/glow, neon, overlays, label. */
-export function Tile({ participant, tileW, tileH, lit, dominant, mutedSpeaking, isSelf, offer }: TileProps) {
+export function Tile({ participant, tileW, tileH, lit, dominant, mutedSpeaking, isSelf, offer, compact }: TileProps) {
   const { id, name, palette, camOn, micOn, status } = participant
   const registerTile = useTileRegistration(id)
   const notes = [camOn ? '' : 'kamera mati', micOn ? '' : 'mikrofon mati', status === 'none' ? '' : status.toUpperCase()].filter(Boolean)
@@ -42,10 +44,11 @@ export function Tile({ participant, tileW, tileH, lit, dominant, mutedSpeaking, 
       aria-label={[name, ...notes].join(', ')}
     >
       <div className={styles.media}>
-        {camOn ? (
+        {camOn || compact ? (
           <>
-            <VideoPlaceholder />
+            {camOn && <VideoPlaceholder />}
             {lit && <div className={styles.glowIn} aria-hidden="true" />}
+            {!camOn && <Avatar name={name} />}
           </>
         ) : (
           <>

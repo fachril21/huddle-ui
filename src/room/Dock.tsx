@@ -29,6 +29,9 @@ interface DockProps {
   onClose: (key: DockToggle) => void
   onReact: (name: ReactionName) => void
   onHighFive: () => void
+  onShare: () => void
+  shareActive: boolean
+  shareDisabledReason?: string
   highFiveActive: boolean
   highFiveDisabledReason?: string
   /** Popover for the soundboard button (M6) */
@@ -38,7 +41,7 @@ interface DockProps {
 const ICON = { size: 22, strokeWidth: 1.75, 'aria-hidden': true } as const
 
 /** Floating glass-3 capsule: [mic cam] | [share reaction hand high-five soundboard more] | [leave]. */
-export function Dock({ self, toggles, onToggleMic, onToggleCam, onToggleHand, onToggle, onClose, onReact, onHighFive, highFiveActive, highFiveDisabledReason, soundboard }: DockProps) {
+export function Dock({ self, toggles, onToggleMic, onToggleCam, onToggleHand, onToggle, onClose, onReact, onHighFive, onShare, shareActive, shareDisabledReason, highFiveActive, highFiveDisabledReason, soundboard }: DockProps) {
   const wrapRef = useRef<HTMLDivElement>(null)
   const openPopover: DockToggle | null = toggles.reaction ? 'reaction' : toggles.soundboard ? 'soundboard' : null
   const anchorX = usePopoverAnchor(wrapRef, openPopover)
@@ -81,7 +84,7 @@ export function Dock({ self, toggles, onToggleMic, onToggleCam, onToggleHand, on
           onClick={onToggleCam}
         />
         <span className={styles.sep} aria-hidden="true" />
-        <DockButton icon={<MonitorUp {...ICON} />} label="Bagikan layar" pressed={toggles.share} onClick={() => onToggle('share')} />
+        <DockButton icon={<MonitorUp {...ICON} />} label={shareActive ? 'Berhenti berbagi layar' : 'Bagikan layar'} pressed={shareActive} disabledReason={shareDisabledReason} onClick={onShare} />
         <span data-popover-key="reaction" style={{ display: 'contents' }}>
           <DockButton icon={<SmilePlus {...ICON} />} label="Reaction" pressed={toggles.reaction} onClick={() => onToggle('reaction')} />
         </span>
