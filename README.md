@@ -20,8 +20,17 @@ Bun tidak terpasang di mesin pengembangan, jadi dipakai npm.
 
 Tekan `Shift+D` untuk membuka/menutup panel kontrol demo (di luar produk). Tersedia sejak M2.
 
+## Yang bisa dicoba
+
+- **Bicara**: Demo Director -> Aksi massal, atau per peserta (Bicara, Natural, slider level). Matikan mic Anda lalu "Bicara" pada baris Anda untuk neon amber + banner.
+- **Pindahkan kartu**: seret kartu ke kartu lain (atau fokus kartu, tahan Alt + panah).
+- **Angkat tangan, reaction, high five**: tombol di dock; peserta lain lewat Demo Director -> Kejadian cepat.
+- **Share screen**: tombol Bagikan layar, atau "Peserta berbagi layar" di Demo Director.
+- **Soundboard dan polling**: tombol Soundboard di dock; Polling di pil kanan bawah (Dewi bisa memulai polling contoh dari Demo Director).
+- Animated emoji dimuat dari CDN (butuh internet); tanpa internet tampil emoji native.
+
 ## Tahap
 
-M0 setup · M1 layout room · M2 kartu peserta saat bicara (aurora + neon) · M3+ lihat PRD bagian 16.
+M0 setup, M1 layout, M2 aurora + neon, M3 emoji/tangan/reaction/state kartu, M4 high five, M5 share screen, M6 soundboard + polling selesai. Berikutnya (PRD bagian 16): M7 panel Chat dan Alat host lengkap, menu Keluar, paginasi 12 peserta, role switcher; M8 skenario otomatis, tier efek, polish.
 
 Catatan keputusan dan inkonsistensi dokumen: `docs/NOTES.md`.
