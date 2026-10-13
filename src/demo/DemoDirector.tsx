@@ -163,6 +163,21 @@ function QuickEvents({ state, dispatch }: { state: RoomState; dispatch: Dispatch
           </button>
         ))}
       </div>
+      <div className={styles.presets} role="group" aria-label="High five dari peserta">
+        <button type="button" className={styles.btn} onClick={() => dispatch({ type: 'hfOffer', fromId: who, now: performance.now() })}>
+          Peserta lain mengajak
+        </button>
+        <button
+          type="button"
+          className={styles.btn}
+          onClick={() => {
+            const target = state.highFive.offers.find((o) => o.fromId !== who)
+            if (target) dispatch({ type: 'hfRespond', fromId: target.fromId, byId: who, now: performance.now() })
+          }}
+        >
+          Peserta lain menyambut
+        </button>
+      </div>
     </section>
   )
 }

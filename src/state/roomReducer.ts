@@ -27,6 +27,11 @@ export type RoomAction =
   | { type: 'applyVoicePreset'; preset: VoicePreset }
   | { type: 'react'; senderId: string; name: ReactionName; x: number; now: number }
   | { type: 'expireReactions'; now: number }
+  | { type: 'hfOffer'; fromId: string; now: number }
+  | { type: 'hfCancel'; fromId: string }
+  | { type: 'hfRespond'; fromId: string; byId: string; now: number }
+  | { type: 'hfTick'; now: number }
+  | { type: 'hfMatchDone'; id: number }
 
 export const DEFAULT_LEVEL = 0.6
 const IDLE_VOICE: VoiceSource = { talking: false, level: DEFAULT_LEVEL, natural: false }
@@ -38,14 +43,20 @@ export const REACTION_LIFETIME_MS = 3800
 /** At most this many floating emoji at once; oldest are dropped first. */
 const MAX_REACTIONS = 12
 
+/** An open offer hangs for 6 seconds (Design.md 11.3), then the sender waits 3 seconds before offering again. */
+export const HF_OFFER_MS = 6000
+export const HF_COOLDOWN_MS = 3000
+export const HF_CLAIM_TOAST_MS = 1800
+
 const participants = ALL_PARTICIPANTS.slice(0, VISIBLE_COUNT)
 
 export const initialRoomState: RoomState = {
   participants,
   voice: Object.fromEntries(participants.map((p) => [p.id, IDLE_VOICE])),
-  toggles: { share: false, reaction: false, highFive: false, soundboard: false, more: false },
+  toggles: { share: false, reaction: false, soundboard: false, more: false },
   panel: null,
   reactions: [],
+  highFive: { offers: [], matches: [], claims: [], cooldowns: {} },
 }
 
 /** Who talks in each mass preset, and how loudly. */
@@ -108,6 +119,38 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
     }
     case 'react':
       return addReaction(state, action)
+    case 'hfOffer': {
+      const hf = state.highFive
+      const busy = hf.offers.some((o) => o.fromId === action.fromId)
+      if (busy || action.now < (hf.cooldowns[action.fromId] ?? 0)) return state
+      const id = nextId([...hf.offers, ...hf.claims.map((c) => ({ id: c.offerId }))])
+      const offer = { id, fromId: action.fromId, startedAt: action.now, expiresAt: action.now + HF_OFFER_MS }
+      return { ...state, highFive: { ...hf, offers: [...hf.offers, offer] } }
+    }
+    case 'hfCancel':
+      return { ...state, highFive: { ...state.highFive, offers: state.highFive.offers.filter((o) => o.fromId !== action.fromId) } }
+    case 'hfRespond': {
+      const hf = state.highFive
+      const offer = hf.offers.find((o) => o.fromId === action.fromId)
+      if (!offer || action.byId === action.fromId || action.now >= offer.expiresAt) return state
+      const match = { id: nextId(hf.matches), aId: offer.fromId, bId: action.byId }
+      const claim = { offerId: offer.id, fromId: offer.fromId, byId: action.byId, at: action.now }
+      return {
+        ...state,
+        highFive: { ...hf, offers: hf.offers.filter((o) => o.id !== offer.id), matches: [...hf.matches, match], claims: [...hf.claims, claim] },
+      }
+    }
+    case 'hfTick': {
+      const hf = state.highFive
+      const expired = hf.offers.filter((o) => action.now >= o.expiresAt)
+      const claims = hf.claims.filter((c) => action.now - c.at < HF_CLAIM_TOAST_MS)
+      if (!expired.length && claims.length === hf.claims.length) return state
+      const cooldowns = { ...hf.cooldowns }
+      for (const o of expired) cooldowns[o.fromId] = action.now + HF_COOLDOWN_MS
+      return { ...state, highFive: { ...hf, offers: hf.offers.filter((o) => action.now < o.expiresAt), claims, cooldowns } }
+    }
+    case 'hfMatchDone':
+      return { ...state, highFive: { ...state.highFive, matches: state.highFive.matches.filter((m) => m.id !== action.id) } }
     case 'expireReactions': {
       const alive = state.reactions.filter((r) => action.now - r.createdAt < REACTION_LIFETIME_MS)
       return alive.length === state.reactions.length ? state : { ...state, reactions: alive }
@@ -128,4 +171,8 @@ function addReaction(state: RoomState, a: Extract<RoomAction, { type: 'react' }>
   const id = Math.max(0, ...state.reactions.map((r) => r.id)) + 1
   const next = [...state.reactions, { id, senderId: a.senderId, name: a.name, count: 1, x: a.x, createdAt: a.now, updatedAt: a.now }]
   return { ...state, reactions: next.slice(-MAX_REACTIONS) }
+}
+
+function nextId(items: readonly { id: number }[]): number {
+  return Math.max(0, ...items.map((i) => i.id)) + 1
 }

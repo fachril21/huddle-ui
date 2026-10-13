@@ -26,7 +26,7 @@ export interface VoiceSource {
   readonly natural: boolean
 }
 
-export type DockToggle = 'share' | 'reaction' | 'highFive' | 'soundboard' | 'more'
+export type DockToggle = 'share' | 'reaction' | 'soundboard' | 'more'
 
 export type PanelName = 'peserta' | 'chat' | 'polling' | 'host'
 
@@ -52,12 +52,43 @@ export interface ReactionItem {
   readonly updatedAt: number
 }
 
+export interface HighFiveOffer {
+  readonly id: number
+  readonly fromId: string
+  readonly startedAt: number
+  readonly expiresAt: number
+}
+
+/** A matched pair whose animation is playing or waiting its turn (max 2 play at once). */
+export interface HighFiveMatch {
+  readonly id: number
+  readonly aId: string
+  readonly bId: string
+}
+
+/** Someone took an offer; late responders see "Sudah disambut ..." for a moment. */
+export interface HighFiveClaim {
+  readonly offerId: number
+  readonly fromId: string
+  readonly byId: string
+  readonly at: number
+}
+
+export interface HighFiveState {
+  readonly offers: readonly HighFiveOffer[]
+  readonly matches: readonly HighFiveMatch[]
+  readonly claims: readonly HighFiveClaim[]
+  /** participant id -> performance.now() until which they cannot offer again */
+  readonly cooldowns: Readonly<Record<string, number>>
+}
+
 export interface RoomState {
   readonly participants: readonly Participant[]
   readonly voice: Readonly<Record<string, VoiceSource>>
   readonly toggles: Readonly<Record<DockToggle, boolean>>
   readonly panel: PanelName | null
   readonly reactions: readonly ReactionItem[]
+  readonly highFive: HighFiveState
 }
 
 export const SELF_ID = 'anda'

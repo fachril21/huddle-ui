@@ -106,3 +106,56 @@ export function ConnectionOverlay({ participant }: { participant: Participant })
 export function PoorSignalIcon() {
   return <SignalLow size={14} strokeWidth={1.75} aria-label="Koneksi buruk" role="img" className={styles.poorIcon} />
 }
+
+interface OfferOverlayProps extends OverlayProps {
+  /** Open high-five offer from this participant, if any */
+  offer: { startedAt: number; expiresAt: number } | null
+}
+
+const RING_R = 46
+const RING_C = 2 * Math.PI * RING_R
+
+/** High-five invitation: reaching hand with a 6s countdown ring and a gentle 1 Hz border pulse (Design.md 11.4). */
+export function OfferOverlay({ participant, tileW, tileH, offer }: OfferOverlayProps) {
+  const g = geometry(participant, tileW, tileH)
+  const size = g.emoji
+  const handUp = participant.hand !== null
+  // The raised-hand emoji owns the left slot; the offer then sits on the right of the avatar.
+  const left = g.narrow ? 10 : handUp ? tileW / 2 + g.avatar / 2 + size * 0.1 : g.camOn ? tileW * 0.14 : tileW / 2 - g.avatar / 2 - size * 1.1
+  const top = g.narrow ? 10 : tileH / 2 - size / 2
+  const duration = offer ? (offer.expiresAt - offer.startedAt) / 1000 : 6
+
+  return (
+    <AnimatePresence>
+      {offer && (
+        <>
+          <span key="pulse" className={styles.offerPulse} aria-hidden="true" />
+          <motion.div
+            key="offer"
+            className={styles.offer}
+            style={{ left, top, width: size, height: size }}
+            initial={{ y: size * 0.9, scale: 0.3, opacity: 0 }}
+            animate={{ y: 0, scale: 1, opacity: 1 }}
+            exit={{ y: 12, rotate: 25, scale: 0.85, opacity: 0, transition: { duration: 0.35 } }}
+            transition={{ type: 'spring', stiffness: 220, damping: 18 }}
+          >
+            <svg className={styles.countdown} viewBox="0 0 100 100" aria-hidden="true">
+              <circle className={styles.countdownTrack} cx="50" cy="50" r={RING_R} />
+              <circle
+                className={styles.countdownArc}
+                cx="50"
+                cy="50"
+                r={RING_R}
+                strokeDasharray={RING_C}
+                style={{ animationDuration: `${duration}s` }}
+              />
+            </svg>
+            <span className={styles.offerEmoji}>
+              <AnimatedEmoji name="hand-reach" size={Math.round(size * 0.66)} />
+            </span>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  )
+}

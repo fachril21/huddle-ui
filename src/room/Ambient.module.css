@@ -75,3 +75,9 @@
 }
 
 :global([data-motion='reduced']) .blob { animation: none; }
+
+/* High five impact: mesh brightens ~40% for a moment, never a white flash (Design.md 11.5) */
+:global([data-hf-boost='true']) .blob {
+  opacity: calc(var(--o) * 1.4 * (1 + 0.3 * var(--crosstalk, 0)));
+  transition-duration: 250ms;
+}

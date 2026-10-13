@@ -29,6 +29,8 @@ interface DockProps {
   onClose: (key: DockToggle) => void
   onReact: (name: ReactionName) => void
   onHighFive: () => void
+  highFiveActive: boolean
+  highFiveDisabledReason?: string
   /** Popover for the soundboard button (M6) */
   soundboard?: ReactNode
 }
@@ -36,7 +38,7 @@ interface DockProps {
 const ICON = { size: 22, strokeWidth: 1.75, 'aria-hidden': true } as const
 
 /** Floating glass-3 capsule: [mic cam] | [share reaction hand high-five soundboard more] | [leave]. */
-export function Dock({ self, toggles, onToggleMic, onToggleCam, onToggleHand, onToggle, onClose, onReact, onHighFive, soundboard }: DockProps) {
+export function Dock({ self, toggles, onToggleMic, onToggleCam, onToggleHand, onToggle, onClose, onReact, onHighFive, highFiveActive, highFiveDisabledReason, soundboard }: DockProps) {
   const wrapRef = useRef<HTMLDivElement>(null)
   const openPopover: DockToggle | null = toggles.reaction ? 'reaction' : toggles.soundboard ? 'soundboard' : null
   const anchorX = usePopoverAnchor(wrapRef, openPopover)
@@ -84,7 +86,7 @@ export function Dock({ self, toggles, onToggleMic, onToggleCam, onToggleHand, on
           <DockButton icon={<SmilePlus {...ICON} />} label="Reaction" pressed={toggles.reaction} onClick={() => onToggle('reaction')} />
         </span>
         <DockButton icon={<Hand {...ICON} />} label="Angkat tangan" pressed={self.hand !== null} onClick={onToggleHand} />
-        <DockButton icon={<Handshake {...ICON} />} label="High five" pressed={toggles.highFive} onClick={onHighFive} />
+        <DockButton icon={<Handshake {...ICON} />} label="High five" pressed={highFiveActive} disabledReason={highFiveDisabledReason} onClick={onHighFive} />
         <span data-popover-key="soundboard" style={{ display: 'contents' }}>
           <DockButton icon={<AudioLines {...ICON} />} label="Soundboard" pressed={toggles.soundboard} onClick={() => onToggle('soundboard')} />
         </span>

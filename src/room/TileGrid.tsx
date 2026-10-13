@@ -3,7 +3,7 @@ import { useRef } from 'react'
 import type { CSSProperties, Dispatch, KeyboardEvent } from 'react'
 import type { RoomAction } from '../state/roomReducer'
 import { SELF_ID } from '../state/types'
-import type { Participant } from '../state/types'
+import type { HighFiveOffer, Participant } from '../state/types'
 import { Tile } from '../tile/Tile'
 import { useVoiceSnapshot } from '../voice/VoiceContext'
 import { bestGrid, GRID_GAP, useElementSize } from './gridLayout'
@@ -11,13 +11,14 @@ import styles from './TileGrid.module.css'
 
 interface TileGridProps {
   participants: readonly Participant[]
+  offers: readonly HighFiveOffer[]
   dispatch: Dispatch<RoomAction>
 }
 
 /** After a swap, ignore further swaps briefly so tiles do not ping-pong while layout animates. */
 const SWAP_COOLDOWN_MS = 260
 
-export function TileGrid({ participants, dispatch }: TileGridProps) {
+export function TileGrid({ participants, offers, dispatch }: TileGridProps) {
   const [stageRef, size] = useElementSize<HTMLDivElement>()
   const { cols, tileW, tileH } = bestGrid(participants.length, size.width, size.height)
   const voice = useVoiceSnapshot()
@@ -72,6 +73,9 @@ export function TileGrid({ participants, dispatch }: TileGridProps) {
               aria-description="Seret untuk memindah, atau tahan Alt dan tekan tombol panah"
               layout="position"
               transition={{ type: 'spring', stiffness: 380, damping: 36 }}
+              onTap={() => {
+                if (offers.some((o) => o.fromId === p.id) && p.id !== SELF_ID) dispatch({ type: 'hfRespond', fromId: p.id, byId: SELF_ID, now: performance.now() })
+              }}
               drag
               dragSnapToOrigin
               dragElastic={0.12}
@@ -87,6 +91,7 @@ export function TileGrid({ participants, dispatch }: TileGridProps) {
                 lit={voice.rendered.has(p.id)}
                 dominant={voice.dominantId === p.id}
                 isSelf={p.id === SELF_ID}
+                offer={offers.find((o) => o.fromId === p.id) ?? null}
                 mutedSpeaking={p.id === SELF_ID && voice.mutedSpeaking}
               />
             </motion.div>
