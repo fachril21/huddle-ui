@@ -1,34 +1,39 @@
-import type { CSSProperties } from 'react'
-import { EMOJI } from './registry'
-import type { EmojiEntry, EmojiName } from './registry'
+import { Emoji } from '@usespaceui/emoji/react'
+import { resolveEmojiUrl } from '@usespaceui/emoji'
+import { useReducedMotion } from '../room/useReducedMotion'
+import { EMOJI, EMOJI_PACK } from './registry'
+import type { EmojiName } from './registry'
 import styles from './AnimatedEmoji.module.css'
 
 interface AnimatedEmojiProps {
   name: EmojiName
-  /** Pixel size of the glyph */
+  /** Pixel size */
   size?: number
-  /** Repeat with a 1.2s rest between loops (Design.md 8.1). false plays once. */
-  loop?: boolean
   /** Accessible name; omit for purely decorative use */
   label?: string
 }
 
-/** Abstraction over animated emoji. Unicode + CSS animation now; Lottie later via registry `lottieSrc`. */
-export function AnimatedEmoji({ name, size = 56, loop = true, label }: AnimatedEmojiProps) {
-  const entry: EmojiEntry = EMOJI[name]
-  const style = { '--emoji-size': `${size}px` } as CSSProperties
-
+/**
+ * Animated emoji (Telegram-style). Loops by itself; shows the native glyph if the asset cannot load
+ * (offline demo) and under reduced motion. Swap the pack in registry.ts without touching call sites.
+ */
+export function AnimatedEmoji({ name, size = 56, label }: AnimatedEmojiProps) {
+  const reduced = useReducedMotion()
   return (
-    <span
-      className={styles.emoji}
-      data-anim={entry.animation}
-      data-loop={loop}
-      style={style}
-      role={label ? 'img' : undefined}
-      aria-label={label}
-      aria-hidden={label ? undefined : true}
-    >
-      {entry.glyph}
+    <span className={styles.emoji} style={{ width: size, height: size }} role={label ? 'img' : undefined} aria-label={label} aria-hidden={label ? undefined : true}>
+      <Emoji emoji={EMOJI[name]} source={EMOJI_PACK.source} type={reduced ? 'pure' : EMOJI_PACK.type} size={size} fallback />
     </span>
   )
+}
+
+/** Warm the browser cache so emoji do not pop in the first time they appear. */
+export function preloadEmoji(names: readonly EmojiName[]) {
+  for (const name of names) {
+    try {
+      const url = resolveEmojiUrl(EMOJI[name], { source: EMOJI_PACK.source, type: EMOJI_PACK.type })
+      if (url) new Image().src = url
+    } catch {
+      /* missing asset: native fallback will render */
+    }
+  }
 }

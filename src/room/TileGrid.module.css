@@ -12,6 +12,16 @@
   flex-wrap: wrap;
   justify-content: center;
   gap: 12px;
+  user-select: none;
 }
 
-.cell { display: contents; }
+.cell {
+  position: relative;
+  flex: none;
+  width: var(--tile-w);
+  height: var(--tile-h);
+  border-radius: var(--radius-tile);
+  cursor: grab;
+  touch-action: none;
+}
+.cell:focus-visible { box-shadow: var(--focus-ring); }

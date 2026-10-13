@@ -1,4 +1,9 @@
-import { useEffect, useReducer, useState } from 'react'
+import { useEffect, useReducer, useRef, useState } from 'react'
+import { installAudioUnlock } from './audio/audioEngine'
+import { playDing } from './audio/notifySounds'
+import { preloadEmoji } from './emoji/AnimatedEmoji'
+import { EMOJI } from './emoji/registry'
+import type { EmojiName } from './emoji/registry'
 import { DemoDirector } from './demo/DemoDirector'
 import { DemoToggle } from './demo/DemoToggle'
 import { Room } from './room/Room'
@@ -13,6 +18,19 @@ export function App() {
   const [state, dispatch] = useReducer(roomReducer, initialRoomState)
   const [engine] = useState(() => new VoiceEngine(SELF_ID))
   const [demoOpen, setDemoOpen] = useState(false)
+
+  useEffect(() => {
+    installAudioUnlock()
+    preloadEmoji(Object.keys(EMOJI) as EmojiName[])
+  }, [])
+
+  // Ding whenever a new hand goes up (Design.md 17)
+  const handsUp = useRef(0)
+  const handCount = state.participants.filter((p) => p.hand !== null).length
+  useEffect(() => {
+    if (handCount > handsUp.current) playDing()
+    handsUp.current = handCount
+  }, [handCount])
 
   useEffect(() => {
     engine.start()

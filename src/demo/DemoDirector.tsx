@@ -3,7 +3,10 @@ import { AnimatePresence, motion } from 'motion/react'
 import type { Dispatch } from 'react'
 import { DEFAULT_LEVEL } from '../state/roomReducer'
 import type { RoomAction, VoicePreset } from '../state/roomReducer'
+import { REACTIONS } from '../room/reactions'
+import { EMOJI } from '../emoji/registry'
 import type { Participant, RoomState } from '../state/types'
+import { useState } from 'react'
 import styles from './DemoDirector.module.css'
 
 interface DemoDirectorProps {
@@ -51,6 +54,8 @@ export function DemoDirector({ state, dispatch, open, onClose }: DemoDirectorPro
             </div>
           </section>
 
+          <QuickEvents state={state} dispatch={dispatch} />
+
           <section className={styles.group} aria-label="Peserta">
             <h2>Peserta</h2>
             <ul className={styles.list}>
@@ -92,6 +97,13 @@ function ParticipantRow({ participant: p, state, dispatch }: { participant: Part
         <Toggle label="Kamera" on={p.camOn} onClick={() => dispatch({ type: 'toggleCam', id: p.id })} />
         <Toggle label="Mic" on={p.micOn} onClick={() => dispatch({ type: 'toggleMic', id: p.id })} />
       </div>
+      <div className={styles.toggles}>
+        <Toggle label="Tangan" on={p.hand !== null} onClick={() => dispatch({ type: 'toggleHand', id: p.id })} />
+        <Toggle label="AFK" on={p.status === 'afk'} onClick={() => dispatch({ type: 'toggleStatus', id: p.id, status: 'afk' })} />
+        <Toggle label="BRB" on={p.status === 'brb'} onClick={() => dispatch({ type: 'toggleStatus', id: p.id, status: 'brb' })} />
+        <Toggle label="Koneksi buruk" on={p.connection === 'poor'} onClick={() => dispatch({ type: 'toggleConnection', id: p.id, connection: 'poor' })} />
+        <Toggle label="Menyambung" on={p.connection === 'reconnecting'} onClick={() => dispatch({ type: 'toggleConnection', id: p.id, connection: 'reconnecting' })} />
+      </div>
       <label className={styles.slider}>
         <span className="sr-only">Level suara {p.name}</span>
         <input
@@ -113,5 +125,44 @@ function Toggle({ label, on, onClick }: { label: string; on: boolean; onClick: (
     <button type="button" className={styles.btn} aria-pressed={on} onClick={onClick}>
       {label}
     </button>
+  )
+}
+
+const REACTION_X_MIN = 24
+const REACTION_X_MAX = 200
+
+/** One-click events from other participants. More groups arrive with each milestone. */
+function QuickEvents({ state, dispatch }: { state: RoomState; dispatch: Dispatch<RoomAction> }) {
+  const others = state.participants.filter((p) => p.id !== 'anda')
+  const [who, setWho] = useState(others[0]?.id ?? 'dewi')
+  return (
+    <section className={styles.group} aria-label='Kejadian cepat'>
+      <h2>Kejadian cepat</h2>
+      <label className={styles.pick}>
+        <span>Dari</span>
+        <select value={who} onChange={(e) => setWho(e.target.value)}>
+          {others.map((p) => (
+            <option key={p.id} value={p.id}>
+              {p.name}
+            </option>
+          ))}
+        </select>
+      </label>
+      <div className={styles.presets} role='group' aria-label='Reaction dari peserta'>
+        {REACTIONS.map((r) => (
+          <button
+            key={r.name}
+            type='button'
+            className={styles.btn}
+            aria-label={'Reaction ' + r.label}
+            onClick={() =>
+              dispatch({ type: 'react', senderId: who, name: r.name, x: REACTION_X_MIN + Math.random() * (REACTION_X_MAX - REACTION_X_MIN), now: performance.now() })
+            }
+          >
+            {EMOJI[r.emoji]}
+          </button>
+        ))}
+      </div>
+    </section>
   )
 }

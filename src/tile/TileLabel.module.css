@@ -52,3 +52,14 @@
 }
 
 :global([data-motion='reduced']) .eq i { animation: none !important; transform: scaleY(0.75); }
+
+.away {
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--aurora-amber);
+  color: var(--on-aurora);
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 700;
+  text-shadow: none;
+}

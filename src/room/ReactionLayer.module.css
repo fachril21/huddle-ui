@@ -1,0 +1,34 @@
+.layer {
+  position: fixed;
+  left: 0;
+  bottom: 112px;
+  width: 280px;
+  height: 0;
+  z-index: var(--z-popover);
+  pointer-events: none;
+}
+
+.item {
+  position: absolute;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  will-change: transform, opacity;
+}
+
+.chip {
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  color: var(--text-1);
+  white-space: nowrap;
+}
+.count { color: var(--aurora-amber); font-variant-numeric: tabular-nums; }
+
+@media (min-width: 1920px) {
+  .item { scale: 1.28; }
+}

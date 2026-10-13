@@ -7,26 +7,57 @@
   background: linear-gradient(180deg, var(--ink-950), var(--ink-900));
 }
 
+/*
+ * Each blob follows its own slow 4-point path (--x1..--y3), so the mesh visibly breathes
+ * while staying faint. Only transform animates; opacity is static except the crosstalk warm-up.
+ */
 .blob {
   position: absolute;
   border-radius: 50%;
-  filter: blur(120px);
+  filter: blur(110px);
   mix-blend-mode: screen;
   will-change: transform;
   /* --o is the resting opacity; --crosstalk (0|1) warms it slightly while people talk over each other */
   opacity: calc(var(--o) * (1 + 0.3 * var(--crosstalk, 0)));
   transition: opacity 1.2s var(--ease-out);
-  animation: drift var(--drift-dur, 60s) ease-in-out infinite alternate;
+  animation: drift var(--drift-dur) ease-in-out infinite alternate;
   animation-delay: var(--drift-delay, 0s);
 }
 
-.a { --o: 0.14; --drift-dur: 62s; width: 60vmax; height: 60vmax; left: -18vmax; top: -22vmax; background: var(--aurora-violet); }
-.b { --o: 0.12; --drift-dur: 54s; --drift-delay: -18s; width: 55vmax; height: 55vmax; right: -16vmax; bottom: -22vmax; background: var(--aurora-cyan); }
-.c { --o: 0.08; --drift-dur: 70s; --drift-delay: -35s; width: 45vmax; height: 45vmax; left: -10vmax; bottom: -20vmax; background: var(--aurora-orchid); }
-.d { --o: 0.1; --drift-dur: 58s; --drift-delay: -8s; width: 50vmax; height: 50vmax; right: -14vmax; top: -20vmax; background: var(--aurora-blue); }
+.a {
+  --o: 0.14; --drift-dur: 34s; --drift-delay: 0s;
+  --x1: 24vmax; --y1: 10vmax; --s1: 1.15;
+  --x2: 10vmax; --y2: 32vmax; --s2: 0.92;
+  --x3: 34vmax; --y3: 22vmax; --s3: 1.22;
+  width: 60vmax; height: 60vmax; left: -18vmax; top: -22vmax; background: var(--aurora-violet);
+}
+.b {
+  --o: 0.12; --drift-dur: 30s; --drift-delay: -11s;
+  --x1: -26vmax; --y1: -8vmax; --s1: 1.1;
+  --x2: -12vmax; --y2: -30vmax; --s2: 1.2;
+  --x3: -34vmax; --y3: -16vmax; --s3: 0.94;
+  width: 55vmax; height: 55vmax; right: -16vmax; bottom: -22vmax; background: var(--aurora-cyan);
+}
+.c {
+  --o: 0.08; --drift-dur: 38s; --drift-delay: -20s;
+  --x1: 28vmax; --y1: -16vmax; --s1: 1.18;
+  --x2: 40vmax; --y2: -6vmax; --s2: 0.95;
+  --x3: 18vmax; --y3: -30vmax; --s3: 1.1;
+  width: 45vmax; height: 45vmax; left: -10vmax; bottom: -20vmax; background: var(--aurora-orchid);
+}
+.d {
+  --o: 0.1; --drift-dur: 32s; --drift-delay: -6s;
+  --x1: -22vmax; --y1: 18vmax; --s1: 1.12;
+  --x2: -36vmax; --y2: 8vmax; --s2: 1;
+  --x3: -16vmax; --y3: 34vmax; --s3: 1.2;
+  width: 50vmax; height: 50vmax; right: -14vmax; top: -20vmax; background: var(--aurora-blue);
+}
 
 @keyframes drift {
-  to { transform: translate3d(8vmax, -6vmax, 0) scale(1.12); }
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  33% { transform: translate3d(var(--x1), var(--y1), 0) scale(var(--s1)); }
+  66% { transform: translate3d(var(--x2), var(--y2), 0) scale(var(--s2)); }
+  100% { transform: translate3d(var(--x3), var(--y3), 0) scale(var(--s3)); }
 }
 
 .grain {
@@ -43,11 +74,4 @@
   background: radial-gradient(ellipse at center, transparent 55%, var(--vignette) 100%);
 }
 
-/* Share screen (M5) dims the mesh to 60% */
-:global([data-sharing='true']) .blob { opacity: calc(var(--o) * 0.6); }
-
 :global([data-motion='reduced']) .blob { animation: none; }
-
-@media (prefers-reduced-motion: reduce) {
-  .blob { animation: none; }
-}

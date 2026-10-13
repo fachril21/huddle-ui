@@ -1,0 +1,102 @@
+.hand {
+  position: absolute;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  pointer-events: none;
+}
+
+.queue {
+  min-width: 24px;
+  height: 22px;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-pill);
+  color: var(--aurora-amber);
+  font-size: 12px;
+  line-height: 20px;
+  font-weight: 700;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* brief amber neon when a hand goes up (600ms) */
+.handFlash {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: 0 0 0 2px var(--aurora-amber), 0 0 16px color-mix(in srgb, var(--aurora-amber) 70%, transparent);
+}
+
+.status {
+  position: absolute;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.poor {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  border-radius: inherit;
+  border: 2px dashed var(--aurora-rose);
+  pointer-events: none;
+  animation: poorPulse 1.6s ease-in-out infinite;
+}
+@keyframes poorPulse {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 1; }
+}
+
+.shimmer {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  border-radius: inherit;
+  overflow: hidden;
+  pointer-events: none;
+}
+.shimmer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -40%;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--text-1) 22%, transparent), transparent);
+  animation: sweep 2.4s ease-in-out infinite;
+  will-change: transform;
+}
+@keyframes sweep {
+  from { transform: translateX(0); }
+  to { transform: translateX(350%); }
+}
+
+.reconnecting {
+  position: absolute;
+  top: var(--space-3);
+  left: 50%;
+  translate: -50% 0;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 26px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--text-1);
+}
+.spin { animation: spin 1.2s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.poorIcon { color: var(--aurora-rose); }
+
+:global([data-motion='reduced']) .poor { animation: none; opacity: 1; }
+:global([data-motion='reduced']) .shimmer::before,
+:global([data-motion='reduced']) .spin { animation: none; }

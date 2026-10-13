@@ -5,11 +5,14 @@ import { Aurora } from './Aurora'
 import { Avatar } from './Avatar'
 import { NeonBorder } from './NeonBorder'
 import { TileLabel } from './TileLabel'
+import { ConnectionOverlay, HandOverlay, StatusOverlay } from './TileOverlays'
 import { VideoPlaceholder } from './VideoPlaceholder'
 import styles from './Tile.module.css'
 
 interface TileProps {
   participant: Participant
+  tileW: number
+  tileH: number
   /** Tile is rendering voice effects (speaking, holding, or fading) */
   lit: boolean
   dominant: boolean
@@ -18,10 +21,11 @@ interface TileProps {
   isSelf: boolean
 }
 
-/** Participant card. Layer order follows Design.md 7.1: base, media, aurora/glow, neon, label. */
-export function Tile({ participant, lit, dominant, mutedSpeaking, isSelf }: TileProps) {
-  const { id, name, palette, camOn, micOn } = participant
+/** Participant card. Layer order follows Design.md 7.1: base, media, aurora/glow, neon, overlays, label. */
+export function Tile({ participant, tileW, tileH, lit, dominant, mutedSpeaking, isSelf }: TileProps) {
+  const { id, name, palette, camOn, micOn, status } = participant
   const registerTile = useTileRegistration(id)
+  const notes = [camOn ? '' : 'kamera mati', micOn ? '' : 'mikrofon mati', status === 'none' ? '' : status.toUpperCase()].filter(Boolean)
 
   return (
     <article
@@ -32,7 +36,8 @@ export function Tile({ participant, lit, dominant, mutedSpeaking, isSelf }: Tile
       data-cam={camOn ? 'on' : 'off'}
       data-lit={lit}
       data-dominant={lit && dominant}
-      aria-label={`${name}${camOn ? '' : ', kamera mati'}${micOn ? '' : ', mikrofon mati'}`}
+      data-away={status !== 'none'}
+      aria-label={[name, ...notes].join(', ')}
     >
       <div className={styles.media}>
         {camOn ? (
@@ -48,6 +53,9 @@ export function Tile({ participant, lit, dominant, mutedSpeaking, isSelf }: Tile
         )}
       </div>
       {lit && <NeonBorder dominant={dominant} />}
+      <ConnectionOverlay participant={participant} />
+      <HandOverlay participant={participant} tileW={tileW} tileH={tileH} />
+      <StatusOverlay participant={participant} tileW={tileW} tileH={tileH} />
       {isSelf && (
         <div className={styles.muted} data-on={mutedSpeaking} aria-hidden="true">
           <div className={styles.mutedPulse} />

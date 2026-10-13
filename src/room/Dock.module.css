@@ -1,9 +1,13 @@
-.dock {
+/* Wrapper centers the dock and hosts popovers as siblings: a backdrop-filter parent would flatten a child's blur. */
+.wrap {
   position: absolute;
   left: 50%;
   bottom: var(--space-4);
   transform: translateX(-50%);
   z-index: var(--z-chrome);
+}
+
+.dock {
   display: flex;
   align-items: center;
   gap: var(--space-1);
@@ -16,4 +20,12 @@
   height: 28px;
   margin: 0 var(--space-2);
   background: var(--glass-border);
+}
+
+.popoverSlot {
+  position: absolute;
+  bottom: calc(100% + var(--space-4));
+  left: 0;
+  width: 0;
+  z-index: var(--z-popover);
 }

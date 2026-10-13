@@ -74,3 +74,7 @@
 }
 
 :global([data-motion='reduced']) .mutedPulse { animation: none; }
+
+/* AFK / BRB: media dims to 65% (Design.md 9.2) */
+.media { transition: opacity var(--dur-slow) var(--ease-out); }
+.tile[data-away='true'] .media { opacity: 0.65; }
