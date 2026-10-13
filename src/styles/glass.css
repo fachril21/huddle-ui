@@ -1,0 +1,33 @@
+/* Three glass tiers (Design.md 4). Chrome only: never on video bodies. */
+.glass-1, .glass-2, .glass-3 {
+  position: relative;
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-edge), var(--glass-shadow);
+}
+.glass-1 {
+  background: var(--glass-1-bg);
+  backdrop-filter: blur(var(--glass-1-blur)) saturate(var(--glass-sat));
+  text-shadow: var(--glass-text-shadow);
+  box-shadow: var(--glass-edge);
+}
+.glass-2 {
+  background: var(--glass-tint), var(--glass-2-bg);
+  backdrop-filter: blur(var(--glass-2-blur)) saturate(var(--glass-sat));
+  border-radius: var(--radius-lg);
+}
+.glass-3 {
+  background: var(--glass-tint), var(--glass-3-bg);
+  backdrop-filter: blur(var(--glass-3-blur)) saturate(var(--glass-sat));
+}
+/* grain on top of tint to prevent banding */
+.glass-2::after, .glass-3::after {
+  content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background-image: var(--noise); opacity: 0.03; mix-blend-mode: overlay;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .glass-1, .glass-2, .glass-3 { background: var(--ink-800); backdrop-filter: none; }
+}
+@supports not (backdrop-filter: blur(1px)) {
+  .glass-1, .glass-2, .glass-3 { background: var(--glass-solid); }
+}

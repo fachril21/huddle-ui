@@ -1,0 +1,95 @@
+/* Design tokens from Design.md section 2-3. Components must never hardcode colors. */
+:root {
+  /* ink */
+  --ink-950: #060912;
+  --ink-900: #0b1020;
+  --ink-800: #121935;
+  --ink-700: #1b2347;
+
+  /* text */
+  --text-1: #f4f7ff;
+  --text-2: #b4beda;
+  --text-3: #8e99b8;
+
+  /* aurora core */
+  --aurora-cyan: #2be4f2;
+  --aurora-mint: #3df2b0;
+  --aurora-blue: #3d7bff;
+  --aurora-violet: #8b7bff;
+  --aurora-orchid: #e255e8;
+  --aurora-rose: #ff5c85;
+  --aurora-amber: #ffb84d;
+
+  /* action + status */
+  --primary: #5b5bf0;
+  --primary-glow: #8b7bff;
+  --danger: #d92d45;
+  --success: #3df2b0;
+  --warning: #ffb84d;
+  --on-primary: #ffffff;
+  --on-danger: #ffffff;
+  --on-aurora: var(--ink-950);
+
+  /* participant palettes (Design.md 2.2): color 1, color 2, mix */
+  --pal-borealis-1: #2be4f2; --pal-borealis-2: #3df2b0; --pal-borealis-mix: #33ebc4;
+  --pal-nebula-1: #8b7bff;   --pal-nebula-2: #e255e8;   --pal-nebula-mix: #b66af3;
+  --pal-solstice-1: #ffb84d; --pal-solstice-2: #ff5c85; --pal-solstice-mix: #ff8b69;
+  --pal-abyss-1: #3d7bff;    --pal-abyss-2: #2be4f2;    --pal-abyss-mix: #33a2f8;
+  --pal-orchid-1: #ff5c85;   --pal-orchid-2: #8b7bff;   --pal-orchid-mix: #c56cc2;
+  --pal-verdant-1: #3df2b0;  --pal-verdant-2: #3d7bff;  --pal-verdant-mix: #3db6d8;
+
+  /* glass tiers (Design.md 3.1) */
+  --glass-1-bg: rgba(10, 14, 28, 0.5);   --glass-1-blur: 12px;
+  --glass-2-bg: rgba(16, 22, 44, 0.58);  --glass-2-blur: 24px;
+  --glass-3-bg: rgba(20, 28, 56, 0.7);   --glass-3-blur: 40px;
+  --glass-sat: 160%;
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-edge: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  --glass-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  --glass-solid: rgba(18, 25, 53, 0.94);
+  --glass-tint: linear-gradient(135deg, rgba(139, 123, 255, 0.1), rgba(43, 228, 242, 0.05));
+  --glass-text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+
+  /* shared light + overlay tokens */
+  --comet-core: #ffffff;
+  --scrim: rgba(0, 0, 0, 0.55);
+  --shadow-ink: rgba(0, 0, 0, 0.45);
+  --hairline: rgba(255, 255, 255, 0.08);
+  --veil-hover: rgba(255, 255, 255, 0.08);
+  --veil-press: rgba(255, 255, 255, 0.14);
+  --vignette: rgba(0, 0, 0, 0.35);
+  --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E");
+  --brand-gradient: linear-gradient(90deg, var(--aurora-blue), var(--aurora-violet), var(--aurora-orchid));
+
+  /* typography */
+  --font-display: 'Sora', system-ui, sans-serif;
+  --font-body: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* spacing (4px base) */
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+  --space-5: 20px; --space-6: 24px; --space-8: 32px; --space-12: 48px;
+
+  /* radius */
+  --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px; --radius-xl: 24px;
+  --radius-tile: 20px; --radius-dock: 28px; --radius-pill: 999px;
+
+  /* motion */
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-fast: 120ms; --dur-base: 220ms; --dur-slow: 420ms; --dur-layout: 520ms;
+
+  /* focus */
+  --focus-ring: 0 0 0 2px var(--ink-950), 0 0 0 4px var(--aurora-cyan);
+
+  /* layering */
+  --z-ambient: 0; --z-stage: 1; --z-chrome: 10; --z-popover: 20; --z-toast: 30; --z-demo: 100;
+}
+
+/* Bind a palette to --c1/--c2/--cm on any element via data-palette */
+[data-palette='borealis'] { --c1: var(--pal-borealis-1); --c2: var(--pal-borealis-2); --cm: var(--pal-borealis-mix); }
+[data-palette='nebula']   { --c1: var(--pal-nebula-1);   --c2: var(--pal-nebula-2);   --cm: var(--pal-nebula-mix); }
+[data-palette='solstice'] { --c1: var(--pal-solstice-1); --c2: var(--pal-solstice-2); --cm: var(--pal-solstice-mix); }
+[data-palette='abyss']    { --c1: var(--pal-abyss-1);    --c2: var(--pal-abyss-2);    --cm: var(--pal-abyss-mix); }
+[data-palette='orchid']   { --c1: var(--pal-orchid-1);   --c2: var(--pal-orchid-2);   --cm: var(--pal-orchid-mix); }
+[data-palette='verdant']  { --c1: var(--pal-verdant-1);  --c2: var(--pal-verdant-2);  --cm: var(--pal-verdant-mix); }
