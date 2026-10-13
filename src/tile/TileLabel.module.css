@@ -1,0 +1,54 @@
+.label {
+  position: absolute;
+  left: var(--space-3);
+  bottom: var(--space-3);
+  max-width: calc(100% - var(--space-6));
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 28px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: 600;
+  color: var(--text-1);
+  z-index: 6;
+}
+
+.name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.role {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-2);
+  letter-spacing: 0.02em;
+}
+
+/* mini equalizer: hidden until the tile is speaking */
+.eq {
+  display: none;
+  align-items: flex-end;
+  gap: 2px;
+  height: 12px;
+  color: var(--c1);
+}
+.eq i {
+  width: 3px;
+  height: 100%;
+  border-radius: 2px;
+  background: currentColor;
+  transform-origin: bottom;
+  transform: scaleY(0.4);
+}
+:global([data-lit='true']) .eq { display: flex; }
+:global([data-lit='true']) .eq i { animation: eq 900ms ease-in-out infinite alternate; }
+:global([data-lit='true']) .eq i:nth-child(2) { animation-delay: -300ms; animation-duration: 760ms; }
+:global([data-lit='true']) .eq i:nth-child(3) { animation-delay: -600ms; animation-duration: 1040ms; }
+
+@keyframes eq {
+  from { transform: scaleY(0.3); }
+  to { transform: scaleY(1); }
+}
+
+:global([data-motion='reduced']) .eq i { animation: none !important; transform: scaleY(0.75); }

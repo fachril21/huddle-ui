@@ -1,0 +1,53 @@
+.ambient {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-ambient);
+  overflow: hidden;
+  pointer-events: none;
+  background: linear-gradient(180deg, var(--ink-950), var(--ink-900));
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  mix-blend-mode: screen;
+  will-change: transform;
+  /* --o is the resting opacity; --crosstalk (0|1) warms it slightly while people talk over each other */
+  opacity: calc(var(--o) * (1 + 0.3 * var(--crosstalk, 0)));
+  transition: opacity 1.2s var(--ease-out);
+  animation: drift var(--drift-dur, 60s) ease-in-out infinite alternate;
+  animation-delay: var(--drift-delay, 0s);
+}
+
+.a { --o: 0.14; --drift-dur: 62s; width: 60vmax; height: 60vmax; left: -18vmax; top: -22vmax; background: var(--aurora-violet); }
+.b { --o: 0.12; --drift-dur: 54s; --drift-delay: -18s; width: 55vmax; height: 55vmax; right: -16vmax; bottom: -22vmax; background: var(--aurora-cyan); }
+.c { --o: 0.08; --drift-dur: 70s; --drift-delay: -35s; width: 45vmax; height: 45vmax; left: -10vmax; bottom: -20vmax; background: var(--aurora-orchid); }
+.d { --o: 0.1; --drift-dur: 58s; --drift-delay: -8s; width: 50vmax; height: 50vmax; right: -14vmax; top: -20vmax; background: var(--aurora-blue); }
+
+@keyframes drift {
+  to { transform: translate3d(8vmax, -6vmax, 0) scale(1.12); }
+}
+
+.grain {
+  position: absolute;
+  inset: 0;
+  background-image: var(--noise);
+  opacity: 0.03;
+  mix-blend-mode: overlay;
+}
+
+.vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 55%, var(--vignette) 100%);
+}
+
+/* Share screen (M5) dims the mesh to 60% */
+:global([data-sharing='true']) .blob { opacity: calc(var(--o) * 0.6); }
+
+:global([data-motion='reduced']) .blob { animation: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .blob { animation: none; }
+}

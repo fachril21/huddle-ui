@@ -1,0 +1,31 @@
+.avatar {
+  --size: clamp(56px, 28cqh, 120px);
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--size);
+  height: var(--size);
+  margin: calc(var(--size) / -2) 0 0 calc(var(--size) / -2);
+  border-radius: 50%;
+  background: linear-gradient(145deg, var(--c1), var(--c2));
+  display: grid;
+  place-items: center;
+  box-shadow: 0 6px 18px var(--shadow-ink);
+}
+
+.initial {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: calc(var(--size) * 0.4);
+  line-height: 1;
+  color: var(--on-aurora);
+}
+
+/* thin ring that lights up with voice level (opacity driven by --aurora-o) */
+.ring {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid var(--c1);
+  opacity: var(--ring-o, 0);
+}

@@ -1,11 +1,20 @@
+import { useReducer } from 'react'
+import { Room } from './room/Room'
+import styles from './room/Room.module.css'
+import { initialRoomState, roomReducer } from './state/roomReducer'
+
 export function App() {
+  const [state, dispatch] = useReducer(roomReducer, initialRoomState)
+
   return (
-    <main style={{ display: 'grid', placeItems: 'center', height: '100%' }}>
-      <div style={{ textAlign: 'center' }}>
-        <h1 style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 40, margin: 0 }}>Huddle</h1>
-        <p style={{ color: 'var(--text-2)' }}>Room prototype — M0</p>
-        <code style={{ fontFamily: 'var(--font-mono)', color: 'var(--text-3)' }}>abc-defg-hij</code>
+    <>
+      <Room state={state} dispatch={dispatch} />
+      <div className={styles.notice} role="alert">
+        <div>
+          <h1>Layar terlalu sempit</h1>
+          <p>Prototype ini dioptimalkan untuk layar desktop (minimal 1100 px).</p>
+        </div>
       </div>
-    </main>
+    </>
   )
 }

@@ -1,0 +1,17 @@
+import { useEffect, useState } from 'react'
+
+const QUERY = '(prefers-reduced-motion: reduce)'
+
+/** Mirrors prefers-reduced-motion. Components key off a data-motion attribute so the Demo Director can simulate it later. */
+export function useReducedMotion(): boolean {
+  const [reduced, setReduced] = useState(() => window.matchMedia(QUERY).matches)
+
+  useEffect(() => {
+    const mq = window.matchMedia(QUERY)
+    const onChange = () => setReduced(mq.matches)
+    mq.addEventListener('change', onChange)
+    return () => mq.removeEventListener('change', onChange)
+  }, [])
+
+  return reduced
+}

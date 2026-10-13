@@ -1,0 +1,36 @@
+.tile {
+  position: relative;
+  flex: none;
+  width: var(--tile-w);
+  height: var(--tile-h);
+  border-radius: var(--radius-tile);
+  container-type: size;
+  /* base: ink with a very dim personal mesh (Design.md 7.1 z0). No overflow clip: neon glow lives outside. */
+  background:
+    radial-gradient(70% 90% at 15% 0%, color-mix(in srgb, var(--c1) 10%, transparent), transparent 70%),
+    radial-gradient(70% 90% at 90% 100%, color-mix(in srgb, var(--c2) 10%, transparent), transparent 70%),
+    var(--ink-800);
+  box-shadow: 0 0 0 1px var(--glass-border);
+}
+
+/* clips video/avatar/aurora to the rounded tile */
+.media {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+}
+
+.micOff {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--text-1);
+  background: var(--danger);
+  z-index: 6;
+}

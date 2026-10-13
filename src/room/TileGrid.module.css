@@ -1,0 +1,17 @@
+/* Leaves room for the top row (badges) and the floating dock */
+.stage {
+  position: absolute;
+  inset: 56px var(--space-4) 104px;
+  z-index: var(--z-stage);
+  display: grid;
+  place-items: center;
+}
+
+.grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+.cell { display: contents; }
