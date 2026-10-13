@@ -91,6 +91,47 @@ export interface RoomState {
   readonly highFive: HighFiveState
   /** Participant currently sharing their screen, if any */
   readonly sharerId: string | null
+  readonly soundboard: SoundboardState
+  /** Newest first. polls[0] is the active poll while its status is active. */
+  readonly polls: readonly Poll[]
 }
 
 export const SELF_ID = 'anda'
+
+/** A soundboard sound someone played; shown as a chip and an equalizer on their tile while it lasts. */
+export interface SoundPlay {
+  readonly id: number
+  readonly fromId: string
+  readonly soundId: string
+  readonly startedAt: number
+  readonly durationMs: number
+}
+
+export interface SoundboardState {
+  /** Host switch "Izinkan soundboard" */
+  readonly allowed: boolean
+  readonly plays: readonly SoundPlay[]
+  /** participant id -> performance.now() of their last play (3s global cooldown per sender) */
+  readonly lastPlayAt: Readonly<Record<string, number>>
+}
+
+export interface PollOption {
+  readonly id: string
+  readonly text: string
+}
+
+export interface Poll {
+  readonly id: number
+  readonly question: string
+  readonly options: readonly PollOption[]
+  readonly multiple: boolean
+  readonly anonymous: boolean
+  readonly liveResults: boolean
+  /** null = manual close */
+  readonly autoCloseS: number | null
+  readonly status: 'active' | 'closed'
+  readonly startedAt: number
+  readonly creatorId: string
+  /** voter id -> chosen option ids (identities are never shown on anonymous polls) */
+  readonly votes: Readonly<Record<string, readonly string[]>>
+}

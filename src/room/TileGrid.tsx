@@ -17,6 +17,7 @@ interface TileGridProps {
   participants: readonly Participant[]
   offers: readonly HighFiveOffer[]
   sharerId: string | null
+  soundPlayers: ReadonlySet<string>
   dispatch: Dispatch<RoomAction>
 }
 
@@ -31,7 +32,7 @@ const TILE_RADIUS = 20
  * Positions every tile absolutely from computed rectangles. The same elements stay mounted when the layout
  * switches between grid and share-screen, so Motion can animate each box (FLIP) without reloading anything.
  */
-export function TileGrid({ participants, offers, sharerId, dispatch }: TileGridProps) {
+export function TileGrid({ participants, offers, sharerId, soundPlayers, dispatch }: TileGridProps) {
   const [stageRef, size] = useElementSize<HTMLDivElement>()
   const reduced = useReducedMotion()
   const voice = useVoiceSnapshot()
@@ -143,6 +144,7 @@ export function TileGrid({ participants, offers, sharerId, dispatch }: TileGridP
                   mutedSpeaking={p.id === SELF_ID && voice.mutedSpeaking}
                   offer={offers.find((o) => o.fromId === p.id) ?? null}
                   compact={rect.h < 160}
+                  soundPlaying={soundPlayers.has(p.id)}
                 />
               </motion.div>
             )

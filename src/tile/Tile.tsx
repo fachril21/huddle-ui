@@ -23,10 +23,12 @@ interface TileProps {
   offer: { startedAt: number; expiresAt: number } | null
   /** Tile is small (under 160px tall): aurora gives way to a static glow (Design.md 7.5) */
   compact: boolean
+  /** This participant is playing a soundboard sound right now */
+  soundPlaying: boolean
 }
 
 /** Participant card. Layer order follows Design.md 7.1: base, media, aurora/glow, neon, overlays, label. */
-export function Tile({ participant, tileW, tileH, lit, dominant, mutedSpeaking, isSelf, offer, compact }: TileProps) {
+export function Tile({ participant, tileW, tileH, lit, dominant, mutedSpeaking, isSelf, offer, compact, soundPlaying }: TileProps) {
   const { id, name, palette, camOn, micOn, status } = participant
   const registerTile = useTileRegistration(id)
   const notes = [camOn ? '' : 'kamera mati', micOn ? '' : 'mikrofon mati', status === 'none' ? '' : status.toUpperCase()].filter(Boolean)
@@ -41,6 +43,7 @@ export function Tile({ participant, tileW, tileH, lit, dominant, mutedSpeaking, 
       data-lit={lit}
       data-dominant={lit && dominant}
       data-away={status !== 'none'}
+      data-sound={soundPlaying}
       aria-label={[name, ...notes].join(', ')}
     >
       <div className={styles.media}>
@@ -58,6 +61,7 @@ export function Tile({ participant, tileW, tileH, lit, dominant, mutedSpeaking, 
         )}
       </div>
       {lit && <NeonBorder dominant={dominant} />}
+      {soundPlaying && <div className={styles.soundPulse} aria-hidden="true" />}
       <ConnectionOverlay participant={participant} />
       <HandOverlay participant={participant} tileW={tileW} tileH={tileH} />
       <OfferOverlay participant={participant} tileW={tileW} tileH={tileH} offer={offer} />

@@ -32,6 +32,7 @@ interface DockProps {
   onShare: () => void
   shareActive: boolean
   shareDisabledReason?: string
+  soundboardDisabledReason?: string
   highFiveActive: boolean
   highFiveDisabledReason?: string
   /** Popover for the soundboard button (M6) */
@@ -41,7 +42,7 @@ interface DockProps {
 const ICON = { size: 22, strokeWidth: 1.75, 'aria-hidden': true } as const
 
 /** Floating glass-3 capsule: [mic cam] | [share reaction hand high-five soundboard more] | [leave]. */
-export function Dock({ self, toggles, onToggleMic, onToggleCam, onToggleHand, onToggle, onClose, onReact, onHighFive, onShare, shareActive, shareDisabledReason, highFiveActive, highFiveDisabledReason, soundboard }: DockProps) {
+export function Dock({ self, toggles, onToggleMic, onToggleCam, onToggleHand, onToggle, onClose, onReact, onHighFive, onShare, shareActive, shareDisabledReason, highFiveActive, highFiveDisabledReason, soundboardDisabledReason, soundboard }: DockProps) {
   const wrapRef = useRef<HTMLDivElement>(null)
   const openPopover: DockToggle | null = toggles.reaction ? 'reaction' : toggles.soundboard ? 'soundboard' : null
   const anchorX = usePopoverAnchor(wrapRef, openPopover)
@@ -91,7 +92,7 @@ export function Dock({ self, toggles, onToggleMic, onToggleCam, onToggleHand, on
         <DockButton icon={<Hand {...ICON} />} label="Angkat tangan" pressed={self.hand !== null} onClick={onToggleHand} />
         <DockButton icon={<Handshake {...ICON} />} label="High five" pressed={highFiveActive} disabledReason={highFiveDisabledReason} onClick={onHighFive} />
         <span data-popover-key="soundboard" style={{ display: 'contents' }}>
-          <DockButton icon={<AudioLines {...ICON} />} label="Soundboard" pressed={toggles.soundboard} onClick={() => onToggle('soundboard')} />
+          <DockButton icon={<AudioLines {...ICON} />} label="Soundboard" pressed={toggles.soundboard} disabledReason={soundboardDisabledReason} onClick={() => onToggle('soundboard')} />
         </span>
         <DockButton icon={<Ellipsis {...ICON} />} label="Lainnya" pressed={toggles.more} onClick={() => onToggle('more')} />
         <span className={styles.sep} aria-hidden="true" />

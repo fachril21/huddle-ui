@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
+import { AnimatePresence } from 'motion/react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { CSSProperties, Dispatch } from 'react'
 import type { RoomAction } from '../state/roomReducer'
 import { SELF_ID } from '../state/types'
@@ -8,11 +9,18 @@ import { Ambient } from './Ambient'
 import { Dock } from './Dock'
 import { HighFiveStage } from './HighFiveStage'
 import { HighFiveToasts } from './HighFiveToasts'
+import { useHighFive } from './hooks/useHighFive'
+import { usePolls } from './hooks/usePolls'
+import { useSoundboard } from './hooks/useSoundboard'
 import { InfoPill } from './InfoPill'
 import { MutedBanner } from './MutedBanner'
 import { PanelPill } from './PanelPill'
+import { PollToast } from './PollToast'
 import { ReactionLayer } from './ReactionLayer'
 import { BURST_LIMIT, BURST_WINDOW_MS } from './reactions'
+import { SidePanel } from './SidePanel'
+import { SoundboardPopover } from './SoundboardPopover'
+import { SoundChips } from './SoundChips'
 import { TileGrid } from './TileGrid'
 import { TopBar } from './TopBar'
 import { useReducedMotion } from './useReducedMotion'
@@ -22,6 +30,8 @@ import styles from './Room.module.css'
 const MOCK_UNREAD_CHAT = 1
 const REACTION_X_MIN = 24
 const REACTION_X_MAX = 200
+/** Side panel width plus its gaps; the tile stage gives this space up while a panel is open */
+const PANEL_SPACE = '376px'
 
 interface RoomProps {
   state: RoomState
@@ -33,13 +43,13 @@ export function Room({ state, dispatch }: RoomProps) {
   const engine = useVoiceEngine()
   const voice = useVoiceSnapshot()
   const self = state.participants.find((p) => p.id === SELF_ID)
+  const [announcement, setAnnouncement] = useState('')
+  const announce = useCallback((text: string) => setAnnouncement(text), [])
+  const highFive = useHighFive(state, dispatch, announce)
+  const soundboard = useSoundboard(state, dispatch)
+  const polls = usePolls(state, dispatch, announce)
   const sentAt = useRef<number[]>([])
   const hasReactions = state.reactions.length > 0
-  const { offers, claims, matches, cooldowns } = state.highFive
-  const hfBusy = offers.length > 0 || claims.length > 0
-  const [announcement, setAnnouncement] = useState('')
-  const [, rerender] = useReducer((n: number) => n + 1, 0)
-  const seen = useRef({ offers: new Set<number>(), matches: new Set<number>() })
 
   useEffect(() => engine.setReducedMotion(reducedMotion), [engine, reducedMotion])
 
@@ -50,45 +60,10 @@ export function Room({ state, dispatch }: RoomProps) {
     return () => window.clearInterval(id)
   }, [hasReactions, dispatch])
 
-  // Expire open offers and stale "Sudah disambut" toasts
+  // If the host switches soundboard off while its popover is open, close it
   useEffect(() => {
-    if (!hfBusy) return
-    const id = window.setInterval(() => dispatch({ type: 'hfTick', now: performance.now() }), 200)
-    return () => window.clearInterval(id)
-  }, [hfBusy, dispatch])
-
-  // Re-render when the local high-five cooldown ends so the dock button re-enables
-  const selfCooldownUntil = cooldowns[SELF_ID] ?? 0
-  useEffect(() => {
-    const left = selfCooldownUntil - performance.now()
-    if (left <= 0) return
-    const id = window.setTimeout(() => rerender(), left + 20)
-    return () => window.clearTimeout(id)
-  }, [selfCooldownUntil])
-
-  // Screen-reader announcements (aria-live polite): new invitations and completed high fives
-  useEffect(() => {
-    const names = (id: string) => state.participants.find((p) => p.id === id)?.name ?? ''
-    for (const o of offers) {
-      if (seen.current.offers.has(o.id)) continue
-      seen.current.offers.add(o.id)
-      if (o.fromId !== SELF_ID) setAnnouncement(`${names(o.fromId)} mengajak high five`)
-    }
-    for (const m of matches) {
-      if (seen.current.matches.has(m.id)) continue
-      seen.current.matches.add(m.id)
-      setAnnouncement(`${names(m.aId)} dan ${names(m.bId)} high five`)
-    }
-  }, [offers, matches, state.participants])
-
-  const onHighFive = useCallback(() => {
-    const now = performance.now()
-    const theirs = offers.find((o) => o.fromId !== SELF_ID)
-    if (theirs) dispatch({ type: 'hfRespond', fromId: theirs.fromId, byId: SELF_ID, now })
-    else if (offers.some((o) => o.fromId === SELF_ID)) dispatch({ type: 'hfCancel', fromId: SELF_ID })
-    else dispatch({ type: 'hfOffer', fromId: SELF_ID, now })
-    dispatch({ type: 'closeDock', key: 'reaction' })
-  }, [offers, dispatch])
+    if (!state.soundboard.allowed) dispatch({ type: 'closeDock', key: 'soundboard' })
+  }, [state.soundboard.allowed, dispatch])
 
   const onReact = useCallback(
     (name: ReactionName) => {
@@ -106,24 +81,36 @@ export function Room({ state, dispatch }: RoomProps) {
 
   if (!self) return null
 
-  const style = { '--crosstalk': voice.crosstalk ? 1 : 0 } as CSSProperties
+  const sharing = state.sharerId !== null
+  const style = { '--crosstalk': voice.crosstalk ? 1 : 0, '--panel-space': state.panel ? PANEL_SPACE : '0px' } as CSSProperties
 
   return (
-    <div className={styles.room} data-motion={reducedMotion ? 'reduced' : 'full'} data-sharing={state.sharerId !== null} style={style}>
+    <div className={styles.room} data-motion={reducedMotion ? 'reduced' : 'full'} data-sharing={sharing} style={style}>
       <Ambient />
-      <TileGrid participants={state.participants} offers={offers} sharerId={state.sharerId} dispatch={dispatch} />
+      <TileGrid participants={state.participants} offers={state.highFive.offers} sharerId={state.sharerId} soundPlayers={soundboard.players} dispatch={dispatch} />
       <TopBar />
       <MutedBanner visible={voice.mutedSpeaking && !self.micOn} onUnmute={() => dispatch({ type: 'setMic', id: SELF_ID, on: true })} />
       <HighFiveToasts
-        offers={offers}
-        claims={claims}
+        offers={state.highFive.offers}
+        claims={state.highFive.claims}
         participants={state.participants}
         onRespond={(fromId) => dispatch({ type: 'hfRespond', fromId, byId: SELF_ID, now: performance.now() })}
       />
-      <HighFiveStage matches={matches} participants={state.participants} sharing={state.sharerId !== null} onDone={(id) => dispatch({ type: 'hfMatchDone', id })} />
+      <PollToast
+        question={polls.toastQuestion}
+        onVote={() => {
+          polls.dismissToast()
+          dispatch({ type: 'openPanel', panel: 'polling' })
+        }}
+      />
+      <HighFiveStage matches={state.highFive.matches} participants={state.participants} sharing={sharing} onDone={(id) => dispatch({ type: 'hfMatchDone', id })} />
       <div className="sr-only" aria-live="polite">{announcement}</div>
       <ReactionLayer reactions={state.reactions} participants={state.participants} />
+      <SoundChips plays={soundboard.plays} participants={state.participants} />
       <InfoPill />
+      <AnimatePresence>
+        {state.panel && <SidePanel key="panel" panel={state.panel} state={state} dispatch={dispatch} onClose={() => dispatch({ type: 'openPanel', panel: null })} />}
+      </AnimatePresence>
       <Dock
         self={self}
         toggles={state.toggles}
@@ -133,17 +120,20 @@ export function Room({ state, dispatch }: RoomProps) {
         onToggle={(key) => dispatch({ type: 'toggleDock', key })}
         onClose={onClose}
         onReact={onReact}
-        onHighFive={onHighFive}
+        onHighFive={highFive.onHighFive}
         onShare={() => dispatch(state.sharerId === SELF_ID ? { type: 'stopShare' } : { type: 'startShare', id: SELF_ID })}
         shareActive={state.sharerId === SELF_ID}
-        shareDisabledReason={state.sharerId !== null && state.sharerId !== SELF_ID ? 'Peserta lain sedang berbagi layar. Tunggu sampai selesai.' : undefined}
-        highFiveActive={offers.some((o) => o.fromId === SELF_ID)}
-        highFiveDisabledReason={performance.now() < selfCooldownUntil ? 'Tunggu sebentar sebelum mengajak lagi' : undefined}
+        shareDisabledReason={sharing && state.sharerId !== SELF_ID ? 'Peserta lain sedang berbagi layar. Tunggu sampai selesai.' : undefined}
+        highFiveActive={highFive.active}
+        highFiveDisabledReason={highFive.disabledReason}
+        soundboardDisabledReason={soundboard.disabledReason}
+        soundboard={<SoundboardPopover key="soundboard" lastPlayAt={soundboard.selfLastPlayAt} onPlay={soundboard.onPlay} />}
       />
       <PanelPill
         active={state.panel}
         participantCount={state.participants.length}
         unreadChat={MOCK_UNREAD_CHAT}
+        pendingPoll={polls.pendingBadge}
         onSelect={(panel) => dispatch({ type: 'togglePanel', panel })}
       />
     </div>

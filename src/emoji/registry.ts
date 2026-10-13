@@ -20,6 +20,16 @@ export const EMOJI = {
   sleep: '😴',
   coffee: '☕',
   trophy: '🏆',
+  drum: '🎶',
+  wow: '🤯',
+  ding: '✨',
+  horn: '📣',
+  rimshot: '🤡',
+  sad: '😭',
+  cricket: '🦗',
+  whoosh: '🚀',
+  cheer: '🥳',
+  levelup: '🆙',
 } as const
 
 export type EmojiName = keyof typeof EMOJI

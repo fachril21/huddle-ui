@@ -78,3 +78,19 @@
 /* AFK / BRB: media dims to 65% (Design.md 9.2) */
 .media { transition: opacity var(--dur-slow) var(--ease-out); }
 .tile[data-away='true'] .media { opacity: 0.65; }
+
+/* Playing a soundboard sound: neon ring pulses (does not change the speaking state) */
+.soundPulse {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: 0 0 0 2px var(--c1), 0 0 16px var(--c2);
+  animation: soundPulse 0.6s ease-in-out infinite alternate;
+}
+@keyframes soundPulse {
+  from { opacity: 0.3; }
+  to { opacity: 0.9; }
+}
+:global([data-motion='reduced']) .soundPulse { animation: none; opacity: 0.7; }

@@ -3,6 +3,8 @@ import { AnimatePresence, motion } from 'motion/react'
 import type { Dispatch } from 'react'
 import { DEFAULT_LEVEL } from '../state/roomReducer'
 import type { RoomAction, VoicePreset } from '../state/roomReducer'
+import { SOUNDS, SOUND_BY_ID } from '../audio/soundboardSounds'
+import { SAMPLE_POLL } from '../features/polls/pollMath'
 import { REACTIONS } from '../room/reactions'
 import { EMOJI } from '../emoji/registry'
 import type { Participant, RoomState } from '../state/types'
@@ -128,6 +130,16 @@ function Toggle({ label, on, onClick }: { label: string; on: boolean; onClick: (
   )
 }
 
+/** The ready-made poll from PRD 11.3, as if started by Dewi (3 options, anonymous, live results). */
+const SAMPLE_START = {
+  question: SAMPLE_POLL.question,
+  options: SAMPLE_POLL.options.map((text, i) => ({ id: 'o' + (i + 1), text })),
+  multiple: false,
+  anonymous: true,
+  liveResults: true,
+  autoCloseS: null,
+}
+
 const REACTION_X_MIN = 24
 const REACTION_X_MAX = 200
 
@@ -135,6 +147,7 @@ const REACTION_X_MAX = 200
 function QuickEvents({ state, dispatch }: { state: RoomState; dispatch: Dispatch<RoomAction> }) {
   const others = state.participants.filter((p) => p.id !== 'anda')
   const [who, setWho] = useState(others[0]?.id ?? 'dewi')
+  const [sound, setSound] = useState(SOUNDS[2].id)
   return (
     <section className={styles.group} aria-label='Kejadian cepat'>
       <h2>Kejadian cepat</h2>
@@ -176,6 +189,36 @@ function QuickEvents({ state, dispatch }: { state: RoomState; dispatch: Dispatch
           }}
         >
           Peserta lain menyambut
+        </button>
+      </div>
+      <div className={styles.presets} role="group" aria-label="Soundboard dari peserta">
+        <label className={styles.pick}>
+          <span>Suara</span>
+          <select value={sound} onChange={(e) => setSound(e.target.value)}>
+            {SOUNDS.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button
+          type="button"
+          className={styles.btn}
+          onClick={() => dispatch({ type: 'sbPlay', fromId: who, soundId: sound, durationMs: SOUND_BY_ID[sound]?.durationMs ?? 1500, now: performance.now() })}
+        >
+          Peserta lain memutar suara
+        </button>
+        <button type="button" className={styles.btn} aria-pressed={state.soundboard.allowed} onClick={() => dispatch({ type: 'sbAllow', on: !state.soundboard.allowed })}>
+          Soundboard diizinkan
+        </button>
+      </div>
+      <div className={styles.presets} role="group" aria-label="Polling">
+        <button type="button" className={styles.btn} onClick={() => dispatch({ type: 'pollStart', poll: { ...SAMPLE_START, creatorId: 'dewi', startedAt: performance.now() } })}>
+          Dewi memulai polling contoh
+        </button>
+        <button type="button" className={styles.btn} onClick={() => dispatch({ type: 'pollClose' })}>
+          Tutup polling
         </button>
       </div>
       <div className={styles.presets} role="group" aria-label="Berbagi layar dari peserta">

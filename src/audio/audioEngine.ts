@@ -54,3 +54,11 @@ export function setGroupMuted(group: SoundGroup, isMuted: boolean) {
   muted[group] = isMuted
   if (graph) graph.groups[group].gain.value = isMuted ? 0 : volumes[group]
 }
+
+export function getGroupVolume(group: SoundGroup): number {
+  return volumes[group]
+}
+
+export function isGroupMuted(group: SoundGroup): boolean {
+  return muted[group]
+}

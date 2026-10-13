@@ -1,7 +1,7 @@
 /* Leaves room for the top row (badges) and the floating dock */
 .stage {
   position: absolute;
-  inset: 56px var(--space-4) 104px;
+  inset: 56px calc(var(--space-4) + var(--panel-space, 0px)) 104px var(--space-4);
   z-index: var(--z-stage);
 }
 

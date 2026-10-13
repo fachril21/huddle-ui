@@ -1,6 +1,7 @@
 import { ALL_PARTICIPANTS, VISIBLE_COUNT } from '../demo/participants'
 import type {
   ConnectionState,
+  Poll,
   DockToggle,
   PanelName,
   Participant,
@@ -23,10 +24,18 @@ export type RoomAction =
   | { type: 'toggleDock'; key: DockToggle }
   | { type: 'closeDock'; key: DockToggle }
   | { type: 'togglePanel'; panel: PanelName }
+  | { type: 'openPanel'; panel: PanelName | null }
   | { type: 'patchVoice'; id: string; patch: Partial<VoiceSource> }
   | { type: 'applyVoicePreset'; preset: VoicePreset }
   | { type: 'react'; senderId: string; name: ReactionName; x: number; now: number }
   | { type: 'expireReactions'; now: number }
+  | { type: 'sbPlay'; fromId: string; soundId: string; durationMs: number; now: number }
+  | { type: 'sbExpire'; now: number }
+  | { type: 'sbAllow'; on: boolean }
+  | { type: 'pollStart'; poll: Omit<Poll, 'id' | 'status' | 'votes'> }
+  | { type: 'pollVote'; voterId: string; optionIds: readonly string[] }
+  | { type: 'pollClose' }
+  | { type: 'pollTick'; now: number }
   | { type: 'startShare'; id: string }
   | { type: 'stopShare' }
   | { type: 'hfOffer'; fromId: string; now: number }
@@ -49,6 +58,9 @@ const MAX_REACTIONS = 12
 export const HF_OFFER_MS = 6000
 export const HF_COOLDOWN_MS = 3000
 export const HF_CLAIM_TOAST_MS = 1800
+/** One sound per sender every 3 seconds, regardless of which sound (Design.md 12.3) */
+export const SOUNDBOARD_COOLDOWN_MS = 3000
+const MAX_SOUND_CHIPS = 3
 
 const participants = ALL_PARTICIPANTS.slice(0, VISIBLE_COUNT)
 
@@ -60,6 +72,8 @@ export const initialRoomState: RoomState = {
   reactions: [],
   highFive: { offers: [], matches: [], claims: [], cooldowns: {} },
   sharerId: null,
+  soundboard: { allowed: true, plays: [], lastPlayAt: {} },
+  polls: [],
 }
 
 /** Who talks in each mass preset, and how loudly. */
@@ -107,6 +121,8 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
       return state.toggles[action.key] ? { ...state, toggles: { ...state.toggles, [action.key]: false } } : state
     case 'togglePanel':
       return { ...state, panel: state.panel === action.panel ? null : action.panel }
+    case 'openPanel':
+      return { ...state, panel: action.panel }
     case 'patchVoice':
       return { ...state, voice: { ...state.voice, [action.id]: { ...state.voice[action.id], ...action.patch } } }
     case 'applyVoicePreset': {
@@ -122,6 +138,46 @@ export function roomReducer(state: RoomState, action: RoomAction): RoomState {
     }
     case 'react':
       return addReaction(state, action)
+    case 'sbPlay': {
+      const sb = state.soundboard
+      if (!sb.allowed || action.now < (sb.lastPlayAt[action.fromId] ?? 0) + SOUNDBOARD_COOLDOWN_MS) return state
+      const id = nextId(sb.plays)
+      const play = { id, fromId: action.fromId, soundId: action.soundId, startedAt: action.now, durationMs: action.durationMs }
+      return {
+        ...state,
+        soundboard: { ...sb, plays: [...sb.plays, play].slice(-MAX_SOUND_CHIPS), lastPlayAt: { ...sb.lastPlayAt, [action.fromId]: action.now } },
+      }
+    }
+    case 'sbExpire': {
+      const alive = state.soundboard.plays.filter((p) => action.now - p.startedAt < p.durationMs)
+      return alive.length === state.soundboard.plays.length ? state : { ...state, soundboard: { ...state.soundboard, plays: alive } }
+    }
+    case 'sbAllow':
+      return { ...state, soundboard: { ...state.soundboard, allowed: action.on } }
+    case 'pollStart': {
+      if (state.polls[0]?.status === 'active') return state
+      const poll: Poll = { ...action.poll, id: nextId(state.polls), status: 'active', votes: {} }
+      return { ...state, polls: [poll, ...state.polls] }
+    }
+    case 'pollVote': {
+      const [current, ...rest] = state.polls
+      if (!current || current.status !== 'active') return state
+      const valid = action.optionIds.filter((o) => current.options.some((x) => x.id === o))
+      if (!valid.length) return state
+      const chosen = current.multiple ? valid : valid.slice(0, 1)
+      return { ...state, polls: [{ ...current, votes: { ...current.votes, [action.voterId]: chosen } }, ...rest] }
+    }
+    case 'pollClose': {
+      const [current, ...rest] = state.polls
+      if (!current || current.status !== 'active') return state
+      return { ...state, polls: [{ ...current, status: 'closed' }, ...rest] }
+    }
+    case 'pollTick': {
+      const [current, ...rest] = state.polls
+      if (!current || current.status !== 'active' || current.autoCloseS === null) return state
+      if (action.now < current.startedAt + current.autoCloseS * 1000) return state
+      return { ...state, polls: [{ ...current, status: 'closed' }, ...rest] }
+    }
     case 'startShare':
       return state.sharerId === null ? { ...state, sharerId: action.id } : state
     case 'stopShare':
