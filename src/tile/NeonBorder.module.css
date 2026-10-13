@@ -1,0 +1,78 @@
+.neon {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 4;
+}
+
+/* outer glow: static shadow, only its opacity follows the voice level */
+.glowOut {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 0 6px var(--c1), 0 0 18px var(--c2);
+  opacity: var(--glow-out-o, 0);
+}
+
+.glowDominant {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: 0 0 10px var(--c1), 0 0 30px var(--c2);
+  opacity: 0;
+  transition: opacity 500ms var(--ease-out);
+}
+.glowDominant[data-on='true'] { opacity: var(--glow-out-o, 0); }
+
+/* 2px ring cut out of the tile edge */
+.ring {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 2px;
+  overflow: hidden;
+  opacity: var(--neon-o, 0);
+  -webkit-mask: linear-gradient(var(--mask-on) 0 0) content-box, linear-gradient(var(--mask-on) 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(var(--mask-on) 0 0) content-box exclude, linear-gradient(var(--mask-on) 0 0);
+  mask-composite: exclude;
+}
+
+/* the white tip breathes between .85 and 1, slower than 2 Hz */
+.spark { position: absolute; inset: 0; animation: spark 720ms ease-in-out infinite alternate; }
+
+.orbit {
+  --d: calc(max(100cqw, 100cqh) * 1.5);
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--d);
+  height: var(--d);
+  margin: calc(var(--d) / -2) 0 0 calc(var(--d) / -2);
+  animation: cometSpin 2.6s linear infinite;
+  will-change: transform;
+}
+
+.comet {
+  position: absolute;
+  inset: 0;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg 230deg,
+    var(--c1) 290deg,
+    var(--comet-core) 345deg,
+    var(--c2) 360deg
+  );
+}
+.opposite { transform: rotate(180deg); opacity: 0; transition: opacity 500ms var(--ease-out); }
+.opposite[data-on='true'] { opacity: 1; }
+
+@keyframes cometSpin { to { transform: rotate(360deg); } }
+@keyframes spark { from { opacity: 0.85; } to { opacity: 1; } }
+
+/* Reduced motion: static neon outline instead of an orbiting comet */
+:global([data-motion='reduced']) .orbit { animation: none; }
+:global([data-motion='reduced']) .spark { animation: none; }
+:global([data-motion='reduced']) .comet { background: linear-gradient(135deg, var(--c1), var(--c2)); }
+:global([data-motion='reduced']) .opposite { display: none; }

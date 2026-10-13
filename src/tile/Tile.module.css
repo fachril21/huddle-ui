@@ -34,3 +34,43 @@
   background: var(--danger);
   z-index: 6;
 }
+
+/* camera-on speaking: soft inner glow along the edge, face stays clear (Design.md 7.1 z3) */
+.glowIn {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 28px 2px var(--cm);
+  opacity: var(--glow-in-o, 0);
+  pointer-events: none;
+}
+
+/* self tile: mic is off but voice is detected -> amber neon pulse (Design.md 7.4) */
+.muted {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 4;
+  opacity: 0;
+  transition: opacity 400ms var(--ease-out);
+}
+.muted[data-on='true'] { opacity: 1; }
+
+.mutedPulse {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow:
+    0 0 0 2px var(--aurora-amber),
+    0 0 8px var(--aurora-amber),
+    0 0 22px color-mix(in srgb, var(--aurora-amber) 60%, transparent);
+  animation: mutedPulse 1.6s ease-in-out infinite;
+}
+
+@keyframes mutedPulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+:global([data-motion='reduced']) .mutedPulse { animation: none; }

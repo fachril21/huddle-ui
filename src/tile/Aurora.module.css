@@ -1,0 +1,92 @@
+.aurora {
+  --blob-d: 74cqh;
+  position: absolute;
+  inset: 0;
+  opacity: var(--aurora-o, 0);
+  filter: saturate(var(--sat, 1));
+  pointer-events: none;
+}
+
+/* grows out from the avatar when the tile first lights up */
+.entry {
+  position: absolute;
+  inset: 0;
+  animation: auroraIn 320ms var(--ease-out) both;
+}
+
+.scaler {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--blob-d);
+  height: var(--blob-d);
+  margin: calc(var(--blob-d) / -2) 0 0 calc(var(--blob-d) / -2);
+  transform: scale(var(--blob-s, 1));
+  will-change: transform;
+}
+
+.blob {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  filter: blur(24px);
+  mix-blend-mode: screen;
+  will-change: transform;
+  animation: blobOrbit var(--orbit-dur) ease-in-out infinite alternate;
+}
+.b1 { --orbit-dur: 6.5s; --dx: -22cqh; --dy: -10cqh; background: radial-gradient(circle, var(--c1) 0%, transparent 68%); }
+.b2 { --orbit-dur: 8.5s; --dx: 20cqh; --dy: 12cqh; background: radial-gradient(circle, var(--cm) 0%, transparent 68%); animation-delay: -3s; }
+.b3 { --orbit-dur: 10.5s; --dx: 6cqh; --dy: -18cqh; background: radial-gradient(circle, var(--c2) 0%, transparent 68%); animation-delay: -6s; }
+
+@keyframes blobOrbit {
+  0% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(var(--dx), var(--dy), 0); }
+  100% { transform: translate3d(calc(var(--dx) * -0.8), calc(var(--dy) * -0.9), 0); }
+}
+
+/* tall ribbon that sways, reads as an aurora curtain */
+.curtain {
+  position: absolute;
+  left: 50%;
+  top: -15%;
+  width: 46cqh;
+  height: 130%;
+  margin-left: -23cqh;
+  border-radius: 50%;
+  background: linear-gradient(180deg, transparent 0%, var(--c1) 35%, var(--c2) 70%, transparent 100%);
+  filter: blur(12px);
+  mix-blend-mode: screen;
+  opacity: 0.55;
+  mask-image: radial-gradient(closest-side, var(--mask-on) 40%, transparent 100%);
+  animation: curtainSway 7s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+@keyframes curtainSway {
+  from { transform: translate3d(-8cqh, 0, 0) skewX(-8deg); }
+  to { transform: translate3d(8cqh, 0, 0) skewX(8deg); }
+}
+
+/* ripple ring, animated through WAAPI by the engine; sits on the avatar edge */
+.ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: clamp(56px, 28cqh, 120px);
+  height: clamp(56px, 28cqh, 120px);
+  margin-left: calc(clamp(56px, 28cqh, 120px) / -2);
+  margin-top: calc(clamp(56px, 28cqh, 120px) / -2);
+  border-radius: 50%;
+  border: 2px solid var(--c1);
+  opacity: 0;
+}
+
+@keyframes auroraIn {
+  from { transform: scale(0.55); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+:global([data-motion='reduced']) .blob,
+:global([data-motion='reduced']) .curtain { animation: none; }
+:global([data-motion='reduced']) .entry { animation: none; }
+:global([data-motion='reduced']) .ring { display: none; }

@@ -1,10 +1,13 @@
-import type { Dispatch } from 'react'
+import { useEffect } from 'react'
+import type { CSSProperties, Dispatch } from 'react'
 import type { RoomAction } from '../state/roomReducer'
 import { SELF_ID } from '../state/types'
 import type { RoomState } from '../state/types'
+import { useVoiceEngine, useVoiceSnapshot } from '../voice/VoiceContext'
 import { Ambient } from './Ambient'
 import { Dock } from './Dock'
 import { InfoPill } from './InfoPill'
+import { MutedBanner } from './MutedBanner'
 import { PanelPill } from './PanelPill'
 import { TileGrid } from './TileGrid'
 import { TopBar } from './TopBar'
@@ -21,14 +24,22 @@ interface RoomProps {
 
 export function Room({ state, dispatch }: RoomProps) {
   const reducedMotion = useReducedMotion()
+  const engine = useVoiceEngine()
+  const voice = useVoiceSnapshot()
   const self = state.participants.find((p) => p.id === SELF_ID)
+
+  useEffect(() => engine.setReducedMotion(reducedMotion), [engine, reducedMotion])
+
   if (!self) return null
 
+  const style = { '--crosstalk': voice.crosstalk ? 1 : 0 } as CSSProperties
+
   return (
-    <div className={styles.room} data-motion={reducedMotion ? 'reduced' : 'full'}>
+    <div className={styles.room} data-motion={reducedMotion ? 'reduced' : 'full'} style={style}>
       <Ambient />
       <TileGrid participants={state.participants} />
       <TopBar />
+      <MutedBanner visible={voice.mutedSpeaking && !self.micOn} onUnmute={() => dispatch({ type: 'setMic', id: SELF_ID, on: true })} />
       <InfoPill />
       <Dock
         self={self}

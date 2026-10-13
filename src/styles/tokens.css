@@ -52,6 +52,7 @@
 
   /* shared light + overlay tokens */
   --comet-core: #ffffff;
+  --mask-on: #000000; /* opaque stop for CSS masks (alpha only) */
   --scrim: rgba(0, 0, 0, 0.55);
   --shadow-ink: rgba(0, 0, 0, 0.45);
   --hairline: rgba(255, 255, 255, 0.08);

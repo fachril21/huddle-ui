@@ -1,0 +1,71 @@
+.emoji {
+  display: inline-block;
+  font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
+  font-size: var(--emoji-size);
+  line-height: 1;
+  user-select: none;
+  filter: drop-shadow(0 6px 16px var(--shadow-ink));
+  transform-origin: 70% 80%;
+  /* each keyframe set animates in the first ~55% and rests for the remainder (about the 1.2s loop gap) */
+  animation-duration: 2.2s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+.emoji[data-loop='false'] { animation-iteration-count: 1; }
+
+.emoji[data-anim='wave'] { animation-name: wave; }
+.emoji[data-anim='reach'] { animation-name: reach; transform-origin: 20% 80%; }
+.emoji[data-anim='bounce'] { animation-name: bounce; transform-origin: 50% 100%; }
+.emoji[data-anim='pulse'] { animation-name: pulse; transform-origin: 50% 50%; }
+.emoji[data-anim='pop'] { animation-name: pop; transform-origin: 50% 60%; }
+.emoji[data-anim='wobble'] { animation-name: wobble; transform-origin: 50% 60%; }
+.emoji[data-anim='flicker'] { animation-name: flicker; transform-origin: 50% 90%; }
+.emoji[data-anim='float'] { animation-name: float; transform-origin: 50% 50%; animation-duration: 3.2s; }
+
+@keyframes wave {
+  0%, 55%, 100% { transform: rotate(0); }
+  10% { transform: rotate(16deg); }
+  20% { transform: rotate(-12deg); }
+  30% { transform: rotate(14deg); }
+  40% { transform: rotate(-8deg); }
+  48% { transform: rotate(6deg); }
+}
+@keyframes reach {
+  0%, 55%, 100% { transform: translateX(0) rotate(0); }
+  25% { transform: translateX(10%) rotate(-8deg); }
+}
+@keyframes bounce {
+  0%, 55%, 100% { transform: translateY(0) scale(1, 1); }
+  15% { transform: translateY(-14%) scale(0.96, 1.06); }
+  30% { transform: translateY(0) scale(1.06, 0.94); }
+  42% { transform: translateY(-4%) scale(1, 1); }
+}
+@keyframes pulse {
+  0%, 55%, 100% { transform: scale(1); }
+  15% { transform: scale(1.18); }
+  30% { transform: scale(0.96); }
+  42% { transform: scale(1.1); }
+}
+@keyframes pop {
+  0%, 55%, 100% { transform: scale(1) rotate(0); }
+  18% { transform: scale(1.22) rotate(-6deg); }
+  36% { transform: scale(0.97) rotate(4deg); }
+}
+@keyframes wobble {
+  0%, 55%, 100% { transform: rotate(0); }
+  12% { transform: rotate(-9deg) scale(1.06); }
+  24% { transform: rotate(8deg) scale(1.06); }
+  36% { transform: rotate(-5deg); }
+}
+@keyframes flicker {
+  0%, 100% { transform: scale(1, 1); }
+  30% { transform: scale(0.96, 1.08); }
+  60% { transform: scale(1.04, 0.97); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8%); }
+}
+
+/* reduced motion: first frame only */
+:global([data-motion='reduced']) .emoji { animation: none; }
