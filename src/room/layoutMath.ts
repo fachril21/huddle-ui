@@ -23,20 +23,39 @@ const STRIP_MAX_W = 288
 const PAGER_H = 28
 const PAGER_GAP = 8
 
-/** Regular grid: tiles of the largest 16:9 size, last row centered. */
-export function gridLayout(ids: readonly string[], W: number, H: number): StageLayout {
+/** Up to 9 tiles per page once the room has more people (PRD 6.6). */
+export const PAGE_SIZE = 9
+
+export function pageCount(total: number): number {
+  return Math.max(1, Math.ceil(total / PAGE_SIZE))
+}
+
+/** One page of the regular grid: tiles of the largest 16:9 size, last row centered. */
+function layoutPage(ids: readonly string[], W: number, H: number, into: Record<string, Rect>) {
   const { cols, tileW, tileH } = bestGrid(ids.length, W, H)
   const rows = Math.ceil(ids.length / cols)
   const totalH = rows * tileH + (rows - 1) * GRID_GAP
   const y0 = (H - totalH) / 2
-  const rects: Record<string, Rect> = {}
   ids.forEach((id, i) => {
     const row = Math.floor(i / cols)
     const inRow = Math.min(cols, ids.length - row * cols)
     const x0 = (W - (inRow * tileW + (inRow - 1) * GRID_GAP)) / 2
-    rects[id] = { x: x0 + (i % cols) * (tileW + GRID_GAP), y: y0 + row * (tileH + GRID_GAP), w: tileW, h: tileH }
+    into[id] = { x: x0 + (i % cols) * (tileW + GRID_GAP), y: y0 + row * (tileH + GRID_GAP), w: tileW, h: tileH }
   })
-  return { rects, hidden: new Set(), frame: null, pager: null }
+}
+
+/** Regular grid. Tiles on other pages keep their own page's slot but are hidden. */
+export function gridLayout(ids: readonly string[], W: number, H: number, page = 0): StageLayout {
+  const pages = pageCount(ids.length)
+  const current = Math.min(page, pages - 1)
+  const rects: Record<string, Rect> = {}
+  const hidden = new Set<string>()
+  for (let p = 0; p < pages; p++) {
+    const slice = ids.slice(p * PAGE_SIZE, (p + 1) * PAGE_SIZE)
+    layoutPage(slice, W, H, rects)
+    if (p !== current) slice.forEach((id) => hidden.add(id))
+  }
+  return { rects, hidden, frame: null, pager: null }
 }
 
 /** Share screen: big frame on the left, a strip of up to 4 camera tiles on the right (Design.md 14.4). */

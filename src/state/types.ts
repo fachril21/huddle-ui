@@ -6,6 +6,9 @@ export type PresenceStatus = 'none' | 'afk' | 'brb'
 
 export type ConnectionState = 'good' | 'poor' | 'reconnecting'
 
+/** Visual effects tier (Design.md 19.1): Penuh, Hemat, Mati */
+export type FxTier = 'full' | 'lite' | 'off'
+
 export interface Participant {
   readonly id: string
   readonly name: string
@@ -26,19 +29,11 @@ export interface VoiceSource {
   readonly natural: boolean
 }
 
-export type DockToggle = 'reaction' | 'soundboard' | 'more'
+export type DockToggle = 'reaction' | 'soundboard' | 'more' | 'leave'
 
 export type PanelName = 'peserta' | 'chat' | 'polling' | 'host'
 
-export type ReactionName =
-  | 'thumbs-up'
-  | 'clap'
-  | 'heart'
-  | 'party'
-  | 'laugh'
-  | 'surprised'
-  | 'thanks'
-  | 'fire'
+export type ReactionName = 'thumbs-up' | 'clap' | 'heart' | 'party' | 'laugh' | 'surprised' | 'thanks' | 'fire'
 
 /** A floating reaction. Consecutive identical reactions from one sender merge into count. */
 export interface ReactionItem {
@@ -82,22 +77,6 @@ export interface HighFiveState {
   readonly cooldowns: Readonly<Record<string, number>>
 }
 
-export interface RoomState {
-  readonly participants: readonly Participant[]
-  readonly voice: Readonly<Record<string, VoiceSource>>
-  readonly toggles: Readonly<Record<DockToggle, boolean>>
-  readonly panel: PanelName | null
-  readonly reactions: readonly ReactionItem[]
-  readonly highFive: HighFiveState
-  /** Participant currently sharing their screen, if any */
-  readonly sharerId: string | null
-  readonly soundboard: SoundboardState
-  /** Newest first. polls[0] is the active poll while its status is active. */
-  readonly polls: readonly Poll[]
-}
-
-export const SELF_ID = 'anda'
-
 /** A soundboard sound someone played; shown as a chip and an equalizer on their tile while it lasts. */
 export interface SoundPlay {
   readonly id: number
@@ -135,3 +114,76 @@ export interface Poll {
   /** voter id -> chosen option ids (identities are never shown on anonymous polls) */
   readonly votes: Readonly<Record<string, readonly string[]>>
 }
+
+export interface ChatMessage {
+  readonly id: number
+  readonly fromId: string
+  /** null = public; otherwise a private message to this participant */
+  readonly toId: string | null
+  readonly text: string
+  /** seconds on the mock meeting clock (see formatChatTime) */
+  readonly at: number
+}
+
+export interface ChatState {
+  readonly messages: readonly ChatMessage[]
+  /** who is typing right now, if anyone */
+  readonly typingId: string | null
+  /** number of messages already seen; the rest count as unread */
+  readonly readCount: number
+}
+
+export interface Guest {
+  readonly id: string
+  readonly name: string
+}
+
+export type RecordingState = 'off' | 'on' | 'paused'
+
+export interface HostState {
+  readonly locked: boolean
+  readonly restrictShare: boolean
+  readonly recording: RecordingState
+  /** Non-hosts must agree once to be recorded */
+  readonly consented: boolean
+  readonly waiting: readonly Guest[]
+  readonly announcement: { readonly id: number; readonly text: string } | null
+}
+
+export interface Notice {
+  readonly id: number
+  readonly text: string
+  readonly at: number
+}
+
+/** live = in the room; left = the user left; ended = the host ended it for everyone */
+export type Phase = 'live' | 'left' | 'ended'
+
+export interface Settings {
+  readonly fx: FxTier
+  readonly simulateReduced: boolean
+}
+
+export interface RoomState {
+  /** Participants currently in the room, in display order */
+  readonly participants: readonly Participant[]
+  /** Participants not in the room (outside the 4/8/12 selection or removed by the host) */
+  readonly bench: readonly Participant[]
+  readonly voice: Readonly<Record<string, VoiceSource>>
+  readonly toggles: Readonly<Record<DockToggle, boolean>>
+  readonly panel: PanelName | null
+  readonly reactions: readonly ReactionItem[]
+  readonly highFive: HighFiveState
+  /** Participant currently sharing their screen, if any */
+  readonly sharerId: string | null
+  readonly soundboard: SoundboardState
+  /** Newest first. polls[0] is the active poll while its status is active. */
+  readonly polls: readonly Poll[]
+  readonly chat: ChatState
+  readonly host: HostState
+  readonly notices: readonly Notice[]
+  readonly phase: Phase
+  readonly settings: Settings
+}
+
+export const SELF_ID = 'anda'

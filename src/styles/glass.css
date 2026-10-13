@@ -31,3 +31,16 @@
 @supports not (backdrop-filter: blur(1px)) {
   .glass-1, .glass-2, .glass-3 { background: var(--glass-solid); }
 }
+
+/* Effects tiers (Design.md 19.1). Hemat lightens the blur; Mati makes every glass surface solid. */
+[data-fx='lite'] {
+  --glass-1-blur: 8px;
+  --glass-2-blur: 12px;
+  --glass-3-blur: 16px;
+}
+[data-fx='off'] .glass-1,
+[data-fx='off'] .glass-2,
+[data-fx='off'] .glass-3 {
+  background: var(--ink-800);
+  backdrop-filter: none;
+}

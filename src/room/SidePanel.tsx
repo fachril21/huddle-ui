@@ -1,16 +1,20 @@
-import { Hand, MicOff, VideoOff, X } from 'lucide-react'
+import { X } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useEffect } from 'react'
 import type { Dispatch } from 'react'
+import { ChatPanel } from '../features/chat/ChatPanel'
+import { HostPanel } from '../features/host/HostPanel'
+import { ParticipantsPanel } from '../features/participants/ParticipantsPanel'
 import { PollingPanel } from '../features/polls/PollingPanel'
 import type { RoomAction } from '../state/roomReducer'
 import { SELF_ID } from '../state/types'
-import type { PanelName, RoomState } from '../state/types'
+import type { PanelName, Role, RoomState } from '../state/types'
 import styles from './SidePanel.module.css'
 
 interface SidePanelProps {
   panel: PanelName
   state: RoomState
+  selfRole: Role
   dispatch: Dispatch<RoomAction>
   onClose: () => void
 }
@@ -24,7 +28,9 @@ const TABS: readonly { name: PanelName; label: string }[] = [
 const PANEL_TITLES: Record<PanelName, string> = { peserta: 'Peserta', chat: 'Chat', polling: 'Polling', host: 'Alat host' }
 
 /** Floating glass-2 card on the right (Design.md 15.2). Esc closes it and returns focus to its trigger. */
-export function SidePanel({ panel, state, dispatch, onClose }: SidePanelProps) {
+export function SidePanel({ panel, state, selfRole, dispatch, onClose }: SidePanelProps) {
+  const canManage = selfRole === 'Host' || selfRole === 'Co-host'
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape' || e.defaultPrevented) return
@@ -35,7 +41,7 @@ export function SidePanel({ panel, state, dispatch, onClose }: SidePanelProps) {
     return () => document.removeEventListener('keydown', onKey)
   }, [panel, onClose])
 
-  const isTabbed = panel !== 'host'
+  const now = () => performance.now()
 
   return (
     <motion.aside
@@ -47,7 +53,7 @@ export function SidePanel({ panel, state, dispatch, onClose }: SidePanelProps) {
       transition={{ duration: 0.26, ease: [0.2, 0.8, 0.2, 1] }}
     >
       <header className={styles.head}>
-        {isTabbed ? (
+        {panel !== 'host' ? (
           <div className={styles.tabs} role="tablist" aria-label="Panel samping">
             {TABS.map((t) => (
               <button key={t.name} type="button" role="tab" aria-selected={panel === t.name} onClick={() => dispatch({ type: 'openPanel', panel: t.name })}>
@@ -63,15 +69,26 @@ export function SidePanel({ panel, state, dispatch, onClose }: SidePanelProps) {
         </button>
       </header>
 
-      <div className={styles.body}>
-        {panel === 'peserta' && <ParticipantsTab state={state} />}
-        {panel === 'chat' && <p className={styles.placeholder}>Chat belum tersedia di tahap ini.</p>}
+      <div className={styles.body} data-panel={panel}>
+        {panel === 'peserta' && (
+          <ParticipantsPanel
+            participants={state.participants}
+            selfRole={selfRole}
+            onMute={(id) => dispatch({ type: 'toggleMic', id })}
+            onCoHost={(id) => dispatch({ type: 'setRole', id, role: 'Co-host' })}
+            onMakeHost={(id) => dispatch({ type: 'makeHost', id })}
+            onRemove={(id) => dispatch({ type: 'removeParticipant', id, now: now() })}
+          />
+        )}
+        {panel === 'chat' && (
+          <ChatPanel chat={state.chat} participants={state.participants} onSend={(text, toId) => dispatch({ type: 'chatSend', fromId: SELF_ID, toId, text, now: now() })} />
+        )}
         {panel === 'polling' && (
           <PollingPanel
             polls={state.polls}
             participantCount={state.participants.length}
             selfId={SELF_ID}
-            canManage
+            canManage={canManage}
             onStart={(draft) =>
               dispatch({
                 type: 'pollStart',
@@ -82,7 +99,7 @@ export function SidePanel({ panel, state, dispatch, onClose }: SidePanelProps) {
                   anonymous: draft.anonymous,
                   liveResults: draft.liveResults,
                   autoCloseS: draft.autoCloseS,
-                  startedAt: performance.now(),
+                  startedAt: now(),
                   creatorId: SELF_ID,
                 },
               })
@@ -91,60 +108,20 @@ export function SidePanel({ panel, state, dispatch, onClose }: SidePanelProps) {
             onClose={() => dispatch({ type: 'pollClose' })}
           />
         )}
-        {panel === 'host' && <HostTools state={state} dispatch={dispatch} />}
+        {panel === 'host' && canManage && (
+          <HostPanel
+            host={state.host}
+            soundboardAllowed={state.soundboard.allowed}
+            onDecide={(id, admit) => dispatch({ type: 'guestDecide', id, admit, now: now() })}
+            onLock={(on) => dispatch({ type: 'hostLock', on, now: now() })}
+            onRestrictShare={(on) => dispatch({ type: 'hostRestrictShare', on })}
+            onSoundboard={(on) => dispatch({ type: 'sbAllow', on })}
+            onMuteAll={() => dispatch({ type: 'muteAll', now: now() })}
+            onAnnounce={(text) => dispatch({ type: 'announce', text })}
+            onRecording={(s) => dispatch({ type: 'hostRecording', state: s })}
+          />
+        )}
       </div>
     </motion.aside>
-  )
-}
-
-function ParticipantsTab({ state }: { state: RoomState }) {
-  const raised = state.participants.filter((p) => p.hand !== null).sort((a, b) => (a.hand ?? 0) - (b.hand ?? 0))
-  return (
-    <div className={styles.stack}>
-      {raised.length > 0 && (
-        <section aria-label="Antrean tangan terangkat">
-          <h3 className={styles.sub}>Tangan terangkat</h3>
-          <ol className={styles.queue}>
-            {raised.map((p) => (
-              <li key={p.id}>
-                <span className={styles.seq}>{p.hand}</span>
-                {p.name}
-                <Hand size={14} strokeWidth={1.75} aria-hidden="true" className={styles.handIcon} />
-              </li>
-            ))}
-          </ol>
-        </section>
-      )}
-      <section aria-label="Daftar peserta">
-        <h3 className={styles.sub}>Di meeting ({state.participants.length})</h3>
-        <ul className={styles.people}>
-          {state.participants.map((p) => (
-            <li key={p.id} data-palette={p.palette}>
-              <i className={styles.dot} aria-hidden="true">{p.name.charAt(0)}</i>
-              <span className={styles.name}>{p.name}</span>
-              {(p.role === 'Host' || p.role === 'Co-host') && <span className={styles.role}>{p.role}</span>}
-              {p.status !== 'none' && <span className={styles.away}>{p.status === 'afk' ? 'AFK' : 'BRB'}</span>}
-              <span className={styles.flags}>
-                {!p.micOn && <MicOff size={14} strokeWidth={1.75} aria-label="Mikrofon mati" role="img" />}
-                {!p.camOn && <VideoOff size={14} strokeWidth={1.75} aria-label="Kamera mati" role="img" />}
-              </span>
-            </li>
-          ))}
-        </ul>
-      </section>
-    </div>
-  )
-}
-
-function HostTools({ state, dispatch }: { state: RoomState; dispatch: Dispatch<RoomAction> }) {
-  const allowed = state.soundboard.allowed
-  return (
-    <section aria-label="Moderasi">
-      <h3 className={styles.sub}>Moderasi</h3>
-      <button type="button" role="switch" aria-checked={allowed} className={styles.switch} onClick={() => dispatch({ type: 'sbAllow', on: !allowed })}>
-        <span>Izinkan soundboard</span>
-        <i aria-hidden="true" />
-      </button>
-    </section>
   )
 }

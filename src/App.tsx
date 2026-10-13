@@ -6,6 +6,8 @@ import { EMOJI } from './emoji/registry'
 import type { EmojiName } from './emoji/registry'
 import { DemoDirector } from './demo/DemoDirector'
 import { DemoToggle } from './demo/DemoToggle'
+import { useScenarioPlayer } from './demo/useScenarioPlayer'
+import { MotionProvider } from './room/MotionContext'
 import { Room } from './room/Room'
 import styles from './room/Room.module.css'
 import { initialRoomState, roomReducer } from './state/roomReducer'
@@ -18,6 +20,7 @@ export function App() {
   const [state, dispatch] = useReducer(roomReducer, initialRoomState)
   const [engine] = useState(() => new VoiceEngine(SELF_ID))
   const [demoOpen, setDemoOpen] = useState(false)
+  const player = useScenarioPlayer(dispatch)
 
   useEffect(() => {
     installAudioUnlock()
@@ -41,8 +44,10 @@ export function App() {
   useEffect(() => {
     const inputs: Record<string, VoiceInput> = {}
     for (const p of state.participants) inputs[p.id] = { ...state.voice[p.id], micOn: p.micOn }
+    // people outside the room stay silent
+    for (const p of state.bench) inputs[p.id] = { ...state.voice[p.id], talking: false, micOn: false }
     engine.setInputs(inputs)
-  }, [engine, state.participants, state.voice])
+  }, [engine, state.participants, state.bench, state.voice])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -56,10 +61,11 @@ export function App() {
   }, [])
 
   return (
+    <MotionProvider fx={state.settings.fx} simulateReduced={state.settings.simulateReduced}>
     <VoiceProvider engine={engine}>
       <Room state={state} dispatch={dispatch} />
       <DemoToggle open={demoOpen} onClick={() => setDemoOpen((o) => !o)} />
-      <DemoDirector state={state} dispatch={dispatch} open={demoOpen} onClose={() => setDemoOpen(false)} />
+      <DemoDirector state={state} dispatch={dispatch} player={player} open={demoOpen} onClose={() => setDemoOpen(false)} />
       <div className={styles.notice} role="alert">
         <div>
           <h1>Layar terlalu sempit</h1>
@@ -67,5 +73,6 @@ export function App() {
         </div>
       </div>
     </VoiceProvider>
+    </MotionProvider>
   )
 }

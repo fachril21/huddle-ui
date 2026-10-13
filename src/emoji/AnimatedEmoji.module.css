@@ -7,3 +7,10 @@
   pointer-events: none;
   filter: drop-shadow(0 6px 16px var(--shadow-ink));
 }
+
+.native {
+  display: inline-grid;
+  place-items: center;
+  font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
+  line-height: 1;
+}

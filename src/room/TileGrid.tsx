@@ -17,6 +17,8 @@ interface TileGridProps {
   participants: readonly Participant[]
   offers: readonly HighFiveOffer[]
   sharerId: string | null
+  /** Current page of the regular grid (rooms over 9 people) */
+  gridPage: number
   soundPlayers: ReadonlySet<string>
   dispatch: Dispatch<RoomAction>
 }
@@ -32,7 +34,7 @@ const TILE_RADIUS = 20
  * Positions every tile absolutely from computed rectangles. The same elements stay mounted when the layout
  * switches between grid and share-screen, so Motion can animate each box (FLIP) without reloading anything.
  */
-export function TileGrid({ participants, offers, sharerId, soundPlayers, dispatch }: TileGridProps) {
+export function TileGrid({ participants, offers, sharerId, gridPage, soundPlayers, dispatch }: TileGridProps) {
   const [stageRef, size] = useElementSize<HTMLDivElement>()
   const reduced = useReducedMotion()
   const voice = useVoiceSnapshot()
@@ -41,7 +43,7 @@ export function TileGrid({ participants, offers, sharerId, soundPlayers, dispatc
   const lastSwap = useRef(0)
 
   const ids = useMemo(() => participants.map((p) => p.id), [participants])
-  const grid = useMemo(() => gridLayout(ids, size.width, size.height), [ids, size.width, size.height])
+  const grid = useMemo(() => gridLayout(ids, size.width, size.height, gridPage), [ids, size.width, size.height, gridPage])
   const layout = sharerId ? shareLayout(ids, sharerId, size.width, size.height, page) : grid
   const ready = size.width > 0 && size.height > 0
   const presenter = participants.find((p) => p.id === sharerId)

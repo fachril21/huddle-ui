@@ -1,0 +1,30 @@
+.scrim { position: absolute; inset: 0; z-index: calc(var(--z-demo) - 1); display: grid; place-items: center; background: var(--scrim); }
+
+.dialog {
+  display: grid;
+  gap: var(--space-3);
+  width: min(420px, calc(100% - 48px));
+  padding: var(--space-6);
+  border-radius: var(--radius-xl);
+  color: var(--text-1);
+}
+.dialog h2 { margin: 0; font-family: var(--font-display); font-size: 20px; line-height: 28px; font-weight: 600; }
+.dialog p { margin: 0; color: var(--text-2); font-size: 14px; line-height: 21px; }
+
+.actions { display: flex; justify-content: flex-end; gap: var(--space-2); margin-top: var(--space-2); }
+.actions button {
+  height: 40px;
+  padding: 0 var(--space-5);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-1);
+  font-size: 14px;
+  font-weight: 600;
+  transition: background-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+}
+.actions button:hover { background: var(--veil-hover); }
+.actions button:active { transform: scale(0.97); }
+.actions button:focus-visible { box-shadow: var(--focus-ring); }
+.actions .agree { border: 0; background: var(--primary); color: var(--on-primary); }
+.actions .agree:hover { background: color-mix(in srgb, var(--primary) 82%, var(--primary-glow)); }

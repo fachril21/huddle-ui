@@ -1,0 +1,35 @@
+import { LogOut, PhoneOff } from 'lucide-react'
+import { motion } from 'motion/react'
+import styles from './LeaveMenu.module.css'
+
+interface LeaveMenuProps {
+  canEndForAll: boolean
+  onLeave: () => void
+  onEnd: () => void
+}
+
+/** Popover above "Keluar" (PRD 8.8): leave alone, or (host only) end the meeting for everyone. */
+export function LeaveMenu({ canEndForAll, onLeave, onEnd }: LeaveMenuProps) {
+  return (
+    <motion.div
+      className={`glass-2 ${styles.menu}`}
+      role="menu"
+      aria-label="Keluar dari meeting"
+      initial={{ opacity: 0, y: 8, scale: 0.96 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: 6, scale: 0.97, transition: { duration: 0.12 } }}
+      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+    >
+      <button type="button" role="menuitem" onClick={onLeave}>
+        <LogOut size={18} strokeWidth={1.75} aria-hidden="true" />
+        Keluar dari meeting
+      </button>
+      {canEndForAll && (
+        <button type="button" role="menuitem" className={styles.danger} onClick={onEnd}>
+          <PhoneOff size={18} strokeWidth={1.75} aria-hidden="true" />
+          Akhiri untuk semua
+        </button>
+      )}
+    </motion.div>
+  )
+}

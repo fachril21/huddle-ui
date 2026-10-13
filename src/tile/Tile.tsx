@@ -1,5 +1,6 @@
 import { MicOff } from 'lucide-react'
 import type { Participant } from '../state/types'
+import { useFx } from '../room/MotionContext'
 import { useTileRegistration } from '../voice/VoiceContext'
 import { Aurora } from './Aurora'
 import { Avatar } from './Avatar'
@@ -31,6 +32,9 @@ interface TileProps {
 export function Tile({ participant, tileW, tileH, lit, dominant, mutedSpeaking, isSelf, offer, compact, soundPlaying }: TileProps) {
   const { id, name, palette, camOn, micOn, status } = participant
   const registerTile = useTileRegistration(id)
+  const { fx } = useFx()
+  // Hemat: aurora becomes a static glow, one comet. Mati: ring colour only (Design.md 19.1)
+  const softGlow = compact || fx === 'lite'
   const notes = [camOn ? '' : 'kamera mati', micOn ? '' : 'mikrofon mati', status === 'none' ? '' : status.toUpperCase()].filter(Boolean)
 
   return (
@@ -47,7 +51,7 @@ export function Tile({ participant, tileW, tileH, lit, dominant, mutedSpeaking, 
       aria-label={[name, ...notes].join(', ')}
     >
       <div className={styles.media}>
-        {camOn || compact ? (
+        {camOn || softGlow ? (
           <>
             {camOn && <VideoPlaceholder />}
             {lit && <div className={styles.glowIn} aria-hidden="true" />}
@@ -55,12 +59,12 @@ export function Tile({ participant, tileW, tileH, lit, dominant, mutedSpeaking, 
           </>
         ) : (
           <>
-            {lit && <Aurora />}
+            {lit && fx === 'full' && <Aurora />}
             <Avatar name={name} />
           </>
         )}
       </div>
-      {lit && <NeonBorder dominant={dominant} />}
+      {lit && <NeonBorder dominant={dominant} simple={fx !== 'full'} />}
       {soundPlaying && <div className={styles.soundPulse} aria-hidden="true" />}
       <ConnectionOverlay participant={participant} />
       <HandOverlay participant={participant} tileW={tileW} tileH={tileH} />

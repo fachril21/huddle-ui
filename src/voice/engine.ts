@@ -13,6 +13,8 @@ export interface VoiceSnapshot {
   /** Tiles that currently render aurora / neon (speaking, holding, fading, or briefly evicting) */
   readonly rendered: ReadonlySet<string>
   readonly dominantId: string | null
+  /** Tiles whose owner is speaking right now (excludes hold/fade), used for paging hints */
+  readonly speaking: ReadonlySet<string>
   /** Self is talking with the mic off (amber neon + banner) */
   readonly mutedSpeaking: boolean
   /** Two or more tiles speaking: ambient warms slightly */
@@ -76,7 +78,7 @@ export class VoiceEngine {
   /** Tile elements may register before their first inputs arrive */
   private readonly elements = new Map<string, HTMLElement>()
   private readonly listeners = new Set<() => void>()
-  private snapshot: VoiceSnapshot = { rendered: new Set(), dominantId: null, mutedSpeaking: false, crosstalk: false }
+  private snapshot: VoiceSnapshot = { rendered: new Set(), dominantId: null, speaking: new Set(), mutedSpeaking: false, crosstalk: false }
   private snapshotKey = ''
   private raf = 0
   private lastTick = 0
@@ -348,13 +350,14 @@ export class VoiceEngine {
   private publish(all: VoiceState[], rendered: VoiceState[]) {
     const now = this.lastTick
     const ids = rendered.map((s) => s.id).sort()
-    const speakingCount = all.filter((s) => s.slotted && s.phase === 'speaking').length
+    const speakingIds = all.filter((s) => s.slotted && s.phase === 'speaking').map((s) => s.id).sort()
+    const speakingCount = speakingIds.length
     const mutedSpeaking = this.mutedGate || now < this.mutedUntil
     const crosstalk = speakingCount >= 2
-    const key = `${ids.join(',')}|${this.dominantId ?? ''}|${mutedSpeaking}|${crosstalk}`
+    const key = `${ids.join(',')}|${speakingIds.join(',')}|${this.dominantId ?? ''}|${mutedSpeaking}|${crosstalk}`
     if (key === this.snapshotKey) return
     this.snapshotKey = key
-    this.snapshot = { rendered: new Set(ids), dominantId: this.dominantId, mutedSpeaking, crosstalk }
+    this.snapshot = { rendered: new Set(ids), dominantId: this.dominantId, speaking: new Set(speakingIds), mutedSpeaking, crosstalk }
     for (const l of this.listeners) l()
   }
 }

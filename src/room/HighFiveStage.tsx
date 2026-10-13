@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { playClap } from '../audio/effectSounds'
 import { AnimatedEmoji } from '../emoji/AnimatedEmoji'
 import type { HighFiveMatch, Participant } from '../state/types'
-import { useReducedMotion } from './useReducedMotion'
+import { useFx } from './MotionContext'
 import styles from './HighFiveStage.module.css'
 
 /** At most two center-screen animations at once; the rest wait their turn (Design.md 11.7). */
@@ -57,7 +57,7 @@ function startPoint(id: string): { x: number; y: number } {
 }
 
 function Match({ match, slot, a, b, scale, onDone }: MatchProps) {
-  const reduced = useReducedMotion()
+  const { reduced, fx } = useFx()
   const [phase, setPhase] = useState<Phase>('fly')
   // Keep the latest callback without restarting the timeline when the parent re-renders
   const doneRef = useRef(onDone)
@@ -105,7 +105,7 @@ function Match({ match, slot, a, b, scale, onDone }: MatchProps) {
         </>
       )}
       <AnimatePresence>
-        {(phase === 'hit' || phase === 'fade') && (
+        {(phase === 'hit' || phase === 'fade') && fx !== 'off' && (
           <motion.div
             key="burst"
             className={styles.burst}
@@ -119,7 +119,7 @@ function Match({ match, slot, a, b, scale, onDone }: MatchProps) {
           </motion.div>
         )}
       </AnimatePresence>
-      {phase === 'hit' && !reduced && <Impact cx={cx} cy={cy} a={a} b={b} scale={scale} />}
+      {phase === 'hit' && !reduced && <Impact cx={cx} cy={cy} a={a} b={b} scale={scale} sparks={fx === 'full'} />}
       <AnimatePresence>
         {phase === 'chip' && (
           <motion.div
@@ -156,15 +156,15 @@ function Hand({ pos, size, flip }: { pos: { x: number[]; y: number[]; scale: num
 }
 
 /** Shockwave rings (one per palette) and aurora sparks around the point of impact. */
-function Impact({ cx, cy, a, b, scale }: { cx: number; cy: number; a: Participant; b: Participant; scale: number }) {
+function Impact({ cx, cy, a, b, scale, sparks: withSparks }: { cx: number; cy: number; a: Participant; b: Participant; scale: number; sparks: boolean }) {
   const sparks = useMemo(
     () =>
-      Array.from({ length: PARTICLES }, (_, i) => ({
+      Array.from({ length: withSparks ? PARTICLES : 0 }, (_, i) => ({
         angle: (i / PARTICLES) * Math.PI * 2 + (Math.random() - 0.5) * 0.2,
         dist: (110 + Math.random() * 150) * scale,
         owner: i % 2 === 0 ? a : b,
       })),
-    [a, b, scale],
+    [a, b, scale, withSparks],
   )
   return (
     <div className={styles.impact} style={{ left: cx, top: cy }}>

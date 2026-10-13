@@ -35,16 +35,18 @@ interface DockProps {
   soundboardDisabledReason?: string
   highFiveActive: boolean
   highFiveDisabledReason?: string
-  /** Popover for the soundboard button (M6) */
+  /** Popovers for the soundboard, "Lainnya" and "Keluar" buttons */
   soundboard?: ReactNode
+  more?: ReactNode
+  leave?: ReactNode
 }
 
 const ICON = { size: 22, strokeWidth: 1.75, 'aria-hidden': true } as const
 
 /** Floating glass-3 capsule: [mic cam] | [share reaction hand high-five soundboard more] | [leave]. */
-export function Dock({ self, toggles, onToggleMic, onToggleCam, onToggleHand, onToggle, onClose, onReact, onHighFive, onShare, shareActive, shareDisabledReason, highFiveActive, highFiveDisabledReason, soundboardDisabledReason, soundboard }: DockProps) {
+export function Dock({ self, toggles, onToggleMic, onToggleCam, onToggleHand, onToggle, onClose, onReact, onHighFive, onShare, shareActive, shareDisabledReason, highFiveActive, highFiveDisabledReason, soundboardDisabledReason, soundboard, more, leave }: DockProps) {
   const wrapRef = useRef<HTMLDivElement>(null)
-  const openPopover: DockToggle | null = toggles.reaction ? 'reaction' : toggles.soundboard ? 'soundboard' : null
+  const openPopover: DockToggle | null = toggles.reaction ? 'reaction' : toggles.soundboard ? 'soundboard' : toggles.more ? 'more' : toggles.leave ? 'leave' : null
   const anchorX = usePopoverAnchor(wrapRef, openPopover)
 
   // Esc or a click outside closes the open popover; focus returns to its trigger on Esc.
@@ -94,14 +96,20 @@ export function Dock({ self, toggles, onToggleMic, onToggleCam, onToggleHand, on
         <span data-popover-key="soundboard" style={{ display: 'contents' }}>
           <DockButton icon={<AudioLines {...ICON} />} label="Soundboard" pressed={toggles.soundboard} disabledReason={soundboardDisabledReason} onClick={() => onToggle('soundboard')} />
         </span>
-        <DockButton icon={<Ellipsis {...ICON} />} label="Lainnya" pressed={toggles.more} onClick={() => onToggle('more')} />
+        <span data-popover-key="more" style={{ display: 'contents' }}>
+          <DockButton icon={<Ellipsis {...ICON} />} label="Lainnya" pressed={toggles.more} onClick={() => onToggle('more')} />
+        </span>
         <span className={styles.sep} aria-hidden="true" />
-        <DockButton icon={<PhoneOff {...ICON} />} label="Keluar" tone="danger" wide />
+        <span data-popover-key="leave" style={{ display: 'contents' }}>
+          <DockButton icon={<PhoneOff {...ICON} />} label="Keluar" tone="danger" wide onClick={() => onToggle('leave')} />
+        </span>
       </nav>
       <div className={styles.popoverSlot} style={{ left: anchorX }} data-popover-surface>
         <AnimatePresence>
           {toggles.reaction && <ReactionPicker key="reaction" onReact={onReact} onHighFive={onHighFive} />}
           {toggles.soundboard && soundboard}
+          {toggles.more && more}
+          {toggles.leave && leave}
         </AnimatePresence>
       </div>
     </div>

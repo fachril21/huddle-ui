@@ -99,3 +99,29 @@
   font: inherit;
 }
 .pick select:focus-visible { box-shadow: var(--focus-ring); }
+
+/* collapsible groups */
+details.group { padding: var(--space-2) 0; border-top: 1px dashed var(--hairline); }
+details.group summary {
+  cursor: pointer;
+  padding: var(--space-1) 0;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  list-style: none;
+}
+details.group summary::-webkit-details-marker { display: none; }
+details.group summary::before { content: '+ '; }
+details.group[open] summary::before { content: '- '; }
+details.group summary:hover { color: var(--text-1); }
+details.group summary:focus-visible { box-shadow: var(--focus-ring); border-radius: var(--radius-sm); }
+.groupBody { padding-top: var(--space-2); }
+
+.stack { display: grid; gap: var(--space-2); }
+.row2 { display: grid; gap: var(--space-1); }
+.row2 > span { color: var(--text-3); }
+.seg { display: inline-flex; gap: var(--space-1); margin-left: auto; }
+.note { margin: 0; color: var(--text-3); }
+.progress { height: 4px; border-radius: 2px; background: var(--ink-700); overflow: hidden; }
+.progress i { display: block; height: 100%; transform-origin: left center; background: var(--aurora-cyan); transition: transform 0.2s linear; }
+.btn { display: inline-flex; align-items: center; gap: var(--space-1); }

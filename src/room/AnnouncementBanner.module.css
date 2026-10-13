@@ -1,0 +1,47 @@
+.slot {
+  position: absolute;
+  top: var(--space-4);
+  /* sits between the Demo button and the status chips, never over them */
+  left: 96px;
+  right: 440px;
+  z-index: calc(var(--z-toast) - 1);
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+.slot > * { pointer-events: auto; }
+
+.banner {
+  position: relative;
+  width: 100%;
+  max-width: 720px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-3) var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  color: var(--text-1);
+}
+
+/* thin aurora strip along the top edge */
+.strip { position: absolute; left: 0; right: 0; top: 0; height: 3px; background: var(--brand-gradient); }
+
+.icon { flex: none; color: var(--aurora-amber); }
+.text { flex: 1; min-width: 0; font-size: 14px; line-height: 20px; overflow-wrap: anywhere; }
+.text b { display: block; font-size: 12px; line-height: 16px; font-weight: 700; color: var(--text-2); }
+
+.close {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-2);
+}
+.close:hover { background: var(--veil-press); color: var(--text-1); }
+.close:focus-visible { box-shadow: var(--focus-ring); }

@@ -1,0 +1,42 @@
+.pager {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 var(--space-1);
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-1);
+  font-variant-numeric: tabular-nums;
+}
+.pager button {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-1);
+}
+.pager button:hover:not(:disabled) { background: var(--veil-hover); }
+.pager button:disabled { color: var(--text-3); cursor: not-allowed; }
+.pager button:focus-visible { box-shadow: var(--focus-ring); }
+.pager span { min-width: 3ch; text-align: center; }
+
+/* small glowing dot: someone on another page is talking */
+.dot {
+  position: absolute;
+  top: 1px;
+  right: 2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--aurora-mint);
+  box-shadow: 0 0 8px var(--aurora-mint);
+  animation: dotPulse 1.4s ease-in-out infinite;
+}
+@keyframes dotPulse { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
+:global([data-motion='reduced']) .dot { animation: none; }

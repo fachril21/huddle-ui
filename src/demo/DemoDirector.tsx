@@ -1,31 +1,32 @@
 import { X } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import type { Dispatch } from 'react'
-import { DEFAULT_LEVEL } from '../state/roomReducer'
-import type { RoomAction, VoicePreset } from '../state/roomReducer'
-import { SOUNDS, SOUND_BY_ID } from '../audio/soundboardSounds'
-import { SAMPLE_POLL } from '../features/polls/pollMath'
-import { REACTIONS } from '../room/reactions'
-import { EMOJI } from '../emoji/registry'
-import type { Participant, RoomState } from '../state/types'
-import { useState } from 'react'
+import type { RoomAction } from '../state/roomReducer'
+import type { RoomState } from '../state/types'
+import { Group, Toggle } from './controls'
 import styles from './DemoDirector.module.css'
+import { EventsSection } from './sections/EventsSection'
+import { ParticipantsSection } from './sections/ParticipantsSection'
+import { ScenarioSection } from './sections/ScenarioSection'
+import { ViewSection } from './sections/ViewSection'
+import type { ScenarioPlayer } from './useScenarioPlayer'
 
 interface DemoDirectorProps {
   state: RoomState
   dispatch: Dispatch<RoomAction>
+  player: ScenarioPlayer
   open: boolean
   onClose: () => void
 }
 
-const PRESETS: readonly { preset: VoicePreset; label: string }[] = [
+const PRESETS = [
   { preset: 'silence', label: 'Semua hening' },
   { preset: 'solo', label: 'Satu pembicara' },
   { preset: 'crowd', label: 'Ramai (3 bicara)' },
-]
+] as const
 
 /** Prototype control panel. Deliberately NOT styled like product UI: dashed outline, mono type. */
-export function DemoDirector({ state, dispatch, open, onClose }: DemoDirectorProps) {
+export function DemoDirector({ state, dispatch, player, open, onClose }: DemoDirectorProps) {
   return (
     <AnimatePresence>
       {open && (
@@ -45,190 +46,31 @@ export function DemoDirector({ state, dispatch, open, onClose }: DemoDirectorPro
             </button>
           </header>
 
-          <section className={styles.group} aria-label="Aksi massal">
-            <h2>Aksi massal</h2>
+          <Group title="Skenario" defaultOpen>
+            <ScenarioSection player={player} />
+          </Group>
+
+          <Group title="Tampilan">
+            <ViewSection state={state} dispatch={dispatch} />
+          </Group>
+
+          <Group title="Aksi massal">
             <div className={styles.presets}>
               {PRESETS.map(({ preset, label }) => (
-                <button key={preset} type="button" className={styles.btn} onClick={() => dispatch({ type: 'applyVoicePreset', preset })}>
-                  {label}
-                </button>
+                <Toggle key={preset} label={label} onClick={() => dispatch({ type: 'applyVoicePreset', preset })} />
               ))}
             </div>
-          </section>
+          </Group>
 
-          <QuickEvents state={state} dispatch={dispatch} />
+          <Group title="Kejadian cepat">
+            <EventsSection state={state} dispatch={dispatch} />
+          </Group>
 
-          <section className={styles.group} aria-label="Peserta">
-            <h2>Peserta</h2>
-            <ul className={styles.list}>
-              {state.participants.map((p) => (
-                <ParticipantRow key={p.id} participant={p} state={state} dispatch={dispatch} />
-              ))}
-            </ul>
-          </section>
+          <Group title="Peserta" defaultOpen>
+            <ParticipantsSection state={state} dispatch={dispatch} />
+          </Group>
         </motion.aside>
       )}
     </AnimatePresence>
-  )
-}
-
-function ParticipantRow({ participant: p, state, dispatch }: { participant: Participant; state: RoomState; dispatch: Dispatch<RoomAction> }) {
-  const voice = state.voice[p.id]
-  const silenced = !p.micOn && p.id !== 'anda'
-
-  return (
-    <li className={styles.row} data-palette={p.palette} data-silenced={silenced}>
-      <div className={styles.who}>
-        <i className={styles.dot} aria-hidden="true" />
-        <span>{p.name}</span>
-        {silenced && <span className={styles.note}>mic mati: tidak menyala</span>}
-      </div>
-      <div className={styles.toggles}>
-        <Toggle
-          label="Bicara"
-          on={voice.talking}
-          onClick={() =>
-            dispatch({
-              type: 'patchVoice',
-              id: p.id,
-              patch: { talking: !voice.talking, level: voice.level < 0.12 ? DEFAULT_LEVEL : voice.level },
-            })
-          }
-        />
-        <Toggle label="Natural" on={voice.natural} onClick={() => dispatch({ type: 'patchVoice', id: p.id, patch: { natural: !voice.natural } })} />
-        <Toggle label="Kamera" on={p.camOn} onClick={() => dispatch({ type: 'toggleCam', id: p.id })} />
-        <Toggle label="Mic" on={p.micOn} onClick={() => dispatch({ type: 'toggleMic', id: p.id })} />
-      </div>
-      <div className={styles.toggles}>
-        <Toggle label="Tangan" on={p.hand !== null} onClick={() => dispatch({ type: 'toggleHand', id: p.id })} />
-        <Toggle label="AFK" on={p.status === 'afk'} onClick={() => dispatch({ type: 'toggleStatus', id: p.id, status: 'afk' })} />
-        <Toggle label="BRB" on={p.status === 'brb'} onClick={() => dispatch({ type: 'toggleStatus', id: p.id, status: 'brb' })} />
-        <Toggle label="Koneksi buruk" on={p.connection === 'poor'} onClick={() => dispatch({ type: 'toggleConnection', id: p.id, connection: 'poor' })} />
-        <Toggle label="Menyambung" on={p.connection === 'reconnecting'} onClick={() => dispatch({ type: 'toggleConnection', id: p.id, connection: 'reconnecting' })} />
-      </div>
-      <label className={styles.slider}>
-        <span className="sr-only">Level suara {p.name}</span>
-        <input
-          type="range"
-          min={0}
-          max={1}
-          step={0.01}
-          value={voice.level}
-          onChange={(e) => dispatch({ type: 'patchVoice', id: p.id, patch: { level: Number(e.target.value) } })}
-        />
-        <output className={styles.value} aria-live="off">{voice.level.toFixed(2)}</output>
-      </label>
-    </li>
-  )
-}
-
-function Toggle({ label, on, onClick }: { label: string; on: boolean; onClick: () => void }) {
-  return (
-    <button type="button" className={styles.btn} aria-pressed={on} onClick={onClick}>
-      {label}
-    </button>
-  )
-}
-
-/** The ready-made poll from PRD 11.3, as if started by Dewi (3 options, anonymous, live results). */
-const SAMPLE_START = {
-  question: SAMPLE_POLL.question,
-  options: SAMPLE_POLL.options.map((text, i) => ({ id: 'o' + (i + 1), text })),
-  multiple: false,
-  anonymous: true,
-  liveResults: true,
-  autoCloseS: null,
-}
-
-const REACTION_X_MIN = 24
-const REACTION_X_MAX = 200
-
-/** One-click events from other participants. More groups arrive with each milestone. */
-function QuickEvents({ state, dispatch }: { state: RoomState; dispatch: Dispatch<RoomAction> }) {
-  const others = state.participants.filter((p) => p.id !== 'anda')
-  const [who, setWho] = useState(others[0]?.id ?? 'dewi')
-  const [sound, setSound] = useState(SOUNDS[2].id)
-  return (
-    <section className={styles.group} aria-label='Kejadian cepat'>
-      <h2>Kejadian cepat</h2>
-      <label className={styles.pick}>
-        <span>Dari</span>
-        <select value={who} onChange={(e) => setWho(e.target.value)}>
-          {others.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.name}
-            </option>
-          ))}
-        </select>
-      </label>
-      <div className={styles.presets} role='group' aria-label='Reaction dari peserta'>
-        {REACTIONS.map((r) => (
-          <button
-            key={r.name}
-            type='button'
-            className={styles.btn}
-            aria-label={'Reaction ' + r.label}
-            onClick={() =>
-              dispatch({ type: 'react', senderId: who, name: r.name, x: REACTION_X_MIN + Math.random() * (REACTION_X_MAX - REACTION_X_MIN), now: performance.now() })
-            }
-          >
-            {EMOJI[r.emoji]}
-          </button>
-        ))}
-      </div>
-      <div className={styles.presets} role="group" aria-label="High five dari peserta">
-        <button type="button" className={styles.btn} onClick={() => dispatch({ type: 'hfOffer', fromId: who, now: performance.now() })}>
-          Peserta lain mengajak
-        </button>
-        <button
-          type="button"
-          className={styles.btn}
-          onClick={() => {
-            const target = state.highFive.offers.find((o) => o.fromId !== who)
-            if (target) dispatch({ type: 'hfRespond', fromId: target.fromId, byId: who, now: performance.now() })
-          }}
-        >
-          Peserta lain menyambut
-        </button>
-      </div>
-      <div className={styles.presets} role="group" aria-label="Soundboard dari peserta">
-        <label className={styles.pick}>
-          <span>Suara</span>
-          <select value={sound} onChange={(e) => setSound(e.target.value)}>
-            {SOUNDS.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <button
-          type="button"
-          className={styles.btn}
-          onClick={() => dispatch({ type: 'sbPlay', fromId: who, soundId: sound, durationMs: SOUND_BY_ID[sound]?.durationMs ?? 1500, now: performance.now() })}
-        >
-          Peserta lain memutar suara
-        </button>
-        <button type="button" className={styles.btn} aria-pressed={state.soundboard.allowed} onClick={() => dispatch({ type: 'sbAllow', on: !state.soundboard.allowed })}>
-          Soundboard diizinkan
-        </button>
-      </div>
-      <div className={styles.presets} role="group" aria-label="Polling">
-        <button type="button" className={styles.btn} onClick={() => dispatch({ type: 'pollStart', poll: { ...SAMPLE_START, creatorId: 'dewi', startedAt: performance.now() } })}>
-          Dewi memulai polling contoh
-        </button>
-        <button type="button" className={styles.btn} onClick={() => dispatch({ type: 'pollClose' })}>
-          Tutup polling
-        </button>
-      </div>
-      <div className={styles.presets} role="group" aria-label="Berbagi layar dari peserta">
-        <button type="button" className={styles.btn} onClick={() => dispatch({ type: 'startShare', id: who })}>
-          Peserta berbagi layar
-        </button>
-        <button type="button" className={styles.btn} onClick={() => dispatch({ type: 'stopShare' })}>
-          Berhenti berbagi
-        </button>
-      </div>
-    </section>
   )
 }
