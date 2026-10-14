@@ -33,8 +33,9 @@ export function Tile({ participant, tileW, tileH, lit, dominant, mutedSpeaking, 
   const { id, name, palette, camOn, micOn, status } = participant
   const registerTile = useTileRegistration(id)
   const { fx } = useFx()
-  // Hemat: aurora becomes a static glow, one comet. Mati: ring colour only (Design.md 19.1)
+  // Hemat: camera-off tiles keep a thin aurora (no ripple ring), one comet. Mati: ring colour only (Design.md 19.1)
   const softGlow = compact || fx === 'lite'
+  const showAurora = !camOn && !compact && fx !== 'off'
   const notes = [camOn ? '' : 'kamera mati', micOn ? '' : 'mikrofon mati', status === 'none' ? '' : status.toUpperCase()].filter(Boolean)
 
   return (
@@ -51,7 +52,7 @@ export function Tile({ participant, tileW, tileH, lit, dominant, mutedSpeaking, 
       aria-label={[name, ...notes].join(', ')}
     >
       <div className={styles.media}>
-        {camOn || softGlow ? (
+        {camOn || (softGlow && !showAurora) ? (
           <>
             {camOn && <VideoPlaceholder />}
             {lit && <div className={styles.glowIn} aria-hidden="true" />}
@@ -59,7 +60,7 @@ export function Tile({ participant, tileW, tileH, lit, dominant, mutedSpeaking, 
           </>
         ) : (
           <>
-            {lit && fx === 'full' && <Aurora />}
+            {lit && showAurora && <Aurora thin={fx === 'lite'} />}
             <Avatar name={name} />
           </>
         )}

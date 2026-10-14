@@ -18,7 +18,7 @@
   mix-blend-mode: screen;
   will-change: transform;
   /* --o is the resting opacity; --crosstalk (0|1) warms it slightly while people talk over each other */
-  opacity: calc(var(--o) * (1 + 0.3 * var(--crosstalk, 0)));
+  opacity: calc(var(--o) * var(--fx-scale, 1) * (1 + 0.3 * var(--crosstalk, 0)));
   transition: opacity 1.2s var(--ease-out);
   animation: drift var(--drift-dur) ease-in-out infinite alternate;
   animation-delay: var(--drift-delay, 0s);
@@ -78,13 +78,13 @@
 
 /* High five impact: mesh brightens ~40% for a moment, never a white flash (Design.md 11.5) */
 :global([data-hf-boost='true']) .blob {
-  opacity: calc(var(--o) * 1.4 * (1 + 0.3 * var(--crosstalk, 0)));
+  opacity: calc(var(--o) * var(--fx-scale, 1) * 1.4 * (1 + 0.3 * var(--crosstalk, 0)));
   transition-duration: 250ms;
 }
 
 /* Share screen: the mesh dims to 60% so the shared content stays the focus (Design.md 5.3) */
-:global([data-sharing='true']) .blob { --o-scale: 0.6; opacity: calc(var(--o) * 0.6 * (1 + 0.3 * var(--crosstalk, 0))); }
+:global([data-sharing='true']) .blob { opacity: calc(var(--o) * var(--fx-scale, 1) * 0.6 * (1 + 0.3 * var(--crosstalk, 0))); }
 
-/* Hemat: static mesh. Mati: plain ink. */
-:global([data-fx='lite']) .blob { animation: none; }
+/* Hemat: static mesh at half strength. Mati: plain ink. */
+:global([data-fx='lite']) .blob { animation: none; --fx-scale: 0.5; }
 :global([data-fx='off']) .blob { display: none; }

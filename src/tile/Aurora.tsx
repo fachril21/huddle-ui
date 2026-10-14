@@ -5,9 +5,9 @@ import styles from './Aurora.module.css'
  * one swaying aurora curtain, and a ripple ring the engine fires on loud peaks.
  * Rendered only while the tile is lit. Intensity comes from CSS variables the engine writes.
  */
-export function Aurora() {
+export function Aurora({ thin = false }: { thin?: boolean }) {
   return (
-    <div className={styles.aurora} aria-hidden="true">
+    <div className={thin ? `${styles.aurora} ${styles.thin}` : styles.aurora} aria-hidden="true">
       <div className={styles.entry}>
         <div className={styles.curtain} />
         <div className={`${styles.scaler} ${styles.s1}`}><i className={`${styles.blob} ${styles.b1}`} /></div>

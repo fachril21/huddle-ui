@@ -7,6 +7,10 @@
   pointer-events: none;
 }
 
+/* Hemat: same aurora at a fraction of the strength, without the ripple ring */
+.thin { opacity: calc(var(--aurora-o, 0) * 0.35); }
+.thin .ring { display: none; }
+
 /* grows out from the avatar when the tile first lights up */
 .entry {
   position: absolute;
