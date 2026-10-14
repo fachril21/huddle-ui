@@ -32,3 +32,7 @@
 }
 
 :global([data-motion='reduced']) .wash { animation: none; }
+
+/* Preview of the outgoing quality on the user's own tile */
+.video[data-quality='low'] { filter: blur(1.6px) saturate(0.8); }
+.video[data-quality='mid'] { filter: blur(0.5px); }

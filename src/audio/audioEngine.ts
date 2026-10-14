@@ -10,6 +10,13 @@ interface AudioGraph {
 }
 
 let graph: AudioGraph | null = null
+const readyListeners: Array<(audio: AudioGraph) => void> = []
+
+/** Run once the AudioContext exists (immediately if it already does). Used to preload sound files. */
+export function onAudioReady(listener: (audio: AudioGraph) => void) {
+  if (graph) listener(graph)
+  else readyListeners.push(listener)
+}
 const volumes: Record<SoundGroup, number> = { notify: 0.8, effects: 0.9, soundboard: 0.6 }
 const muted: Record<SoundGroup, boolean> = { notify: false, effects: false, soundboard: false }
 
@@ -31,7 +38,10 @@ function build(): AudioGraph | null {
 
 /** Call from a user gesture. Safe to call repeatedly. */
 export function unlockAudio() {
-  graph ??= build()
+  if (!graph) {
+    graph = build()
+    if (graph) for (const listener of readyListeners.splice(0)) listener(graph)
+  }
   if (graph && graph.ctx.state === 'suspended') void graph.ctx.resume()
 }
 

@@ -81,3 +81,69 @@ export function shareLayout(ids: readonly string[], presenterId: string, W: numb
   const pager = pages > 1 ? { x: x0, y: y0 + STRIP_SLOTS * (tileH + GRID_GAP) - GRID_GAP + PAGER_GAP, w: tileW, pages } : null
   return { rects, hidden, frame, pager }
 }
+
+/** Largest 16:9 box that fits inside w x h, centered there. */
+function fitCentered(x: number, y: number, w: number, h: number): Rect {
+  const tileW = Math.floor(Math.max(0, Math.min(w, h * RATIO)))
+  const tileH = Math.round(tileW / RATIO)
+  return { x: x + (w - tileW) / 2, y: y + (h - tileH) / 2, w: tileW, h: tileH }
+}
+
+const SPEAKER_STRIP_H = 112
+const SPEAKER_STRIP_W = Math.round(SPEAKER_STRIP_H * RATIO)
+const SPEAKER_STRIP_MAX = 6
+const PAGER_W = 120
+
+/** Pembicara: one big tile for the focused person and a filmstrip of everyone else along the bottom. */
+export function speakerLayout(ids: readonly string[], focusId: string, W: number, H: number, page: number): StageLayout {
+  const others = ids.filter((id) => id !== focusId)
+  const rects: Record<string, Rect> = {}
+  const hidden = new Set<string>()
+  if (!others.length) {
+    layoutPage([focusId], W, H, rects)
+    return { rects, hidden, frame: null, pager: null }
+  }
+  const slots = Math.max(1, Math.min(SPEAKER_STRIP_MAX, Math.floor((W + GRID_GAP) / (SPEAKER_STRIP_W + GRID_GAP))))
+  const pages = Math.ceil(others.length / slots)
+  const reserved = pages > 1 ? PAGER_GAP + PAGER_H : 0
+  const mainH = Math.max(0, H - SPEAKER_STRIP_H - reserved - GRID_GAP)
+  rects[focusId] = fitCentered(0, 0, W, mainH)
+  const current = Math.min(page, pages - 1)
+  const y = mainH + GRID_GAP
+  others.forEach((id, i) => {
+    const pageIndex = Math.floor(i / slots)
+    const onPage = Math.min(slots, others.length - pageIndex * slots)
+    const x0 = (W - (onPage * SPEAKER_STRIP_W + (onPage - 1) * GRID_GAP)) / 2
+    rects[id] = { x: x0 + (i % slots) * (SPEAKER_STRIP_W + GRID_GAP), y, w: SPEAKER_STRIP_W, h: SPEAKER_STRIP_H }
+    if (pageIndex !== current) hidden.add(id)
+  })
+  const pager = pages > 1 ? { x: (W - PAGER_W) / 2, y: y + SPEAKER_STRIP_H + PAGER_GAP, w: PAGER_W, pages } : null
+  return { rects, hidden, frame: null, pager }
+}
+
+/** Sorotan: the focused person large on the left and a vertical strip of up to 4 others on the right. */
+export function spotlightLayout(ids: readonly string[], focusId: string, W: number, H: number, page: number): StageLayout {
+  const others = ids.filter((id) => id !== focusId)
+  const rects: Record<string, Rect> = {}
+  const hidden = new Set<string>()
+  if (!others.length) {
+    layoutPage([focusId], W, H, rects)
+    return { rects, hidden, frame: null, pager: null }
+  }
+  const pages = Math.ceil(others.length / STRIP_SLOTS)
+  const reserved = pages > 1 ? PAGER_GAP + PAGER_H : 0
+  const maxTileW = Math.floor(((H - reserved - GRID_GAP * (STRIP_SLOTS - 1)) / STRIP_SLOTS) * RATIO)
+  const tileW = Math.max(0, Math.min(STRIP_MAX_W, maxTileW))
+  const tileH = Math.round(tileW / RATIO)
+  const slotsH = STRIP_SLOTS * tileH + (STRIP_SLOTS - 1) * GRID_GAP + reserved
+  const y0 = Math.max(0, (H - slotsH) / 2)
+  const x0 = W - tileW
+  rects[focusId] = fitCentered(0, 0, Math.max(0, x0 - GRID_GAP), H)
+  const current = Math.min(page, pages - 1)
+  others.forEach((id, i) => {
+    rects[id] = { x: x0, y: y0 + (i % STRIP_SLOTS) * (tileH + GRID_GAP), w: tileW, h: tileH }
+    if (Math.floor(i / STRIP_SLOTS) !== current) hidden.add(id)
+  })
+  const pager = pages > 1 ? { x: x0, y: y0 + STRIP_SLOTS * (tileH + GRID_GAP) - GRID_GAP + PAGER_GAP, w: tileW, pages } : null
+  return { rects, hidden, frame: null, pager }
+}

@@ -1,12 +1,13 @@
-import { useEffect, useReducer, useRef, useState } from 'react'
+import { useEffect, useReducer, useState } from 'react'
 import { installAudioUnlock } from './audio/audioEngine'
-import { playDing } from './audio/notifySounds'
 import { preloadEmoji } from './emoji/AnimatedEmoji'
 import { EMOJI } from './emoji/registry'
 import type { EmojiName } from './emoji/registry'
 import { DemoDirector } from './demo/DemoDirector'
 import { DemoToggle } from './demo/DemoToggle'
 import { useScenarioPlayer } from './demo/useScenarioPlayer'
+import { loadCameraQuality, saveCameraQuality } from './room/cameraQuality'
+import { useRoomSounds } from './room/hooks/useRoomSounds'
 import { MotionProvider } from './room/MotionContext'
 import { Room } from './room/Room'
 import styles from './room/Room.module.css'
@@ -17,7 +18,7 @@ import type { VoiceInput } from './voice/engine'
 import { VoiceProvider } from './voice/VoiceContext'
 
 export function App() {
-  const [state, dispatch] = useReducer(roomReducer, initialRoomState)
+  const [state, dispatch] = useReducer(roomReducer, initialRoomState, (initial) => ({ ...initial, settings: { ...initial.settings, cameraQuality: loadCameraQuality() } }))
   const [engine] = useState(() => new VoiceEngine(SELF_ID))
   const [demoOpen, setDemoOpen] = useState(false)
   const player = useScenarioPlayer(dispatch)
@@ -27,13 +28,8 @@ export function App() {
     preloadEmoji(Object.keys(EMOJI) as EmojiName[])
   }, [])
 
-  // Ding whenever a new hand goes up (Design.md 17)
-  const handsUp = useRef(0)
-  const handCount = state.participants.filter((p) => p.hand !== null).length
-  useEffect(() => {
-    if (handCount > handsUp.current) playDing()
-    handsUp.current = handCount
-  }, [handCount])
+  useRoomSounds(state)
+  useEffect(() => saveCameraQuality(state.settings.cameraQuality), [state.settings.cameraQuality])
 
   useEffect(() => {
     engine.start()

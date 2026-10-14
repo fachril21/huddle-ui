@@ -1,3 +1,5 @@
+import type { CameraQuality } from '../room/cameraQuality'
+
 export type PaletteName = 'borealis' | 'nebula' | 'solstice' | 'abyss' | 'orchid' | 'verdant'
 
 export type Role = 'Host' | 'Co-host' | 'Peserta' | 'Tamu'
@@ -29,7 +31,7 @@ export interface VoiceSource {
   readonly natural: boolean
 }
 
-export type DockToggle = 'reaction' | 'soundboard' | 'more' | 'leave'
+export type DockToggle = 'reaction' | 'soundboard' | 'more' | 'camera' | 'leave'
 
 export type PanelName = 'peserta' | 'chat' | 'polling' | 'host'
 
@@ -142,12 +144,41 @@ export type RecordingState = 'off' | 'on' | 'paused'
 
 export interface HostState {
   readonly locked: boolean
+  /** Six-digit key needed to claim the host role when nobody holds it (Co-hosts skip it) */
+  readonly hostKey: string
   readonly restrictShare: boolean
   readonly recording: RecordingState
   /** Non-hosts must agree once to be recorded */
   readonly consented: boolean
   readonly waiting: readonly Guest[]
   readonly announcement: { readonly id: number; readonly text: string } | null
+}
+
+export type AnnotationTool = 'pen' | 'highlighter' | 'laser'
+
+/** Ink colours that stay readable on both light and dark shared screens */
+export type AnnotationColor = 'rose' | 'blue' | 'violet' | 'amber'
+
+/** One scribble on the shared screen. Points are normalised to the screen (0..1), so layout changes never break them. */
+export interface Stroke {
+  readonly id: number
+  readonly authorId: string
+  readonly tool: AnnotationTool
+  readonly color: AnnotationColor
+  /** Flat list x0, y0, x1, y1, ... */
+  readonly points: readonly number[]
+  /** performance.now() when the stroke began */
+  readonly startedAt: number
+  /** Reveal time for strokes drawn by other people (0 = drawn instantly) */
+  readonly durationMs: number
+  /** Fade away this long after the stroke ends; null keeps it until the share stops */
+  readonly fadeAfterMs: number | null
+}
+
+export interface AnnotationState {
+  /** Host switch "Izinkan anotasi" for everyone who is not host or co-host */
+  readonly allowed: boolean
+  readonly strokes: readonly Stroke[]
 }
 
 export interface Notice {
@@ -159,8 +190,20 @@ export interface Notice {
 /** live = in the room; left = the user left; ended = the host ended it for everyone */
 export type Phase = 'live' | 'left' | 'ended'
 
+/** Galeri = tile grid, Pembicara = active speaker big with a filmstrip, Sorotan = pinned (or speaking) person with a side strip */
+export type LayoutMode = 'gallery' | 'speaker' | 'spotlight'
+
+export interface LayoutSettings {
+  readonly mode: LayoutMode
+  /** Person pinned in Sorotan */
+  readonly pinnedId: string | null
+  readonly hideNoVideo: boolean
+}
+
 export interface Settings {
   readonly fx: FxTier
+  readonly cameraQuality: CameraQuality
+  readonly layout: LayoutSettings
   readonly simulateReduced: boolean
 }
 
@@ -180,6 +223,7 @@ export interface RoomState {
   /** Newest first. polls[0] is the active poll while its status is active. */
   readonly polls: readonly Poll[]
   readonly chat: ChatState
+  readonly annotation: AnnotationState
   readonly host: HostState
   readonly notices: readonly Notice[]
   readonly phase: Phase

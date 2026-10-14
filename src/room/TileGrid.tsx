@@ -3,12 +3,15 @@ import { AnimatePresence, motion } from 'motion/react'
 import { useMemo, useRef, useState } from 'react'
 import type { Dispatch, KeyboardEvent } from 'react'
 import type { RoomAction } from '../state/roomReducer'
+import type { CameraQuality } from './cameraQuality'
 import { SELF_ID } from '../state/types'
-import type { HighFiveOffer, Participant } from '../state/types'
+import type { HighFiveOffer, LayoutSettings, Participant } from '../state/types'
 import { Tile } from '../tile/Tile'
 import { useVoiceSnapshot } from '../voice/VoiceContext'
 import { useElementSize } from './gridLayout'
-import { gridLayout, shareLayout } from './layoutMath'
+import { resolveFocusId } from './focus'
+import { useActiveSpeaker } from './hooks/useActiveSpeaker'
+import { gridLayout, shareLayout, speakerLayout, spotlightLayout } from './layoutMath'
 import { ScreenFrame } from './ScreenFrame'
 import { useReducedMotion } from './useReducedMotion'
 import styles from './TileGrid.module.css'
@@ -20,6 +23,9 @@ interface TileGridProps {
   /** Current page of the regular grid (rooms over 9 people) */
   gridPage: number
   soundPlayers: ReadonlySet<string>
+  /** Outgoing camera quality, shown on the user's own tile */
+  cameraQuality: CameraQuality
+  layoutSettings: LayoutSettings
   dispatch: Dispatch<RoomAction>
 }
 
@@ -34,7 +40,7 @@ const TILE_RADIUS = 20
  * Positions every tile absolutely from computed rectangles. The same elements stay mounted when the layout
  * switches between grid and share-screen, so Motion can animate each box (FLIP) without reloading anything.
  */
-export function TileGrid({ participants, offers, sharerId, gridPage, soundPlayers, dispatch }: TileGridProps) {
+export function TileGrid({ participants, offers, sharerId, gridPage, soundPlayers, cameraQuality, layoutSettings, dispatch }: TileGridProps) {
   const [stageRef, size] = useElementSize<HTMLDivElement>()
   const reduced = useReducedMotion()
   const voice = useVoiceSnapshot()
@@ -42,9 +48,27 @@ export function TileGrid({ participants, offers, sharerId, gridPage, soundPlayer
   const cells = useRef(new Map<string, HTMLElement>())
   const lastSwap = useRef(0)
 
+  const { mode, pinnedId, hideNoVideo } = layoutSettings
+  const speakerId = useActiveSpeaker(voice.dominantId)
+
   const ids = useMemo(() => participants.map((p) => p.id), [participants])
-  const grid = useMemo(() => gridLayout(ids, size.width, size.height, gridPage), [ids, size.width, size.height, gridPage])
-  const layout = sharerId ? shareLayout(ids, sharerId, size.width, size.height, page) : grid
+  /** Who the layout arranges. "Sembunyikan peserta tanpa kamera" keeps the user and falls back to everyone if nobody is left. */
+  const layoutIds = useMemo(() => {
+    if (!hideNoVideo || sharerId) return ids
+    const withVideo = participants.filter((p) => p.camOn || p.id === SELF_ID).map((p) => p.id)
+    return withVideo.length ? withVideo : ids
+  }, [participants, ids, hideNoVideo, sharerId])
+  const grid = useMemo(() => gridLayout(layoutIds, size.width, size.height, gridPage), [layoutIds, size.width, size.height, gridPage])
+  const focusId = mode === 'gallery' ? null : resolveFocusId(layoutIds, { mode, pinnedId, speakerId, selfId: SELF_ID })
+  const layout = sharerId
+    ? shareLayout(ids, sharerId, size.width, size.height, page)
+    : focusId && mode === 'speaker'
+      ? speakerLayout(layoutIds, focusId, size.width, size.height, page)
+      : focusId && mode === 'spotlight'
+        ? spotlightLayout(layoutIds, focusId, size.width, size.height, page)
+        : grid
+  const reorderable = !sharerId && mode === 'gallery'
+  const parkedRect = layout.rects[layoutIds[0]]
   const ready = size.width > 0 && size.height > 0
   const presenter = participants.find((p) => p.id === sharerId)
   const origin = sharerId ? grid.rects[sharerId] : undefined
@@ -66,7 +90,7 @@ export function TileGrid({ participants, offers, sharerId, gridPage, soundPlayer
   }
 
   const onKeyDown = (e: KeyboardEvent, id: string, index: number) => {
-    if (!e.altKey || sharerId) return
+    if (!e.altKey || !reorderable) return
     const cols = new Set(Object.values(grid.rects).map((r) => Math.round(r.x))).size
     const step = e.key === 'ArrowLeft' ? -1 : e.key === 'ArrowRight' ? 1 : e.key === 'ArrowUp' ? -cols : e.key === 'ArrowDown' ? cols : 0
     if (!step) return
@@ -96,9 +120,11 @@ export function TileGrid({ participants, offers, sharerId, gridPage, soundPlayer
           </AnimatePresence>
 
           {participants.map((p, index) => {
-            const rect = layout.rects[p.id]
+            // people filtered out by "Sembunyikan peserta tanpa kamera" stay mounted, parked invisibly
+            const own = layout.rects[p.id]
+            const rect = own ?? parkedRect
             if (!rect) return null
-            const hidden = layout.hidden.has(p.id)
+            const hidden = layout.hidden.has(p.id) || !own
             const stagger = Math.min(index, MAX_STAGGER_TILES) * STAGGER_S
             return (
               <motion.div
@@ -114,7 +140,7 @@ export function TileGrid({ participants, offers, sharerId, gridPage, soundPlayer
                 tabIndex={hidden ? -1 : 0}
                 aria-hidden={hidden || undefined}
                 aria-roledescription="kartu peserta"
-                aria-description={sharerId ? undefined : 'Seret untuk memindah, atau tahan Alt dan tekan tombol panah'}
+                aria-description={reorderable ? 'Seret untuk memindah, atau tahan Alt dan tekan tombol panah' : undefined}
                 style={{ left: rect.x, top: rect.y, width: rect.w, height: rect.h, borderRadius: TILE_RADIUS, pointerEvents: hidden ? 'none' : undefined }}
                 layout
                 initial={false}
@@ -128,7 +154,7 @@ export function TileGrid({ participants, offers, sharerId, gridPage, soundPlayer
                   if (offers.some((o) => o.fromId === p.id) && p.id !== SELF_ID)
                     dispatch({ type: 'hfRespond', fromId: p.id, byId: SELF_ID, now: performance.now() })
                 }}
-                drag={!sharerId}
+                drag={reorderable}
                 dragSnapToOrigin
                 dragElastic={0.12}
                 dragMomentum={false}
@@ -147,6 +173,9 @@ export function TileGrid({ participants, offers, sharerId, gridPage, soundPlayer
                   offer={offers.find((o) => o.fromId === p.id) ?? null}
                   compact={rect.h < 160}
                   soundPlaying={soundPlayers.has(p.id)}
+                  cameraQuality={p.id === SELF_ID ? cameraQuality : undefined}
+                  pinned={mode === 'spotlight' && pinnedId === p.id}
+                  onPin={sharerId ? undefined : () => dispatch({ type: 'pinParticipant', id: mode === 'spotlight' && pinnedId === p.id ? null : p.id })}
                 />
               </motion.div>
             )

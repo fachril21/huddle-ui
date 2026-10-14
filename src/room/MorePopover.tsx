@@ -3,11 +3,15 @@ import { useState } from 'react'
 import { getGroupVolume, isGroupMuted, setGroupMuted, setGroupVolume } from '../audio/audioEngine'
 import type { SoundGroup } from '../audio/audioEngine'
 import type { FxTier } from '../state/types'
+import { PUSH_TO_TALK, SHORTCUTS } from './shortcuts'
 import styles from './MorePopover.module.css'
 
 interface MorePopoverProps {
   fx: FxTier
   onFx: (fx: FxTier) => void
+  /** Whether the keyboard shortcut list is expanded; lifted so the "?" key can open it */
+  shortcutsOpen: boolean
+  onShortcutsOpen: (open: boolean) => void
 }
 
 const TIERS: readonly { fx: FxTier; label: string; hint: string }[] = [
@@ -23,7 +27,7 @@ const GROUPS: readonly { group: SoundGroup; label: string }[] = [
 ]
 
 /** "Lainnya": effects tier (Design.md 19.1) and the three sound volume groups (Design.md 17). */
-export function MorePopover({ fx, onFx }: MorePopoverProps) {
+export function MorePopover({ fx, onFx, shortcutsOpen, onShortcutsOpen }: MorePopoverProps) {
   return (
     <motion.div
       className={`glass-2 ${styles.popover}`}
@@ -52,6 +56,22 @@ export function MorePopover({ fx, onFx }: MorePopoverProps) {
           <VolumeRow key={g.group} group={g.group} label={g.label} />
         ))}
       </section>
+
+      <details className={styles.keys} open={shortcutsOpen} onToggle={(e) => onShortcutsOpen(e.currentTarget.open)}>
+        <summary>Pintasan keyboard</summary>
+        <ul>
+          {SHORTCUTS.map((s) => (
+            <li key={s.id}>
+              <span>{s.label}</span>
+              <kbd className="keycap">{s.key}</kbd>
+            </li>
+          ))}
+          <li>
+            <span>{PUSH_TO_TALK.label}</span>
+            <kbd className="keycap">{PUSH_TO_TALK.key}</kbd>
+          </li>
+        </ul>
+      </details>
     </motion.div>
   )
 }

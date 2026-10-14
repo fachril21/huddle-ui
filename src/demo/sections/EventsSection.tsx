@@ -3,6 +3,8 @@ import type { Dispatch } from 'react'
 import { SOUND_BY_ID, SOUNDS } from '../../audio/soundboardSounds'
 import { EMOJI } from '../../emoji/registry'
 import { SAMPLE_POLL } from '../../features/polls/pollMath'
+import { DOODLE_KINDS, doodleStroke } from '../doodles'
+import type { DoodleKind } from '../doodles'
 import { REACTIONS } from '../../room/reactions'
 import type { RoomAction } from '../../state/roomReducer'
 import { SELF_ID } from '../../state/types'
@@ -23,6 +25,9 @@ const SAMPLE_START = {
   liveResults: true,
   autoCloseS: null,
 }
+
+const DOODLE_LABELS: Readonly<Record<DoodleKind, string>> = { circle: 'Melingkari', underline: 'Menggarisbawahi', arrow: 'Menggambar panah' }
+const INK_BY_ACTOR = ['rose', 'blue', 'violet', 'amber'] as const
 
 const CHAT_LINES = ['Setuju, kita ambil opsi bertahap.', 'Boleh share dulu hasil minggu lalu?', 'Mantap, lanjut ya.', 'Saya catat di dokumen sprint.']
 const GUESTS = ['Budi Santoso', 'Nanda Pratama', 'Citra Lestari', 'Hadi Wijaya']
@@ -106,6 +111,23 @@ export function EventsSection({ state, dispatch }: { state: RoomState; dispatch:
       <div className={styles.presets} role="group" aria-label="Berbagi layar dari peserta">
         <Toggle label="Peserta berbagi layar" onClick={() => dispatch({ type: 'startShare', id: actor })} />
         <Toggle label="Berhenti berbagi" onClick={() => dispatch({ type: 'stopShare' })} />
+      </div>
+
+      <div className={styles.presets} role="group" aria-label="Coret layar dari peserta">
+        {DOODLE_KINDS.map((kind) => (
+          <Toggle
+            key={kind}
+            label={`Peserta ${DOODLE_LABELS[kind].toLowerCase()}`}
+            onClick={() => dispatch({ type: 'annotationAdd', stroke: doodleStroke(kind, actor, INK_BY_ACTOR[others.findIndex((p) => p.id === actor) % INK_BY_ACTOR.length], now(), 6000) })}
+          />
+        ))}
+        <Toggle label="Coret layar diizinkan" on={state.annotation.allowed} onClick={() => dispatch({ type: 'annotationAllow', on: !state.annotation.allowed })} />
+      </div>
+
+      <div className={styles.presets} role="group" aria-label="Klaim host">
+        <Toggle label="Host meninggalkan meeting" onClick={() => dispatch({ type: 'vacateHost', now: now() })} />
+        <Toggle label="Peserta lain klaim host" onClick={() => dispatch({ type: 'claimHost', id: actor, key: state.host.hostKey, now: now() })} />
+        <p className={styles.hint}>Kunci host: {state.host.hostKey}</p>
       </div>
 
       <div className={styles.presets} role="group" aria-label="Chat, tamu, dan host">

@@ -6,10 +6,12 @@ import styles from './HostPanel.module.css'
 interface HostPanelProps {
   host: HostState
   soundboardAllowed: boolean
+  annotationAllowed: boolean
   onDecide: (guestId: string, admit: boolean) => void
   onLock: (on: boolean) => void
   onRestrictShare: (on: boolean) => void
   onSoundboard: (on: boolean) => void
+  onAnnotation: (on: boolean) => void
   onMuteAll: () => void
   onAnnounce: (text: string) => void
   onRecording: (state: 'on' | 'paused' | 'off') => void
@@ -18,7 +20,7 @@ interface HostPanelProps {
 const MAX_ANNOUNCEMENT = 140
 
 /** Host tools (PRD 8.8): waiting room, moderation switches, announcement, recording. Actions are mock. */
-export function HostPanel({ host, soundboardAllowed, onDecide, onLock, onRestrictShare, onSoundboard, onMuteAll, onAnnounce, onRecording }: HostPanelProps) {
+export function HostPanel({ host, soundboardAllowed, annotationAllowed, onDecide, onLock, onRestrictShare, onSoundboard, onAnnotation, onMuteAll, onAnnounce, onRecording }: HostPanelProps) {
   const [text, setText] = useState('')
 
   const send = (e: React.FormEvent) => {
@@ -56,6 +58,7 @@ export function HostPanel({ host, soundboardAllowed, onDecide, onLock, onRestric
         <Switch label="Kunci meeting" on={host.locked} onChange={onLock} />
         <Switch label="Batasi berbagi layar (hanya host)" on={host.restrictShare} onChange={onRestrictShare} />
         <Switch label="Izinkan soundboard" on={soundboardAllowed} onChange={onSoundboard} />
+        <Switch label="Izinkan peserta mencoret layar" on={annotationAllowed} onChange={onAnnotation} />
         <button type="button" className={styles.outline} onClick={onMuteAll}>
           Bisukan semua
         </button>

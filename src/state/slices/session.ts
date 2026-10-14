@@ -4,7 +4,7 @@ import { canManage, nextId, NOTICE_MS, roleOf, withNotice } from './shared'
 import type { Slice } from './shared'
 
 /** Popovers share one slot above the dock, so opening one closes the others. */
-const POPOVERS: readonly DockToggle[] = ['reaction', 'soundboard', 'more', 'leave']
+const POPOVERS: readonly DockToggle[] = ['reaction', 'soundboard', 'more', 'camera', 'leave']
 
 function openPopover(state: RoomState, key: DockToggle, open: boolean): RoomState {
   const toggles = Object.fromEntries(POPOVERS.map((k) => [k, false])) as Record<DockToggle, boolean>
@@ -99,11 +99,22 @@ export const sessionSlice: Slice = (state, action) => {
       return alive.length === state.notices.length ? state : { ...state, notices: alive }
     }
     case 'leave':
-      return { ...state, phase: action.phase, toggles: { reaction: false, soundboard: false, more: false, leave: false } }
+      return { ...state, phase: action.phase, toggles: { reaction: false, soundboard: false, more: false, camera: false, leave: false } }
     case 'reset':
       return createInitialState(state.settings)
     case 'setFx':
       return { ...state, settings: { ...state.settings, fx: action.fx } }
+    case 'setCameraQuality':
+      return { ...state, settings: { ...state.settings, cameraQuality: action.quality } }
+    case 'setLayoutMode':
+      return { ...state, settings: { ...state.settings, layout: { ...state.settings.layout, mode: action.mode } } }
+    case 'pinParticipant': {
+      // Pinning someone switches to Sorotan; unpinning keeps the mode and lets the speaker take the big tile
+      const layout = action.id ? { ...state.settings.layout, mode: 'spotlight' as const, pinnedId: action.id } : { ...state.settings.layout, pinnedId: null }
+      return { ...state, settings: { ...state.settings, layout } }
+    }
+    case 'setHideNoVideo':
+      return { ...state, settings: { ...state.settings, layout: { ...state.settings.layout, hideNoVideo: action.on } } }
     case 'setSimulateReduced':
       return { ...state, settings: { ...state.settings, simulateReduced: action.on } }
     default:

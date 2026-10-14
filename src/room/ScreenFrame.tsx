@@ -1,7 +1,11 @@
-import { MonitorUp, Square } from 'lucide-react'
-import { motion } from 'motion/react'
+import { MonitorUp, PencilLine, Square } from 'lucide-react'
+import { AnimatePresence, motion } from 'motion/react'
+import { useAnnotation } from '../features/annotation/AnnotationContext'
+import { AnnotationLayer } from '../features/annotation/AnnotationLayer'
+import { AnnotationToolbar } from '../features/annotation/AnnotationToolbar'
 import type { Rect } from './layoutMath'
 import { ScreenMock } from './ScreenMock'
+import { shortcutKey } from './shortcuts'
 import styles from './ScreenFrame.module.css'
 
 interface ScreenFrameProps {
@@ -29,6 +33,7 @@ const FULL = `inset(0px 0px 0px 0px round ${FRAME_RADIUS}px)`
 
 /** The shared-screen stage (Design.md 14). It grows out of the presenter tile. */
 export function ScreenFrame({ frame, origin, presenterName, isSelf, reduced, onStop }: ScreenFrameProps) {
+  const { enabled, blockedByHost, annotating, toggleAnnotating } = useAnnotation()
   const from = reduced ? { opacity: 0 } : { clipPath: insetFor(origin, frame), opacity: 0 }
   const shown = reduced ? { opacity: 1 } : { clipPath: FULL, opacity: 1 }
   return (
@@ -42,20 +47,21 @@ export function ScreenFrame({ frame, origin, presenterName, isSelf, reduced, onS
       aria-label={isSelf ? 'Anda sedang berbagi layar' : `Layar yang dibagikan ${presenterName}`}
     >
       <div className={styles.letterbox}>
-        {isSelf ? (
-          <div className={styles.self}>
-            <MonitorUp size={40} strokeWidth={1.5} aria-hidden="true" />
-            <p>Anda sedang berbagi layar</p>
-            <button type="button" className={styles.stop} onClick={onStop}>
-              <Square size={14} strokeWidth={2} aria-hidden="true" />
-              Berhenti berbagi
-            </button>
-          </div>
-        ) : (
-          <div className={styles.screenBox}>
+        <div className={styles.screenBox} data-self={isSelf || undefined}>
+          {isSelf ? (
+            <div className={styles.self}>
+              <MonitorUp size={40} strokeWidth={1.5} aria-hidden="true" />
+              <p>Anda sedang berbagi layar</p>
+              <button type="button" className={styles.stop} onClick={onStop}>
+                <Square size={14} strokeWidth={2} aria-hidden="true" />
+                Berhenti berbagi
+              </button>
+            </div>
+          ) : (
             <ScreenMock />
-          </div>
-        )}
+          )}
+          <AnnotationLayer />
+        </div>
       </div>
       {!isSelf && (
         <span className={`glass-1 ${styles.chip}`}>
@@ -63,6 +69,20 @@ export function ScreenFrame({ frame, origin, presenterName, isSelf, reduced, onS
           {presenterName} sedang berbagi layar
         </span>
       )}
+      {(enabled || blockedByHost) && (
+        <div className={styles.actions}>
+          {enabled ? (
+            <button type="button" className={`glass-1 ${styles.annotate}`} aria-pressed={annotating} aria-keyshortcuts={shortcutKey('annotate')} onClick={toggleAnnotating}>
+              <PencilLine size={16} strokeWidth={1.75} aria-hidden="true" />
+              {annotating ? 'Sedang mencoret' : 'Coret layar'}
+              <kbd className="keycap">{shortcutKey('annotate')}</kbd>
+            </button>
+          ) : (
+            <span className={`glass-1 ${styles.annotateOff}`}>Coret layar dimatikan host</span>
+          )}
+        </div>
+      )}
+      <AnimatePresence>{annotating && <AnnotationToolbar key="annotation-toolbar" />}</AnimatePresence>
     </motion.section>
   )
 }

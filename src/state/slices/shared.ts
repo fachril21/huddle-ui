@@ -23,6 +23,10 @@ export function canManage(role: Role): boolean {
   return role === 'Host' || role === 'Co-host'
 }
 
+export function hasHost(state: RoomState): boolean {
+  return state.participants.some((p) => p.role === 'Host')
+}
+
 export function roleOf(state: RoomState, id: string): Role | undefined {
   return state.participants.find((p) => p.id === id)?.role
 }

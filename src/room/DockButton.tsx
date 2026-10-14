@@ -12,10 +12,12 @@ interface DockButtonProps {
   /** When set the button is visually disabled but stays focusable so the reason can be read */
   disabledReason?: string
   wide?: boolean
+  /** Key cap text shown in the tooltip (e.g. "M") */
+  shortcut?: string
   onClick?: () => void
 }
 
-export function DockButton({ icon, label, pressed, tone = 'default', disabledReason, wide, onClick }: DockButtonProps) {
+export function DockButton({ icon, label, pressed, tone = 'default', disabledReason, wide, shortcut, onClick }: DockButtonProps) {
   const tipId = useId()
   const disabled = disabledReason !== undefined
 
@@ -29,11 +31,15 @@ export function DockButton({ icon, label, pressed, tone = 'default', disabledRea
       aria-pressed={pressed}
       aria-disabled={disabled || undefined}
       aria-describedby={disabled ? tipId : undefined}
+      aria-keyshortcuts={shortcut}
       onClick={disabled ? undefined : onClick}
     >
       {icon}
       <span role="tooltip" id={tipId} className={`glass-1 ${styles.tip}`}>
-        {label}
+        <span className={styles.tipRow}>
+          {label}
+          {shortcut && <kbd className="keycap">{shortcut}</kbd>}
+        </span>
         {disabled && <span className={styles.reason}>{disabledReason}</span>}
       </span>
     </button>

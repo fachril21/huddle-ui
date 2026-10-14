@@ -44,3 +44,22 @@
   background: var(--ink-800);
   backdrop-filter: none;
 }
+
+/* Key cap shown in tooltips and the shortcut list */
+.keycap {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border: 1px solid var(--glass-border);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  background: var(--veil-hover);
+  color: var(--text-1);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1;
+  font-weight: 600;
+  text-shadow: none;
+}

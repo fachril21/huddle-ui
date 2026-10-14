@@ -11,6 +11,9 @@
   border-radius: var(--radius-xl);
   transform-origin: bottom center;
   color: var(--text-1);
+  max-height: min(78vh, 680px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .popover h2 { margin: 0 0 var(--space-3); font-family: var(--font-display); font-size: 14px; line-height: 20px; font-weight: 600; }
@@ -47,3 +50,21 @@
 }
 .row button[aria-pressed='true'] { background: var(--danger); border-color: var(--danger); color: var(--on-danger); }
 .row button:focus-visible { box-shadow: var(--focus-ring); }
+
+.keys summary {
+  display: flex;
+  align-items: center;
+  min-height: 32px;
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 600;
+  list-style: none;
+}
+.keys summary::-webkit-details-marker { display: none; }
+.keys summary::after { content: '+'; margin-left: auto; color: var(--text-2); font-family: var(--font-mono); }
+.keys[open] summary::after { content: '–'; }
+.keys summary:focus-visible { box-shadow: var(--focus-ring); border-radius: var(--radius-sm); }
+.keys ul { list-style: none; margin: var(--space-2) 0 0; padding: 0; display: grid; gap: 2px; }
+.keys li { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); min-height: 28px; font-size: 13px; font-weight: 500; color: var(--text-2); }

@@ -1,7 +1,7 @@
 import type { VoicePreset } from '../actions'
 import { SELF_ID } from '../types'
 import type { Participant, RoomState } from '../types'
-import { mapParticipant, withNotice } from './shared'
+import { hasHost, mapParticipant, withNotice } from './shared'
 import type { Slice } from './shared'
 
 /** Who talks in each mass preset, and how loudly. */
@@ -93,6 +93,19 @@ export const participantsSlice: Slice = (state, action) => {
       return mapParticipant(state, action.id, (p) => ({ ...p, role: action.role }))
     case 'makeHost':
       return makeHost(state, action.id)
+    case 'claimHost': {
+      const claimer = state.participants.find((p) => p.id === action.id)
+      if (!claimer || hasHost(state)) return state
+      if (claimer.role !== 'Co-host' && action.key !== state.host.hostKey) return state
+      const label = claimer.id === SELF_ID ? 'Anda' : claimer.name
+      return withNotice(makeHost(state, action.id), `${label} sekarang menjadi host`, action.now)
+    }
+    case 'vacateHost': {
+      const host = state.participants.find((p) => p.role === 'Host')
+      if (!host) return state
+      const next = host.id === SELF_ID ? mapParticipant(state, host.id, (p) => ({ ...p, role: 'Peserta' })) : dropFromRoom(state, [host.id])
+      return withNotice(next, 'Host meninggalkan meeting', action.now)
+    }
     case 'removeParticipant': {
       const name = state.participants.find((p) => p.id === action.id)?.name
       if (!name || action.id === SELF_ID) return state

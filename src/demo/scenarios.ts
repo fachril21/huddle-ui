@@ -1,5 +1,8 @@
 import { SAMPLE_POLL } from '../features/polls/pollMath'
 import type { RoomAction } from '../state/roomReducer'
+import { doodleStroke } from './doodles'
+import type { DoodleKind } from './doodles'
+import type { AnnotationColor } from '../state/types'
 import { SELF_ID } from '../state/types'
 
 /** One timed event. `run` receives performance.now() so time-based actions (cooldowns, expiry) line up. */
@@ -27,6 +30,7 @@ const react = (senderId: string, name: Extract<RoomAction, { type: 'react' }>['n
 const offer = (fromId: string): ScenarioStep['run'] => (now) => [{ type: 'hfOffer', fromId, now }]
 const accept = (fromId: string, byId: string): ScenarioStep['run'] => (now) => [{ type: 'hfRespond', fromId, byId, now }]
 const play = (fromId: string, soundId: string, durationMs: number): ScenarioStep['run'] => (now) => [{ type: 'sbPlay', fromId, soundId, durationMs, now }]
+const doodle = (kind: DoodleKind, authorId: string, color: AnnotationColor): ScenarioStep['run'] => (now) => [{ type: 'annotationAdd', stroke: doodleStroke(kind, authorId, color, now, 8000) }]
 const startPoll = (creatorId: string): ScenarioStep['run'] => (now) => [
   {
     type: 'pollStart',
@@ -76,7 +80,10 @@ const BRAINSTORM: Scenario = {
     { at: mm(2, 50), run: () => [{ type: 'pollClose' }] },
     { at: mm(2, 57), run: () => [{ type: 'openPanel', panel: null }] },
     { at: mm(3, 0), run: () => [{ type: 'startShare', id: 'raka' }] },
+    { at: mm(3, 8), run: doodle('circle', 'dewi', 'rose') },
+    { at: mm(3, 16), run: doodle('underline', 'bima', 'blue') },
     { at: mm(3, 20), run: talk('dewi', 0.6) },
+    { at: mm(3, 28), run: doodle('arrow', 'sari', 'violet') },
     { at: mm(3, 35), run: hush('dewi') },
     { at: mm(3, 40), run: () => [{ type: 'stopShare' }] },
   ],
@@ -116,7 +123,10 @@ const SHARE: Scenario = {
   durationS: 30,
   steps: [
     { at: 2, run: () => [{ type: 'startShare', id: 'raka' }] },
+    { at: 6, run: doodle('circle', 'dewi', 'rose') },
     { at: 10, run: talk('dewi', 0.6) },
+    { at: 13, run: doodle('underline', 'bima', 'blue') },
+    { at: 18, run: doodle('arrow', 'sari', 'violet') },
     { at: 20, run: hush('dewi') },
     { at: 24, run: () => [{ type: 'stopShare' }] },
   ],

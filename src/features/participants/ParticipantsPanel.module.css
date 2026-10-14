@@ -73,3 +73,20 @@
 .menu button:hover { background: var(--veil-press); }
 .menu button:focus-visible { box-shadow: var(--focus-ring); }
 .menu button[data-danger='true'] { color: var(--aurora-rose); }
+
+.invite {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  height: 36px;
+  border: 1px dashed var(--glass-border);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-1);
+  font-size: 13px;
+  font-weight: 600;
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+.invite:hover { background: var(--veil-hover); }
+.invite:focus-visible { box-shadow: var(--focus-ring); }

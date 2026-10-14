@@ -2,3 +2,5 @@ node_modules
 dist
 *.tsbuildinfo
 .claude
+.vitest
+bash.exe.stackdump

@@ -16,6 +16,7 @@ interface SidePanelProps {
   state: RoomState
   selfRole: Role
   dispatch: Dispatch<RoomAction>
+  onInvite: () => void
   onClose: () => void
 }
 
@@ -28,7 +29,7 @@ const TABS: readonly { name: PanelName; label: string }[] = [
 const PANEL_TITLES: Record<PanelName, string> = { peserta: 'Peserta', chat: 'Chat', polling: 'Polling', host: 'Alat host' }
 
 /** Floating glass-2 card on the right (Design.md 15.2). Esc closes it and returns focus to its trigger. */
-export function SidePanel({ panel, state, selfRole, dispatch, onClose }: SidePanelProps) {
+export function SidePanel({ panel, state, selfRole, dispatch, onInvite, onClose }: SidePanelProps) {
   const canManage = selfRole === 'Host' || selfRole === 'Co-host'
 
   useEffect(() => {
@@ -74,6 +75,7 @@ export function SidePanel({ panel, state, selfRole, dispatch, onClose }: SidePan
           <ParticipantsPanel
             participants={state.participants}
             selfRole={selfRole}
+            onInvite={onInvite}
             onMute={(id) => dispatch({ type: 'toggleMic', id })}
             onCoHost={(id) => dispatch({ type: 'setRole', id, role: 'Co-host' })}
             onMakeHost={(id) => dispatch({ type: 'makeHost', id })}
@@ -112,10 +114,12 @@ export function SidePanel({ panel, state, selfRole, dispatch, onClose }: SidePan
           <HostPanel
             host={state.host}
             soundboardAllowed={state.soundboard.allowed}
+            annotationAllowed={state.annotation.allowed}
             onDecide={(id, admit) => dispatch({ type: 'guestDecide', id, admit, now: now() })}
             onLock={(on) => dispatch({ type: 'hostLock', on, now: now() })}
             onRestrictShare={(on) => dispatch({ type: 'hostRestrictShare', on })}
             onSoundboard={(on) => dispatch({ type: 'sbAllow', on })}
+            onAnnotation={(on) => dispatch({ type: 'annotationAllow', on })}
             onMuteAll={() => dispatch({ type: 'muteAll', now: now() })}
             onAnnounce={(text) => dispatch({ type: 'announce', text })}
             onRecording={(s) => dispatch({ type: 'hostRecording', state: s })}

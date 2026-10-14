@@ -29,3 +29,22 @@
   width: 0;
   z-index: var(--z-popover);
 }
+
+/* camera button with its settings chevron attached, like Zoom and Meet */
+.split { display: flex; align-items: center; }
+.chevron {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 36px;
+  margin-left: -4px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-2);
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.chevron:hover { background: var(--veil-hover); color: var(--text-1); }
+.chevron[aria-expanded='true'] { background: var(--primary); color: var(--on-primary); }
+.chevron:focus-visible { box-shadow: var(--focus-ring); }

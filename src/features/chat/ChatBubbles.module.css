@@ -1,0 +1,96 @@
+.stack {
+  position: absolute;
+  left: var(--space-4);
+  /* above the info pill (56px) plus a gap; the invite popover (z-popover) still overlays it */
+  bottom: calc(var(--space-4) + 56px + var(--space-3));
+  z-index: calc(var(--z-popover) - 1);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 320px;
+  pointer-events: none;
+}
+
+.bubble {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  border-radius: var(--radius-lg);
+  color: var(--text-1);
+  pointer-events: auto;
+}
+
+.main {
+  display: flex;
+  flex: 1;
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-3) 0 var(--space-3) var(--space-3);
+  border: 0;
+  border-radius: var(--radius-lg);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.main:focus-visible { box-shadow: var(--focus-ring); }
+
+.dot {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--c1, var(--aurora-violet)), var(--c2, var(--aurora-cyan)));
+  color: var(--on-aurora);
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  font-style: normal;
+  text-shadow: none;
+}
+
+.body { display: grid; gap: 2px; min-width: 0; }
+.name { display: flex; align-items: center; gap: var(--space-2); font-size: 12px; line-height: 16px; font-weight: 700; color: var(--text-2); }
+.name em {
+  padding: 0 6px;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--aurora-amber) 22%, transparent);
+  color: var(--aurora-amber);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 600;
+}
+.text {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.close {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  margin: var(--space-2) var(--space-2) 0 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-3);
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out);
+}
+.bubble:hover .close,
+.bubble:focus-within .close { opacity: 1; }
+.close:hover { background: var(--veil-press); color: var(--text-1); }
+.close:focus-visible { box-shadow: var(--focus-ring); }

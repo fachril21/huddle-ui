@@ -1,7 +1,9 @@
+import type { CameraQuality } from '../room/cameraQuality'
 import type {
   ConnectionState,
   DockToggle,
   FxTier,
+  LayoutMode,
   Guest,
   PanelName,
   Phase,
@@ -9,6 +11,7 @@ import type {
   PresenceStatus,
   ReactionName,
   Role,
+  Stroke,
   VoiceSource,
 } from './types'
 
@@ -27,6 +30,8 @@ export type RoomAction =
   | { type: 'setCount'; count: number }
   | { type: 'setRole'; id: string; role: Role }
   | { type: 'makeHost'; id: string }
+  | { type: 'claimHost'; id: string; key: string; now: number }
+  | { type: 'vacateHost'; now: number }
   | { type: 'removeParticipant'; id: string; now: number }
   | { type: 'muteAll'; now: number }
   // chrome
@@ -62,6 +67,13 @@ export type RoomAction =
   | { type: 'chatSend'; fromId: string; toId: string | null; text: string; now: number }
   | { type: 'chatTyping'; id: string | null }
   | { type: 'chatRead' }
+  // annotation on the shared screen
+  | { type: 'annotationAdd'; stroke: Omit<Stroke, 'id'> }
+  | { type: 'annotationErase'; id: number; byId: string }
+  | { type: 'annotationUndo'; byId: string }
+  | { type: 'annotationClear'; byId: string }
+  | { type: 'annotationAllow'; on: boolean }
+  | { type: 'annotationExpire'; now: number }
   // host tools
   | { type: 'hostLock'; on: boolean; now: number }
   | { type: 'hostRestrictShare'; on: boolean }
@@ -78,4 +90,8 @@ export type RoomAction =
   | { type: 'leave'; phase: Exclude<Phase, 'live'> }
   | { type: 'reset' }
   | { type: 'setFx'; fx: FxTier }
+  | { type: 'setCameraQuality'; quality: CameraQuality }
+  | { type: 'setLayoutMode'; mode: LayoutMode }
+  | { type: 'pinParticipant'; id: string | null }
+  | { type: 'setHideNoVideo'; on: boolean }
   | { type: 'setSimulateReduced'; on: boolean }

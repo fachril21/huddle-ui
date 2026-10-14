@@ -1,4 +1,4 @@
-import { Ellipsis, Hand, MicOff, Search, VideoOff } from 'lucide-react'
+import { Ellipsis, Hand, MicOff, Search, UserPlus, VideoOff } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { SELF_ID } from '../../state/types'
 import type { Participant, Role } from '../../state/types'
@@ -7,6 +7,7 @@ import styles from './ParticipantsPanel.module.css'
 interface ParticipantsPanelProps {
   participants: readonly Participant[]
   selfRole: Role
+  onInvite: () => void
   onMute: (id: string) => void
   onCoHost: (id: string) => void
   onMakeHost: (id: string) => void
@@ -14,7 +15,7 @@ interface ParticipantsPanelProps {
 }
 
 /** Search, raised-hand queue, and the participant list with per-person host actions (PRD 8.8). */
-export function ParticipantsPanel({ participants, selfRole, onMute, onCoHost, onMakeHost, onRemove }: ParticipantsPanelProps) {
+export function ParticipantsPanel({ participants, selfRole, onInvite, onMute, onCoHost, onMakeHost, onRemove }: ParticipantsPanelProps) {
   const [query, setQuery] = useState('')
   const [menuFor, setMenuFor] = useState<string | null>(null)
   const canManage = selfRole === 'Host' || selfRole === 'Co-host'
@@ -28,6 +29,11 @@ export function ParticipantsPanel({ participants, selfRole, onMute, onCoHost, on
         <Search size={16} strokeWidth={1.75} aria-hidden="true" />
         <input type="search" value={query} placeholder="Cari peserta" aria-label="Cari peserta" onChange={(e) => setQuery(e.target.value)} />
       </label>
+
+      <button type="button" className={styles.invite} onClick={onInvite}>
+        <UserPlus size={16} strokeWidth={1.75} aria-hidden="true" />
+        Undang lewat tautan
+      </button>
 
       {raised.length > 0 && (
         <section aria-label="Antrean tangan terangkat">

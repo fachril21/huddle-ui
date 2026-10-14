@@ -8,10 +8,12 @@ interface TopBarProps {
   locked: boolean
   /** Extra control shown first, e.g. the grid pager */
   leading?: ReactNode
+  /** Layout menu, shown after the status chips */
+  menu?: ReactNode
 }
 
 /** Top-right chips: Merekam, Meeting terkunci, connection quality (PRD 7.2). */
-export function TopBar({ recording, locked, leading }: TopBarProps) {
+export function TopBar({ recording, locked, leading, menu }: TopBarProps) {
   return (
     <div className={styles.bar}>
       {leading}
@@ -31,6 +33,7 @@ export function TopBar({ recording, locked, leading }: TopBarProps) {
         <Signal size={16} strokeWidth={1.75} aria-hidden="true" className={styles.signal} />
         <span>Koneksi baik</span>
       </div>
+      {menu}
     </div>
   )
 }

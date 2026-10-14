@@ -1,5 +1,6 @@
 import type { RoomAction } from './actions'
 import { createInitialState, initialRoomState, DEFAULT_LEVEL } from './initialState'
+import { annotationSlice } from './slices/annotation'
 import { highFiveSlice, pollsSlice, reactionsSlice, soundboardSlice } from './slices/features'
 import { participantsSlice } from './slices/participants'
 import { chatSlice, chromeSlice, hostSlice, sessionSlice } from './slices/session'
@@ -18,15 +19,21 @@ const SLICES: readonly Slice[] = [
   highFiveSlice,
   soundboardSlice,
   pollsSlice,
+  annotationSlice,
   chatSlice,
   hostSlice,
   sessionSlice,
 ]
 
+/** Ink belongs to a screen share: once nobody is sharing (stopped, or the sharer left) the strokes go too. */
+function withoutOrphanInk(state: RoomState): RoomState {
+  return state.sharerId === null && state.annotation.strokes.length > 0 ? { ...state, annotation: { ...state.annotation, strokes: [] } } : state
+}
+
 export function roomReducer(state: RoomState, action: RoomAction): RoomState {
   for (const slice of SLICES) {
     const next = slice(state, action)
-    if (next) return next
+    if (next) return withoutOrphanInk(next)
   }
   return state
 }

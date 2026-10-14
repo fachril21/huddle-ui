@@ -1,0 +1,88 @@
+.popover {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + var(--space-3));
+  z-index: var(--z-popover);
+  display: grid;
+  gap: var(--space-2);
+  width: 380px;
+  padding: var(--space-4);
+  border-radius: var(--radius-xl);
+  transform-origin: bottom left;
+  color: var(--text-1);
+}
+
+.popover h2 { margin: 0; font-family: var(--font-display); font-size: 16px; line-height: 24px; font-weight: 600; }
+.sub { margin: 0 0 var(--space-2); font-size: 13px; line-height: 19px; color: var(--text-2); }
+
+.field { display: flex; }
+.field input {
+  flex: 1;
+  min-width: 0;
+  height: 40px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  background: var(--hairline);
+  color: var(--text-1);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  text-overflow: ellipsis;
+}
+.field input:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.field input::selection { background: color-mix(in srgb, var(--aurora-cyan) 40%, transparent); color: var(--text-1); }
+
+.actions .copy {
+  flex: 1 1 100%;
+  border: 0;
+  background: var(--primary);
+  color: var(--on-primary);
+}
+.copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  height: 36px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 600;
+  transition: background-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+}
+.copy:hover { background: color-mix(in srgb, var(--primary) 82%, var(--primary-glow)); }
+.copy:active { transform: scale(0.97); }
+.copy:focus-visible { box-shadow: var(--focus-ring); }
+.copy[data-state='copied'] { background: var(--success); color: var(--on-aurora); }
+
+.live { min-height: 18px; margin: 0; font-size: 12px; line-height: 18px; color: var(--text-2); }
+.live[data-failed='true'] { color: var(--aurora-amber); }
+
+.actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.actions button,
+.actions a {
+  display: inline-flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  height: 36px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-1);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+.actions button:hover,
+.actions a:hover { background: var(--veil-hover); }
+.actions button:focus-visible,
+.actions a:focus-visible { box-shadow: var(--focus-ring); }
+
+.hint { margin: var(--space-1) 0 0; font-size: 12px; line-height: 18px; color: var(--text-2); }
+
+@media (prefers-reduced-motion: reduce) {
+  .copy { transition: none; }
+}

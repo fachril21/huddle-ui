@@ -1,5 +1,6 @@
 import {
   AudioLines,
+  ChevronUp,
   Ellipsis,
   Hand,
   Handshake,
@@ -17,6 +18,7 @@ import type { ReactNode } from 'react'
 import type { DockToggle, Participant, ReactionName, RoomState } from '../state/types'
 import { DockButton } from './DockButton'
 import { ReactionPicker } from './ReactionPicker'
+import { shortcutKey } from './shortcuts'
 import styles from './Dock.module.css'
 
 interface DockProps {
@@ -37,6 +39,7 @@ interface DockProps {
   highFiveDisabledReason?: string
   /** Popovers for the soundboard, "Lainnya" and "Keluar" buttons */
   soundboard?: ReactNode
+  camera?: ReactNode
   more?: ReactNode
   leave?: ReactNode
 }
@@ -44,9 +47,9 @@ interface DockProps {
 const ICON = { size: 22, strokeWidth: 1.75, 'aria-hidden': true } as const
 
 /** Floating glass-3 capsule: [mic cam] | [share reaction hand high-five soundboard more] | [leave]. */
-export function Dock({ self, toggles, onToggleMic, onToggleCam, onToggleHand, onToggle, onClose, onReact, onHighFive, onShare, shareActive, shareDisabledReason, highFiveActive, highFiveDisabledReason, soundboardDisabledReason, soundboard, more, leave }: DockProps) {
+export function Dock({ self, toggles, onToggleMic, onToggleCam, onToggleHand, onToggle, onClose, onReact, onHighFive, onShare, shareActive, shareDisabledReason, highFiveActive, highFiveDisabledReason, soundboardDisabledReason, soundboard, camera, more, leave }: DockProps) {
   const wrapRef = useRef<HTMLDivElement>(null)
-  const openPopover: DockToggle | null = toggles.reaction ? 'reaction' : toggles.soundboard ? 'soundboard' : toggles.more ? 'more' : toggles.leave ? 'leave' : null
+  const openPopover: DockToggle | null = toggles.reaction ? 'reaction' : toggles.soundboard ? 'soundboard' : toggles.more ? 'more' : toggles.camera ? 'camera' : toggles.leave ? 'leave' : null
   const anchorX = usePopoverAnchor(wrapRef, openPopover)
 
   // Esc or a click outside closes the open popover; focus returns to its trigger on Esc.
@@ -78,26 +81,35 @@ export function Dock({ self, toggles, onToggleMic, onToggleCam, onToggleHand, on
           icon={self.micOn ? <Mic {...ICON} /> : <MicOff {...ICON} />}
           label={self.micOn ? 'Matikan mikrofon' : 'Nyalakan mikrofon'}
           tone={self.micOn ? 'default' : 'off'}
+          shortcut={shortcutKey('mic')}
           onClick={onToggleMic}
         />
-        <DockButton
-          icon={self.camOn ? <Video {...ICON} /> : <VideoOff {...ICON} />}
-          label={self.camOn ? 'Matikan kamera' : 'Nyalakan kamera'}
-          tone={self.camOn ? 'default' : 'off'}
-          onClick={onToggleCam}
-        />
-        <span className={styles.sep} aria-hidden="true" />
-        <DockButton icon={<MonitorUp {...ICON} />} label={shareActive ? 'Berhenti berbagi layar' : 'Bagikan layar'} pressed={shareActive} disabledReason={shareDisabledReason} onClick={onShare} />
-        <span data-popover-key="reaction" style={{ display: 'contents' }}>
-          <DockButton icon={<SmilePlus {...ICON} />} label="Reaction" pressed={toggles.reaction} onClick={() => onToggle('reaction')} />
+        <span className={styles.split}>
+          <DockButton
+            icon={self.camOn ? <Video {...ICON} /> : <VideoOff {...ICON} />}
+            label={self.camOn ? 'Matikan kamera' : 'Nyalakan kamera'}
+            tone={self.camOn ? 'default' : 'off'}
+            shortcut={shortcutKey('camera')}
+            onClick={onToggleCam}
+          />
+          <span data-popover-key="camera" style={{ display: 'contents' }}>
+            <button type="button" className={styles.chevron} aria-label="Pengaturan kamera" aria-haspopup="dialog" aria-expanded={toggles.camera} onClick={() => onToggle('camera')}>
+              <ChevronUp size={14} strokeWidth={2} aria-hidden="true" />
+            </button>
+          </span>
         </span>
-        <DockButton icon={<Hand {...ICON} />} label="Angkat tangan" pressed={self.hand !== null} onClick={onToggleHand} />
-        <DockButton icon={<Handshake {...ICON} />} label="High five" pressed={highFiveActive} disabledReason={highFiveDisabledReason} onClick={onHighFive} />
+        <span className={styles.sep} aria-hidden="true" />
+        <DockButton icon={<MonitorUp {...ICON} />} label={shareActive ? 'Berhenti berbagi layar' : 'Bagikan layar'} pressed={shareActive} disabledReason={shareDisabledReason} shortcut={shortcutKey('share')} onClick={onShare} />
+        <span data-popover-key="reaction" style={{ display: 'contents' }}>
+          <DockButton icon={<SmilePlus {...ICON} />} label="Reaction" pressed={toggles.reaction} shortcut={shortcutKey('reaction')} onClick={() => onToggle('reaction')} />
+        </span>
+        <DockButton icon={<Hand {...ICON} />} label="Angkat tangan" pressed={self.hand !== null} shortcut={shortcutKey('hand')} onClick={onToggleHand} />
+        <DockButton icon={<Handshake {...ICON} />} label="High five" pressed={highFiveActive} disabledReason={highFiveDisabledReason} shortcut={shortcutKey('highFive')} onClick={onHighFive} />
         <span data-popover-key="soundboard" style={{ display: 'contents' }}>
-          <DockButton icon={<AudioLines {...ICON} />} label="Soundboard" pressed={toggles.soundboard} disabledReason={soundboardDisabledReason} onClick={() => onToggle('soundboard')} />
+          <DockButton icon={<AudioLines {...ICON} />} label="Soundboard" pressed={toggles.soundboard} disabledReason={soundboardDisabledReason} shortcut={shortcutKey('soundboard')} onClick={() => onToggle('soundboard')} />
         </span>
         <span data-popover-key="more" style={{ display: 'contents' }}>
-          <DockButton icon={<Ellipsis {...ICON} />} label="Lainnya" pressed={toggles.more} onClick={() => onToggle('more')} />
+          <DockButton icon={<Ellipsis {...ICON} />} label="Lainnya" pressed={toggles.more} shortcut={shortcutKey('help')} onClick={() => onToggle('more')} />
         </span>
         <span className={styles.sep} aria-hidden="true" />
         <span data-popover-key="leave" style={{ display: 'contents' }}>
@@ -108,6 +120,7 @@ export function Dock({ self, toggles, onToggleMic, onToggleCam, onToggleHand, on
         <AnimatePresence>
           {toggles.reaction && <ReactionPicker key="reaction" onReact={onReact} onHighFive={onHighFive} />}
           {toggles.soundboard && soundboard}
+          {toggles.camera && camera}
           {toggles.more && more}
           {toggles.leave && leave}
         </AnimatePresence>

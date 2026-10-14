@@ -1,7 +1,8 @@
-import { MicOff } from 'lucide-react'
+import { MicOff, Pin, PinOff } from 'lucide-react'
 import type { Participant } from '../state/types'
 import { useFx } from '../room/MotionContext'
 import { useTileRegistration } from '../voice/VoiceContext'
+import type { CameraQuality } from '../room/cameraQuality'
 import { Aurora } from './Aurora'
 import { Avatar } from './Avatar'
 import { NeonBorder } from './NeonBorder'
@@ -26,10 +27,16 @@ interface TileProps {
   compact: boolean
   /** This participant is playing a soundboard sound right now */
   soundPlaying: boolean
+  /** Outgoing camera quality; only passed for the user's own tile */
+  cameraQuality?: CameraQuality
+  /** Sorotan: this person is the pinned one */
+  pinned?: boolean
+  /** Toggles the pin; omitted while sharing a screen */
+  onPin?: () => void
 }
 
 /** Participant card. Layer order follows Design.md 7.1: base, media, aurora/glow, neon, overlays, label. */
-export function Tile({ participant, tileW, tileH, lit, dominant, mutedSpeaking, isSelf, offer, compact, soundPlaying }: TileProps) {
+export function Tile({ participant, tileW, tileH, lit, dominant, mutedSpeaking, isSelf, offer, compact, soundPlaying, cameraQuality, pinned = false, onPin }: TileProps) {
   const { id, name, palette, camOn, micOn, status } = participant
   const registerTile = useTileRegistration(id)
   const { fx } = useFx()
@@ -54,7 +61,7 @@ export function Tile({ participant, tileW, tileH, lit, dominant, mutedSpeaking, 
       <div className={styles.media}>
         {camOn || (softGlow && !showAurora) ? (
           <>
-            {camOn && <VideoPlaceholder />}
+            {camOn && <VideoPlaceholder quality={cameraQuality} />}
             {lit && <div className={styles.glowIn} aria-hidden="true" />}
             {!camOn && <Avatar name={name} />}
           </>
@@ -81,7 +88,19 @@ export function Tile({ participant, tileW, tileH, lit, dominant, mutedSpeaking, 
           <MicOff size={14} strokeWidth={1.75} aria-hidden="true" />
         </span>
       )}
-      <TileLabel participant={participant} />
+      <TileLabel participant={participant} quality={cameraQuality} />
+      {onPin && (
+        <button
+          type="button"
+          className={`glass-1 ${styles.pin}`}
+          aria-pressed={pinned}
+          aria-label={pinned ? `Lepas sorotan ${name}` : `Sorot ${name}`}
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={onPin}
+        >
+          {pinned ? <PinOff size={14} strokeWidth={1.75} aria-hidden="true" /> : <Pin size={14} strokeWidth={1.75} aria-hidden="true" />}
+        </button>
+      )}
     </article>
   )
 }

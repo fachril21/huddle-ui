@@ -1,6 +1,8 @@
 import { ChartColumn, MessageCircle, ShieldCheck, Users } from 'lucide-react'
 import type { ReactNode } from 'react'
 import type { PanelName } from '../state/types'
+import { shortcutKey } from './shortcuts'
+import type { ShortcutId } from './shortcuts'
 import styles from './PanelPill.module.css'
 
 interface PanelPillProps {
@@ -15,6 +17,9 @@ interface PanelPillProps {
   onSelect: (panel: PanelName) => void
 }
 
+/** Panels that have a keyboard shortcut */
+const PANEL_SHORTCUTS: Partial<Record<PanelName, ShortcutId>> = { peserta: 'participants', chat: 'chat' }
+
 const ICON = { size: 20, strokeWidth: 1.75, 'aria-hidden': true } as const
 
 /** Bottom-right glass-1 pill that opens the side panels . */
@@ -28,7 +33,10 @@ export function PanelPill({ active, participantCount, unreadChat, pendingPoll, s
 
   return (
     <div className={`glass-1 ${styles.pill}`} role="group" aria-label="Panel samping">
-      {items.map(({ name, label, icon, badge }) => (
+      {items.map(({ name, label, icon, badge }) => {
+        const shortcutId = PANEL_SHORTCUTS[name]
+        const key = shortcutId ? shortcutKey(shortcutId) : undefined
+        return (
         <button
           key={name}
           data-panel-trigger={name}
@@ -36,13 +44,18 @@ export function PanelPill({ active, participantCount, unreadChat, pendingPoll, s
           className={styles.btn}
           aria-pressed={active === name}
           aria-label={badge ? `${label}, ${badge}` : label}
+          aria-keyshortcuts={key}
           onClick={() => onSelect(name)}
         >
           {icon}
           {badge ? <span className={styles.badge}>{badge}</span> : null}
-          <span role="tooltip" className={`glass-1 ${styles.tip}`}>{label}</span>
+          <span role="tooltip" className={`glass-1 ${styles.tip}`}>
+            {label}
+            {key && <kbd className="keycap">{key}</kbd>}
+          </span>
         </button>
-      ))}
+        )
+      })}
     </div>
   )
 }

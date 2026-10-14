@@ -1,9 +1,11 @@
+import type { CameraQuality } from '../room/cameraQuality'
 import styles from './VideoPlaceholder.module.css'
 
 /** Self-made stand-in for a camera feed: abstract silhouette over a very slowly moving gradient. */
-export function VideoPlaceholder() {
+/** `quality` is only set on the user's own tile, where it softens the picture to preview what others receive. */
+export function VideoPlaceholder({ quality }: { quality?: CameraQuality }) {
   return (
-    <div className={styles.video} aria-hidden="true">
+    <div className={styles.video} data-quality={quality} aria-hidden="true">
       <div className={styles.wash} />
       <svg className={styles.figure} viewBox="0 0 160 100" preserveAspectRatio="xMidYMax meet">
         <ellipse cx="80" cy="115" rx="52" ry="42" />
