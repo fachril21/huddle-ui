@@ -33,7 +33,7 @@
 
 ## Keputusan tambahan (M3-M6, drag reorder, mesh)
 - Animated emoji: `@usespaceui/emoji` 0.1.0 (MIT) dengan paket Telegram anim. Aset dimuat dari `cdn.spaceui.one` saat runtime (butuh internet; offline jatuh ke glyph native). Lisensi artwork Telegram TIDAK tercakup MIT library. Satu saklar: `EMOJI_PACK` di `src/emoji/registry.ts` (mis. ganti ke `noto`, CC BY 4.0, atribusi diperlukan).
-- Bundle JS jadi ~1,37 MB (321 KB gzip) karena library emoji membawa manifest besar dan lottie-web (peringatan `eval` dari lottie-web saat build). Di atas anggaran PRD 300 KB gzip; opsi: lazy-load modul emoji.
+- Bundle: library emoji kini lazy-load (chunk terpisah), jadi bundel utama ~154 KB gzip (di bawah anggaran PRD 300 KB). Chunk `lottie` (78 KB gzip, peringatan `eval` dari lottie-web) hanya dimuat bila format Lottie dipakai; paket Telegram anim memakai WebP sehingga tidak termuat. Sebelum chunk emoji tiba, emoji native tampil sebagai pengganti.
 - Mesh ambient: gerak diperbesar (jalur 4 titik, 30-38 dtk, perjalanan ~25-40 vmax) atas permintaan; opacity tetap 0,08-0,14 (Design.md 5.3 meminta +-8 vmax dan 50-70 dtk).
 - Drag-and-drop kartu: Motion `drag` + `layout`, reorder saat pointer masuk kartu lain (cooldown 260 ms); keyboard Alt+panah. Dimatikan saat share screen. Urutan tidak disimpan.
 - Layout tile memakai posisi absolut hasil hitung JS (bukan flex) agar kartu tidak remount saat grid <-> share screen (FLIP lewat Motion `layout`).
@@ -44,3 +44,17 @@
 - Polling: satu poll aktif; suara peserta lain disimulasikan acak tiap 0,9-2,2 dtk; self selalu Host (role switcher belum ada). "Bagikan hasil ke chat" belum ada karena Chat belum dibuat.
 - Panel samping: tab Peserta (daftar sederhana + antrean tangan), Polling (lengkap), Chat (placeholder), Alat host (hanya saklar soundboard). Sisa M7 belum dikerjakan.
 - Tombol "Keluar" masih tanpa aksi.
+
+## Keputusan tambahan (M7-M8)
+- State dipecah menjadi slice reducer (); aksi didefinisikan di .
+- Peserta: kolam 12 orang; selector 4/8/12 memindah orang ke/dari . "Keluarkan" memindah orang ke bench (jadi bisa kembali lewat selector).
+- Role switcher (Demo Director > Tampilan) mengubah role "Anda": tombol Alat host hanya untuk Host/Co-host, polling hanya dibuat Host/Co-host, "Akhiri untuk semua" hanya Host, berbagi layar bisa dibatasi host. Dialog persetujuan rekaman hanya muncul untuk non-host.
+- Jadikan host: peserta itu menjadi Host, Host sebelumnya turun menjadi Co-host.
+- Tamu menunggu: Setujui/Tolak hanya menghapus dari daftar dan memunculkan chip pemberitahuan (tidak menambah kartu).
+- Paginasi: 9 kartu per halaman saat >9 orang. Pembicara di halaman 2+ yang bicara terus 3 dtk ditukar dengan orang paling lama diam di halaman 1 (bukan Anda). Titik hijau di tombol pager muncul saat ada yang bicara di halaman lain. Pager ada di baris atas bersama chip status.
+- Chat: pesan publik/pribadi, saran @mention (panah/Enter/Tab), indikator mengetik; badge unread hanya menghitung pesan dari orang lain yang belum dibaca. Waktu pesan memakai jam tiruan (mulai 10:40).
+- Tier efek: Penuh/Hemat/Mati dari "Lainnya". Hemat: blur lebih kecil, mesh statis, aurora jadi glow statis, satu comet tanpa glow dominan, tanpa percikan high five. Mati: glass solid, tanpa mesh, tanpa aurora (hanya ring avatar), border neon statis, emoji native, high five hanya chip + bunyi (Mati juga dihitung sebagai reduced motion).
+- Penurunan tier otomatis berdasarkan frame time (Design.md 19.2) TIDAK dibuat: di lingkungan uji headless ia akan selalu terpicu, dan prototype ini sengaja memberi kontrol manual.
+- Skenario otomatis memakai aksi reducer yang sama dengan tombol Demo Director. PRD 10 menjadwalkan ajakan high five Raka di 1:25 dan sambutan Dewi di 1:32, tetapi jendela ajakan 6 dtk (Design.md 11.3) membuatnya kedaluwarsa; sambutan dipercepat ke 1:30.
+- Simulasi reduced motion tersedia di Demo Director; media query OS tetap dihormati.
+- Belum dikerjakan: webcam asli untuk tile Anda (F20, P2), tombol "Bagikan hasil ke chat" pada polling, menu perangkat mic/kamera, "Intensitas efek tepi" (PRD 15 no.2).

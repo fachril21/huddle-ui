@@ -64,7 +64,7 @@ const BRAINSTORM: Scenario = {
     { at: mm(1, 15), run: react('bima', 'fire', 170) },
     { at: mm(1, 25), run: talk('dewi', 0.6) },
     { at: mm(1, 25), run: offer('raka') },
-    { at: mm(1, 32), run: accept('raka', 'dewi') },
+    { at: mm(1, 30), run: accept('raka', 'dewi') },
     { at: mm(1, 40), run: hush('dewi') },
     { at: mm(1, 45), run: offer('andi') },
     { at: mm(1, 53), run: () => [{ type: 'toggleDock', key: 'soundboard' }] },
