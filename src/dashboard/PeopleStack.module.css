@@ -1,0 +1,17 @@
+.stack { display: inline-flex; align-items: center; }
+.dot,
+.more {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  margin-left: -8px;
+  border: 2px solid var(--ink-900);
+  border-radius: 50%;
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 700;
+}
+.stack > :first-child { margin-left: 0; }
+.dot { background: linear-gradient(135deg, var(--c1), var(--c2)); color: var(--on-aurora); font-family: var(--font-display); }
+.more { background: var(--ink-700); color: var(--text-2); font-family: var(--font-mono); font-size: 11px; }

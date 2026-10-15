@@ -1,5 +1,6 @@
-import { Mic, Video, Volume2 } from 'lucide-react'
+import { ArrowLeft, Mic, Video, Volume2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import type { JoinTarget } from '../dashboard/types'
 import { CAMERA_QUALITIES, loadCameraQuality } from '../room/cameraQuality'
 import type { CameraQuality } from '../room/cameraQuality'
 import { Ambient } from '../room/Ambient'
@@ -27,7 +28,7 @@ export interface JoinChoice {
 }
 
 /** The lobby: a full-screen mirror with a glass panel to check devices, name yourself, and enter. */
-export function PreJoin({ onJoin }: { onJoin: (choice: JoinChoice) => void }) {
+export function PreJoin({ meeting, onJoin, onBack }: { meeting: JoinTarget; onJoin: (choice: JoinChoice) => void; onBack: () => void }) {
   const { fx, reduced } = useFx()
   const [name, setName] = useState(loadName)
   const [nameTouched, setNameTouched] = useState(false)
@@ -109,7 +110,13 @@ export function PreJoin({ onJoin }: { onJoin: (choice: JoinChoice) => void }) {
       <main className={styles.frame}>
         <div className={styles.stageWrap}>
           <PreviewStage videoStream={media.videoStream} camOn={camOn} cameraStatus={media.cameraStatus} micOn={micOn} name={name} mic={mic} />
-          <span className={styles.wordmark}>Huddle</span>
+          <div className={styles.brand}>
+            <span className={styles.wordmark}>Huddle</span>
+            <button type="button" className={styles.back} onClick={onBack}>
+              <ArrowLeft size={14} strokeWidth={1.75} aria-hidden="true" />
+              Beranda
+            </button>
+          </div>
           <StageControls
             micOn={micOn}
             camOn={camOn}
@@ -125,7 +132,7 @@ export function PreJoin({ onJoin }: { onJoin: (choice: JoinChoice) => void }) {
             e.preventDefault()
             join()
           }} noValidate aria-label="Persiapan bergabung">
-          <MeetingInfo />
+          <MeetingInfo meeting={meeting} />
 
           <div className={styles.field}>
             <label htmlFor="display-name">Nama tampilan</label>

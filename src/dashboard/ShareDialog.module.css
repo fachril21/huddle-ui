@@ -1,0 +1,11 @@
+.body { display: grid; gap: var(--space-5); }
+
+.summary { display: grid; gap: 2px; margin: 0; color: var(--text-2); font-size: 14px; line-height: 21px; }
+.summary strong { color: var(--text-1); font-family: var(--font-display); font-size: 17px; line-height: 24px; font-weight: 600; }
+
+.text { resize: none; font-size: 13px; line-height: 20px; }
+.actions { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+
+/* reserved line so the copy confirmation or failure never shifts the layout */
+.live { min-height: 18px; margin: calc(var(--space-2) * -1) 0 0; color: var(--text-2); font-size: 12px; line-height: 18px; }
+.live[data-failed] { color: var(--warning); }

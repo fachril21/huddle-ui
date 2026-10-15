@@ -7,6 +7,9 @@ import { DemoDirector } from './demo/DemoDirector'
 import { DemoToggle } from './demo/DemoToggle'
 import { useScenarioPlayer } from './demo/useScenarioPlayer'
 import { motion } from 'motion/react'
+import { Dashboard } from './dashboard/Dashboard'
+import type { JoinTarget } from './dashboard/types'
+import { useMeetings } from './dashboard/useMeetings'
 import { PreJoin } from './prejoin/PreJoin'
 import type { JoinChoice } from './prejoin/PreJoin'
 import { loadCameraQuality, saveCameraQuality } from './room/cameraQuality'
@@ -25,8 +28,10 @@ export function App() {
   const [state, dispatch] = useReducer(roomReducer, initialRoomState, (initial) => ({ ...initial, settings: { ...initial.settings, cameraQuality: loadCameraQuality() } }))
   const [engine] = useState(() => new VoiceEngine(SELF_ID))
   const [demoOpen, setDemoOpen] = useState(false)
-  // null while in the lobby; set once the user presses Masuk
+  // the dashboard shows while no room is chosen; the lobby shows once one is; the room once Masuk is pressed
+  const [target, setTarget] = useState<JoinTarget | null>(null)
   const [joined, setJoined] = useState<JoinChoice | null>(null)
+  const { meetings, dispatch: meetingDispatch } = useMeetings()
   const player = useScenarioPlayer(dispatch)
 
   useEffect(() => {
@@ -67,17 +72,24 @@ export function App() {
     setJoined(choice)
   }
 
-  // "Mulai ulang demo" on the closing screen sends people back to the lobby; the Demo Director's own reset stays in the room
+  // "Mulai ulang demo" on the closing screen sends people back to the dashboard; the Demo Director's own reset stays in the room
   const roomDispatch = (action: RoomAction) => {
-    if (action.type === 'reset') setJoined(null)
+    if (action.type === 'reset') {
+      setJoined(null)
+      setTarget(null)
+    }
     dispatch(action)
   }
+
+  const stage = joined ? 'room' : target ? 'lobby' : 'dashboard'
 
   return (
     <MotionProvider fx={state.settings.fx} simulateReduced={state.settings.simulateReduced}>
     <VoiceProvider engine={engine}>
-      <motion.div key={joined ? 'room' : 'lobby'} className={styles.stage} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35, ease: [0.2, 0.8, 0.2, 1] }}>
-        {joined ? <Room state={state} dispatch={roomDispatch} /> : <PreJoin onJoin={join} />}
+      <motion.div key={stage} className={styles.stage} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35, ease: [0.2, 0.8, 0.2, 1] }}>
+        {stage === 'room' && <Room state={state} dispatch={roomDispatch} />}
+        {stage === 'lobby' && target && <PreJoin meeting={target} onJoin={join} onBack={() => setTarget(null)} />}
+        {stage === 'dashboard' && <Dashboard meetings={meetings} dispatch={meetingDispatch} onEnter={setTarget} />}
       </motion.div>
       <DemoToggle open={demoOpen} onClick={() => setDemoOpen((o) => !o)} />
       <DemoDirector state={state} dispatch={dispatch} player={player} open={demoOpen} onClose={() => setDemoOpen(false)} />

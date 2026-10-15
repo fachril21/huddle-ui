@@ -1,0 +1,83 @@
+/* Shared controls for the dashboard. Same glass vocabulary as the lobby and the room dock. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  height: 40px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  background: var(--veil-hover);
+  color: var(--text-1);
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out);
+}
+.btn:hover { background: var(--veil-press); }
+.btn:active { transform: scale(0.98); }
+.btn:focus-visible { box-shadow: var(--focus-ring); border-color: var(--aurora-cyan); }
+.btn:disabled,
+.btn[aria-disabled='true'] { opacity: 0.5; cursor: not-allowed; }
+.btn:disabled:active,
+.btn[aria-disabled='true']:active { transform: none; }
+
+.primary {
+  border-color: transparent;
+  background: var(--primary);
+  color: var(--on-primary);
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--primary-glow) 38%, transparent);
+}
+.primary:hover { background: color-mix(in srgb, var(--primary) 82%, var(--primary-glow)); box-shadow: 0 12px 30px color-mix(in srgb, var(--primary-glow) 50%, transparent); }
+.primary:focus-visible { border-color: transparent; box-shadow: var(--focus-ring); }
+
+.danger { border-color: transparent; background: var(--danger); color: var(--on-danger); }
+.danger:hover { background: color-mix(in srgb, var(--danger) 86%, white); }
+
+.large { height: 52px; padding: 0 var(--space-5); border-radius: var(--radius-lg); font-family: var(--font-display); font-size: 15px; font-weight: 700; }
+.small { height: 32px; padding: 0 var(--space-3); border-radius: var(--radius-sm); font-size: 12px; line-height: 16px; }
+.icon { width: 36px; height: 36px; padding: 0; border-color: transparent; background: transparent; color: var(--text-2); }
+.icon:hover { background: var(--veil-hover); color: var(--text-1); }
+
+/* text fields */
+.label { display: block; margin-bottom: var(--space-2); color: var(--text-1); font-size: 13px; line-height: 20px; font-weight: 600; }
+.hint { margin: var(--space-2) 0 0; color: var(--text-3); font-size: 12px; line-height: 18px; }
+.error { margin: var(--space-2) 0 0; color: var(--warning); font-size: 12px; line-height: 18px; }
+
+.input {
+  width: 100%;
+  height: 44px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  background: var(--veil-hover);
+  color: var(--text-1);
+  font: inherit;
+  font-size: 14px;
+  caret-color: var(--aurora-cyan);
+  transition: border-color var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out);
+}
+textarea.input { height: auto; min-height: 76px; padding: var(--space-3) var(--space-4); resize: vertical; line-height: 21px; }
+.input::placeholder { color: var(--text-3); }
+.input:hover { background: var(--veil-press); }
+.input:focus-visible { box-shadow: var(--focus-ring); border-color: var(--aurora-cyan); }
+.input[aria-invalid='true'] { border-color: var(--warning); }
+.input:disabled { opacity: 0.55; cursor: not-allowed; }
+/* native pickers follow the dark scheme and the palette */
+.input[type='date'],
+.input[type='time'],
+select.input { color-scheme: dark; font-variant-numeric: tabular-nums; }
+select.input { appearance: none; padding-right: var(--space-8); background-image: linear-gradient(45deg, transparent 50%, var(--text-2) 50%), linear-gradient(135deg, var(--text-2) 50%, transparent 50%); background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%; background-size: 5px 5px; background-repeat: no-repeat; }
+select.input option { background: var(--ink-800); color: var(--text-1); }
+
+.mono { font-family: var(--font-mono); font-weight: 500; letter-spacing: 0; font-variant-numeric: tabular-nums; }
+
+@media (prefers-reduced-motion: reduce) {
+  .btn { transition: none; }
+}

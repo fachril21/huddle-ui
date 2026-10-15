@@ -1,6 +1,6 @@
 import { Users } from 'lucide-react'
 import { ALL_PARTICIPANTS, VISIBLE_COUNT } from '../demo/participants'
-import { MEETING_CODE, MEETING_TITLE } from '../room/meeting'
+import type { JoinTarget } from '../dashboard/types'
 import { SELF_ID } from '../state/types'
 import styles from './MeetingInfo.module.css'
 
@@ -15,16 +15,16 @@ export function insideSummary(): string {
 }
 
 /** Meeting title, code and who is already in. The lobby's answer to "am I in the right place?". */
-export function MeetingInfo() {
+export function MeetingInfo({ meeting }: { meeting: JoinTarget }) {
   return (
     <header className={styles.info}>
       <h1>Siap bergabung?</h1>
       <p className={styles.title}>
-        {MEETING_TITLE} <span className={styles.code}>{MEETING_CODE}</span>
+        {meeting.title} <span className={styles.code}>{meeting.code}</span>
       </p>
       <p className={styles.inside}>
         <Users size={14} strokeWidth={1.75} aria-hidden="true" />
-        {insideSummary()}
+        {meeting.insideNote}
       </p>
     </header>
   )

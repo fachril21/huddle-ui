@@ -1,0 +1,21 @@
+.region { position: fixed; left: 50%; bottom: var(--space-8); z-index: var(--z-toast); display: flex; justify-content: center; transform: translateX(-50%); pointer-events: none; }
+
+.toast {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 600;
+  animation: rise var(--dur-slow) var(--ease-out);
+}
+.toast svg { color: var(--aurora-mint); }
+
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .toast { animation: none; }
+}

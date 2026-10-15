@@ -892,3 +892,16 @@ Prototype interaktif satu layar room (1440 x 900), semua data tiruan, **tidak bu
 8. **Mobile/tablet:** efek aurora dan glass perlu versi khusus perangkat sentuh (tier otomatis Hemat)?
 9. **Aurora di tile kamera menyala:** cukup glow tepi (usulan), atau pengguna ingin efek yang lebih terlihat meski sedikit menutup video?
 10. **Penamaan fitur** di UI: "High five", "Soundboard", "Polling" cukup, atau mau padanan Indonesia?
+
+---
+
+## 23. Dashboard [Baru]
+
+Halaman setelah login (`src/dashboard/`), mode Operate, desktop 1440 x 900. Dunia visual sama dengan room, tetapi lebih tenang: cahaya aurora hanya muncul sebagai sinyal.
+
+- **Susunan "Satu bar perintah".** Rail ikon 88 px di kiri; sapaan dan jam (Sora, `--text-2`) di satu baris; satu bar `glass-3` memuat Buat rapat (menu: dadakan, untuk nanti, jadwalkan), Jadwalkan, kolom kode/tautan, Masuk, dan baris Room saya. Bar adalah satu-satunya slab kaca di atas fold.
+- **Rapat berikutnya.** Baris tenang tanpa kaca. Begitu bisa dimasuki (10 menit sebelum mulai) atau sedang berlangsung, ia mendapat `glass-2` dan tepi aurora bergerak (cyan, mint, violet, orchid, 9 dtk, statis saat reduced motion). Hanya host yang boleh memulai lebih awal.
+- **Daftar.** Baris dipisah hairline, bukan kartu: jam mono + durasi, judul (Sora 15), host + kode + penanda berulang, status (ikon + kata, tidak hanya warna), tumpukan inisial peserta (palet stabil per nama), aksi, menu. Sisa hari ini di atas, yang selesai di bawah. Hari ditulis dalam WIB.
+- **Dialog** memakai `<dialog>` native dengan `glass-3`. Form jadwal meniru Zoom (judul, catatan, tanggal, jam, durasi, zona waktu, berulang, undangan chip, Room, keamanan). Ruang tunggu, kode sandi, dan mute saat masuk hanya tampilan.
+- **Token baru: tidak ada.** Memakai token section 2-3; kontrol bersama di `dashboard/ui.module.css` (tombol 40/52/32 px, input 44 px, segmented, switch 44 x 26).
+- **Gerak.** Satu momen: tepi aurora pada rapat yang bisa dimasuki. Selebihnya transisi 120-220 ms pada hover/fokus dan putaran chevron menu.

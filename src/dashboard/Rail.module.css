@@ -1,0 +1,65 @@
+.rail {
+  position: relative;
+  z-index: var(--z-chrome);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-8);
+  /* clears the Demo Director toggle that floats in the top-left corner */
+  padding: 68px var(--space-2) var(--space-6);
+  border-right: 1px solid var(--hairline);
+  background: var(--glass-1-bg);
+  backdrop-filter: blur(var(--glass-1-blur)) saturate(var(--glass-sat));
+}
+.rail ul { display: grid; gap: var(--space-1); width: 100%; margin: 0; padding: 0; list-style: none; }
+
+.wordmark { font-family: var(--font-display); font-size: 15px; line-height: 24px; font-weight: 700; letter-spacing: -0.01em; }
+
+.item {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  width: 100%;
+  padding: var(--space-3) 0 var(--space-2);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-2);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.item:hover { background: var(--veil-hover); color: var(--text-1); }
+.item:focus-visible { box-shadow: var(--focus-ring); }
+.item[aria-current='page'] { background: var(--veil-press); color: var(--text-1); }
+.item[aria-current='page'] svg { color: var(--aurora-cyan); }
+.item[data-soon] { cursor: default; color: var(--text-3); }
+.item[data-soon]:hover { background: transparent; color: var(--text-3); }
+
+/* the "coming soon" note appears on hover and focus, to the right of the rail */
+.soon {
+  position: absolute;
+  left: calc(100% + var(--space-2));
+  top: 50%;
+  z-index: var(--z-popover);
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  background: var(--glass-solid);
+  color: var(--text-1);
+  font-size: 12px;
+  line-height: 16px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-4px, -50%);
+  transition: opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+}
+.item:hover .soon,
+.item:focus-visible .soon { opacity: 1; transform: translate(0, -50%); }
+
+@media (prefers-reduced-motion: reduce) {
+  .item, .soon { transition: none; }
+}

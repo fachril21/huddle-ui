@@ -1,0 +1,54 @@
+.strip { position: relative; border-radius: var(--radius-xl); }
+
+.inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  padding: var(--space-5) var(--space-6);
+  border-radius: var(--radius-xl);
+}
+
+.main { display: grid; flex: 1; gap: var(--space-1); min-width: 0; }
+.main h2 { margin: 0; overflow: hidden; font-family: var(--font-display); font-size: 22px; line-height: 30px; font-weight: 600; letter-spacing: -0.01em; text-overflow: ellipsis; white-space: nowrap; }
+.meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-4); margin: 0; color: var(--text-2); font-size: 13px; line-height: 20px; }
+.repeat { display: inline-flex; align-items: center; gap: 4px; }
+
+.actions { display: flex; flex: none; align-items: center; gap: var(--space-2); }
+
+/* until it can be entered the strip is a quiet row, so the command bar stays the only slab */
+.strip:not([data-hot]) .inner { border-color: transparent; background: transparent; backdrop-filter: none; box-shadow: none; padding-left: var(--space-3); padding-right: var(--space-3); }
+.strip:not([data-hot]) .inner::after { display: none; }
+
+/* once the session can be entered, an aurora edge runs around the strip */
+.strip[data-hot] { box-shadow: 0 0 56px -18px var(--aurora-cyan); }
+.strip[data-hot]::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: 1.5px;
+  border-radius: inherit;
+  background: linear-gradient(100deg, var(--aurora-cyan), var(--aurora-mint), var(--aurora-violet), var(--aurora-orchid), var(--aurora-cyan)) 0 0 / 300% 100%;
+  mask: linear-gradient(var(--mask-on) 0 0) content-box, linear-gradient(var(--mask-on) 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+  animation: flow 9s linear infinite;
+}
+.strip[data-still]::before { animation: none; }
+
+.empty {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+  padding: var(--space-5) var(--space-6);
+  border-radius: var(--radius-xl);
+}
+.empty h2 { margin: 0; font-family: var(--font-display); font-size: 18px; line-height: 26px; font-weight: 600; }
+.empty p { margin: var(--space-1) 0 0; color: var(--text-2); font-size: 13px; line-height: 20px; }
+
+@keyframes flow { to { background-position: 300% 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .strip[data-hot]::before { animation: none; }
+}

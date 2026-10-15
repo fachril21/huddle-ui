@@ -1,0 +1,42 @@
+.bar {
+  /* its menu must paint over the next-meeting strip, which has its own blur layer */
+  z-index: var(--z-popover);
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-5) var(--space-6) var(--space-4);
+  border-radius: var(--radius-xl);
+}
+
+.bar:focus-within { border-color: color-mix(in srgb, var(--aurora-cyan) 55%, transparent); }
+.row { display: flex; align-items: center; gap: var(--space-6); }
+.make { display: flex; flex: none; align-items: center; gap: var(--space-3); }
+
+.chevron { margin-left: var(--space-1); transition: transform var(--dur-base) var(--ease-out); }
+button[data-open] .chevron { transform: rotate(180deg); }
+
+.schedule .keycap { margin-left: var(--space-1); }
+
+.join { display: flex; flex: 1; min-width: 0; align-items: center; gap: var(--space-3); }
+.field { position: relative; flex: 1; min-width: 0; }
+.input { height: 52px; padding-right: var(--space-12); border-radius: var(--radius-lg); font-size: 15px; }
+.hint { position: absolute; top: 50%; right: var(--space-4); transform: translateY(-50%); pointer-events: none; }
+.field:focus-within .hint { opacity: 0; }
+
+/* sits under the field without taking space, so an idle bar stays tight */
+.error { position: absolute; top: 100%; left: var(--space-1); margin: 2px 0 0; color: var(--warning); font-size: 12px; line-height: 16px; font-weight: 600; white-space: nowrap; }
+
+.room {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--hairline);
+}
+.roomText { display: flex; flex: 1; align-items: baseline; gap: var(--space-4); min-width: 0; }
+.roomText h2 { margin: 0; font-family: var(--font-display); font-size: 14px; line-height: 20px; font-weight: 600; }
+.link { overflow: hidden; color: var(--text-2); font-size: 13px; line-height: 20px; text-overflow: ellipsis; white-space: nowrap; }
+
+@media (prefers-reduced-motion: reduce) {
+  .chevron { transition: none; }
+}

@@ -1,0 +1,11 @@
+.tag { display: inline-flex; align-items: center; gap: 6px; color: var(--text-2); font-size: 12px; line-height: 16px; font-weight: 600; white-space: nowrap; }
+.tag[data-state='joinable'] { color: var(--aurora-mint); }
+.tag[data-state='live'] { color: var(--aurora-cyan); }
+.tag[data-state='live'] svg { animation: pulse 2.4s ease-in-out infinite; }
+.tag[data-state='ended'] { color: var(--text-3); }
+
+@keyframes pulse { 50% { opacity: 0.45; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .tag[data-state='live'] svg { animation: none; }
+}
