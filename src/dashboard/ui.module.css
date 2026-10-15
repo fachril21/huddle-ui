@@ -93,3 +93,6 @@ select.input option { background: var(--ink-800); color: var(--text-1); }
   .input { height: var(--tap); font-size: 16px; }
   textarea.input { font-size: 16px; }
 }
+
+/* icons keep their size when a button is squeezed */
+.btn > svg { flex: none; }

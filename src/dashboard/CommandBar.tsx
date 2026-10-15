@@ -44,7 +44,7 @@ export function CommandBar({ codeRef, joinError, onClearError, onJoinCode, onIns
             width={320}
             trigger={(props, open) => (
               <button type="button" className={`${ui.btn} ${ui.primary} ${ui.large}`} {...props} data-open={open || undefined}>
-                <Video size={20} strokeWidth={1.75} aria-hidden="true" />
+                <Video className={styles.leadIcon} size={20} strokeWidth={1.75} aria-hidden="true" />
                 Buat rapat
                 <ChevronDown className={styles.chevron} size={16} strokeWidth={2} aria-hidden="true" />
               </button>
@@ -79,7 +79,7 @@ export function CommandBar({ codeRef, joinError, onClearError, onJoinCode, onIns
               inputMode="text"
               autoComplete="off"
               spellCheck={false}
-              placeholder="Kode atau tautan rapat"
+              placeholder="Kode atau tautan"
               value={code}
               aria-invalid={joinError ? true : undefined}
               aria-describedby={joinError ? 'join-error' : undefined}

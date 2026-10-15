@@ -14,3 +14,13 @@
   font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
   line-height: 1;
 }
+
+.emoji { position: relative; }
+
+/* the animated picture sits over the glyph and appears only once it has loaded */
+.layer { position: absolute; inset: 0; display: grid; place-items: center; opacity: 0; transition: opacity var(--dur-base) var(--ease-out); }
+.layer[data-ready] { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .layer { transition: none; }
+}

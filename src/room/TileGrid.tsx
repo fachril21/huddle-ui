@@ -227,6 +227,9 @@ export function TileGrid({ participants, offers, sharerId, gridPage, soundPlayer
 
           {showDots && (
             <nav className={styles.dots} aria-label="Halaman peserta">
+              <button type="button" className={styles.arrow} aria-label="Halaman sebelumnya" disabled={gridPage === 0} onClick={() => onGridPage?.(gridPage - 1)}>
+                <ChevronLeft size={20} strokeWidth={2} aria-hidden="true" />
+              </button>
               {Array.from({ length: galleryPages }, (_, i) => (
                 <button
                   key={i}
@@ -239,6 +242,15 @@ export function TileGrid({ participants, offers, sharerId, gridPage, soundPlayer
                   <i />
                 </button>
               ))}
+              <button
+                type="button"
+                className={styles.arrow}
+                aria-label={speakingElsewhere ? 'Halaman berikutnya, ada yang bicara' : 'Halaman berikutnya'}
+                disabled={gridPage >= galleryPages - 1}
+                onClick={() => onGridPage?.(gridPage + 1)}
+              >
+                <ChevronRight size={20} strokeWidth={2} aria-hidden="true" />
+              </button>
             </nav>
           )}
 
