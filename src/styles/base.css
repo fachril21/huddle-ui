@@ -1,6 +1,12 @@
 *, *::before, *::after { box-sizing: border-box; }
 
 html, body, #root { height: 100%; }
+/* the visible height on a phone, with the browser bar in or out */
+@supports (height: 100dvh) {
+  html, body, #root { height: 100dvh; }
+}
+
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 
 body {
   margin: 0;
@@ -28,3 +34,13 @@ button:disabled { cursor: not-allowed; }
   position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
   overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
 }
+
+/* Touch. A finger has no hover, no precision and no right click. */
+@media (pointer: coarse) {
+  * { -webkit-tap-highlight-color: transparent; }
+  button, [role='button'], summary, label, select { touch-action: manipulation; }
+  button { -webkit-user-select: none; user-select: none; }
+  /* iOS zooms the page on focus when a field's text is under 16px */
+  input, select, textarea { font-size: max(16px, 1em); }
+}
+body { overscroll-behavior-y: none; }

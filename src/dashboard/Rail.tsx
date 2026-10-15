@@ -7,6 +7,8 @@ export type DashboardView = 'home' | 'meetings'
 interface RailProps {
   view: DashboardView
   onChange: (view: DashboardView) => void
+  /** A tap on a page that does not exist yet: touch has no hover to say "coming soon" */
+  onSoon?: (label: string) => void
 }
 
 const ICON = { size: 20, strokeWidth: 1.75, 'aria-hidden': true } as const
@@ -25,7 +27,7 @@ const ENTRIES: readonly Entry[] = [
 ]
 
 /** Icon rail. Rekaman and Pengaturan have no page yet: they say so instead of going nowhere. */
-export function Rail({ view, onChange }: RailProps) {
+export function Rail({ view, onChange, onSoon }: RailProps) {
   return (
     <nav className={styles.rail} aria-label="Menu utama">
       <span className={styles.wordmark}>Huddle</span>
@@ -40,7 +42,7 @@ export function Rail({ view, onChange }: RailProps) {
                 aria-current={entry.view === view ? 'page' : undefined}
                 aria-disabled={soon || undefined}
                 data-soon={soon || undefined}
-                onClick={() => entry.view && onChange(entry.view)}
+                onClick={() => (entry.view ? onChange(entry.view) : onSoon?.(entry.label))}
               >
                 {entry.icon}
                 <span>{entry.label}</span>

@@ -159,19 +159,3 @@
 @media (prefers-reduced-motion: reduce) {
   .join { transition: none; }
 }
-
-/* the lobby is desktop-first like the room; below this width we say so instead of squashing */
-@media (max-width: 1099px) {
-  .screen::after {
-    content: 'Layar terlalu sempit. Gunakan layar desktop (minimal 1100 px).';
-    position: absolute;
-    inset: 0;
-    z-index: var(--z-demo);
-    display: grid;
-    place-items: center;
-    padding: var(--space-8);
-    background: var(--ink-950);
-    color: var(--text-2);
-    text-align: center;
-  }
-}

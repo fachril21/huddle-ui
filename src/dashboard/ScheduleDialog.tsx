@@ -58,6 +58,7 @@ export function ScheduleDialog({ mode, now, source, onClose, onSave }: ScheduleD
   return (
     <Modal
       title={TITLES[mode]}
+      size="full"
       onClose={onClose}
       width={680}
       footer={

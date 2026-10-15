@@ -17,3 +17,8 @@
 .empty { padding: var(--space-6) var(--space-3); color: var(--text-2); font-size: 14px; line-height: 21px; }
 .empty p { margin: 0; }
 .empty p + p { margin-top: var(--space-1); color: var(--text-3); font-size: 13px; }
+
+@media (max-width: 767px) {
+  .groups { gap: var(--space-4); }
+  .day { padding: 0 var(--space-3); }
+}

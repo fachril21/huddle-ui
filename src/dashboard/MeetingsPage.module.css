@@ -30,3 +30,13 @@
 @media (prefers-reduced-motion: reduce) {
   .segment button { transition: none; }
 }
+
+@media (max-width: 767px) {
+  .head h1 { font-size: 24px; line-height: 32px; }
+  .head > button { min-height: var(--tap); }
+  .toolbar { gap: var(--space-3); margin: var(--space-4) 0 var(--space-3); }
+  .search { order: -1; flex: 1 1 100%; min-width: 0; }
+  .search input { height: var(--tap); }
+  .segment { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+  .segment button { height: 40px; flex: none; }
+}

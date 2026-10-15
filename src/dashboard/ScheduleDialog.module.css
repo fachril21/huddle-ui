@@ -55,3 +55,18 @@
 @media (prefers-reduced-motion: reduce) {
   .choice, .switch, .switch span[aria-hidden] { transition: none; }
 }
+
+@media (max-width: 767px) {
+  .form { gap: var(--space-4); }
+  /* date and time side by side, duration on its own line */
+  .when { grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+  .when > :nth-child(3) { grid-column: 1 / -1; }
+  .pair { grid-template-columns: 1fr; gap: var(--space-4); }
+  .scope { gap: var(--space-4); }
+  .scope legend { float: none; flex: 1 1 100%; margin: 0; }
+  .scope label { min-height: var(--tap); }
+  .choice { padding: var(--space-4); }
+  .switch { width: 52px; height: 32px; }
+  .switch span[aria-hidden] { width: 26px; height: 26px; }
+  .switch[aria-checked='true'] span[aria-hidden] { transform: translateX(20px); }
+}

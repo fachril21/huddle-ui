@@ -125,3 +125,8 @@ details.group summary:focus-visible { box-shadow: var(--focus-ring); border-radi
 .progress { height: 4px; border-radius: 2px; background: var(--ink-700); overflow: hidden; }
 .progress i { display: block; height: 100%; transform-origin: left center; background: var(--aurora-cyan); transition: transform 0.2s linear; }
 .btn { display: inline-flex; align-items: center; gap: var(--space-1); }
+
+/* phone: the panel is a sheet from the bottom edge */
+@media (max-width: 767px) {
+  .panel { top: auto; left: 0; right: 0; bottom: 0; width: 100%; max-height: 72dvh; padding-bottom: max(var(--space-3), var(--safe-bottom)); border-radius: var(--radius-md) var(--radius-md) 0 0; }
+}

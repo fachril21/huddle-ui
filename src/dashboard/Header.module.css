@@ -44,3 +44,15 @@
   font-size: 14px;
   font-weight: 700;
 }
+
+@media (max-width: 767px) {
+  .header { align-items: center; gap: var(--space-3); }
+  .header h1 { font-size: 22px; line-height: 28px; }
+  .date { font-size: 13px; line-height: 18px; }
+  /* the big clock goes (the phone shows its own); the connection chip keeps its icon only */
+  .side { gap: var(--space-3); }
+  .clock { display: none; }
+  .net { font-size: 0; gap: 0; }
+  .net svg { width: 18px; height: 18px; }
+  .profile { height: var(--tap); padding: 0 var(--space-1); font-size: 0; gap: 0; }
+}

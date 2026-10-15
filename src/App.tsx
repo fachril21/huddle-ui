@@ -24,8 +24,13 @@ import type { VoiceInput } from './voice/engine'
 import { VoiceProvider } from './voice/VoiceContext'
 import type { RoomAction } from './state/actions'
 
+/** A phone starts on the lighter effects tier (smaller blur, still mesh): it spares the battery and the GPU. */
+function defaultFx() {
+  return window.matchMedia('(max-width: 767px)').matches ? 'lite' : initialRoomState.settings.fx
+}
+
 export function App() {
-  const [state, dispatch] = useReducer(roomReducer, initialRoomState, (initial) => ({ ...initial, settings: { ...initial.settings, cameraQuality: loadCameraQuality() } }))
+  const [state, dispatch] = useReducer(roomReducer, initialRoomState, (initial) => ({ ...initial, settings: { ...initial.settings, cameraQuality: loadCameraQuality(), fx: defaultFx() } }))
   const [engine] = useState(() => new VoiceEngine(SELF_ID))
   const [demoOpen, setDemoOpen] = useState(false)
   // the dashboard shows while no room is chosen; the lobby shows once one is; the room once Masuk is pressed
@@ -93,12 +98,6 @@ export function App() {
       </motion.div>
       <DemoToggle open={demoOpen} onClick={() => setDemoOpen((o) => !o)} />
       <DemoDirector state={state} dispatch={dispatch} player={player} open={demoOpen} onClose={() => setDemoOpen(false)} />
-      <div className={styles.notice} role="alert">
-        <div>
-          <h1>Layar terlalu sempit</h1>
-          <p>Prototype ini dioptimalkan untuk layar desktop (minimal 1100 px).</p>
-        </div>
-      </div>
     </VoiceProvider>
     </MotionProvider>
   )

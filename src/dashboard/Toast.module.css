@@ -19,3 +19,8 @@
 @media (prefers-reduced-motion: reduce) {
   .toast { animation: none; }
 }
+
+@media (max-width: 767px) {
+  .region { bottom: calc(72px + var(--safe-bottom)); width: calc(100% - var(--space-8)); }
+  .toast { max-width: 100%; }
+}

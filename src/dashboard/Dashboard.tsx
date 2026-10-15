@@ -10,6 +10,7 @@ import { CancelDialog } from './CancelDialog'
 import { CommandBar } from './CommandBar'
 import { MY_ROOM_CODE, MY_ROOM_TITLE, USER_NAME } from './constants'
 import { matchDashboardShortcut } from './dashboardShortcuts'
+import { useViewport } from '../mobile/useViewport'
 import { Header } from './Header'
 import { generateMeetingCode, parseJoinInput } from './meetingCode'
 import type { MeetingActions } from './meetingActions'
@@ -23,6 +24,7 @@ import { ScheduleDialog } from './ScheduleDialog'
 import { allOccurrences, buildInvitationText, dayLabel, formatTimeRange, groupByDay, occurrenceState, occurrencesBetween, pickNext, startOfDay } from './schedule'
 import type { FormMode, FormSource, ScheduleResult } from './scheduleForm'
 import { ShareDialog } from './ShareDialog'
+import { TabBar } from './TabBar'
 import { Toast } from './Toast'
 import { useNow } from './useNow'
 import type { JoinTarget, Meeting, Occurrence } from './types'
@@ -62,6 +64,8 @@ function insideNote(o: Occurrence, now: Date): string {
 /** Home and meetings pages. Owns dialogs, shortcuts and every way into the lobby. */
 export function Dashboard({ meetings, dispatch, onEnter }: DashboardProps) {
   const { fx, reduced } = useFx()
+  const { sizeClass, coarse } = useViewport()
+  const phone = sizeClass === 'phone'
   const now = useNow()
   const [view, setView] = useState<DashboardView>('home')
   const [dialog, setDialog] = useState<DialogState | null>(null)
@@ -164,14 +168,15 @@ export function Dashboard({ meetings, dispatch, onEnter }: DashboardProps) {
 
   /* ---------- shortcuts ---------- */
 
-  const latest = useRef({ startInstant, openSchedule, dialogOpen: dialog !== null })
+  const latest = useRef({ startInstant, openSchedule, dialogOpen: dialog !== null, coarse })
   useEffect(() => {
-    latest.current = { startInstant, openSchedule, dialogOpen: dialog !== null }
+    latest.current = { startInstant, openSchedule, dialogOpen: dialog !== null, coarse }
   })
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const hit = matchDashboardShortcut(e)
-      if (!hit || latest.current.dialogOpen) return
+      // single-key shortcuts are for a keyboard; on a touch screen a stray letter should do nothing
+      if (!hit || latest.current.dialogOpen || latest.current.coarse) return
       e.preventDefault()
       if (hit === 'instant') latest.current.startInstant()
       else if (hit === 'schedule') latest.current.openSchedule()
@@ -197,9 +202,9 @@ export function Dashboard({ meetings, dispatch, onEnter }: DashboardProps) {
   )
 
   return (
-    <div className={styles.screen} data-fx={fx} data-still={reduced || undefined}>
+    <div className={styles.screen} data-fx={fx} data-still={reduced || undefined} data-phone={phone || undefined}>
       <Ambient />
-      <Rail view={view} onChange={setView} />
+      {phone ? <TabBar view={view} onChange={setView} onSoon={(label) => say(`${label}: segera hadir`)} /> : <Rail view={view} onChange={setView} onSoon={(label) => say(`${label}: segera hadir`)} />}
       <main className={styles.main}>
         <div className={styles.column}>
           {view === 'home' ? (

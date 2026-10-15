@@ -32,3 +32,16 @@
 .sectionHead h2 { margin: 0; font-family: var(--font-display); font-size: 20px; line-height: 28px; font-weight: 600; }
 .sectionHead span { color: var(--text-3); font-size: 13px; line-height: 20px; }
 .more { margin-left: auto; align-self: center; }
+
+/* phone: one column, tab bar below, room for it at the end of the page */
+@media (max-width: 767px) {
+  .screen { grid-template-columns: minmax(0, 1fr); }
+  .column {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-5);
+    padding: calc(var(--space-2) + var(--safe-top) + var(--demo-strip)) max(var(--space-4), var(--safe-left)) calc(72px + var(--safe-bottom) + var(--space-6)) max(var(--space-4), var(--safe-right));
+  }
+  .sectionHead { padding: 0 var(--space-1); }
+  .sectionHead h2 { font-size: 18px; line-height: 26px; }
+  .more { min-height: var(--tap); }
+}

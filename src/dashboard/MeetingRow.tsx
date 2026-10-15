@@ -1,10 +1,11 @@
-import { CalendarX, CopyPlus, Ellipsis, Link2, Mail, Pencil, Repeat } from 'lucide-react'
+import { CalendarX, CopyPlus, DoorOpen, Ellipsis, Link2, Mail, Pencil, Repeat } from 'lucide-react'
 import { entryAction } from './entryAction'
 import { Menu } from './Menu'
 import type { MenuItem } from './Menu'
 import type { MeetingActions } from './meetingActions'
 import { PeopleStack } from './PeopleStack'
-import { formatClock, occurrenceState } from './schedule'
+import { useViewport } from '../mobile/useViewport'
+import { dayLabel, formatClock, formatTimeRange, occurrenceState } from './schedule'
 import { StatusTag } from './StatusTag'
 import type { Occurrence } from './types'
 import ui from './ui.module.css'
@@ -34,6 +35,59 @@ export function MeetingRow({ occurrence, now, actions }: MeetingRowProps) {
   const { meeting } = occurrence
   const state = occurrenceState(occurrence, now)
   const entry = entryAction(meeting.isHost, state)
+  const phone = useViewport().sizeClass === 'phone'
+
+  // phone: the whole row is one big target that opens a sheet with every action, instead of small buttons and a menu
+  if (phone) {
+    const items: MenuItem[] = [
+      ...(entry?.enabled ? [{ id: 'enter', label: entry.label, description: state === 'upcoming' ? 'Buka rapat sebelum jadwal' : undefined, icon: <DoorOpen {...ICON} />, tone: 'primary' as const, onSelect: () => actions.enter(occurrence) }] : []),
+      ...menuItems(occurrence, state === 'ended', actions),
+    ]
+    return (
+      <li className={styles.row} data-state={state} data-phone>
+        <Menu
+          block
+          title={meeting.title}
+          items={items}
+          sheetHeader={
+            <div className={styles.sheetHead}>
+              <p>
+                {dayLabel(occurrence.start, now)}, <span className={ui.mono}>{formatTimeRange(occurrence)}</span>
+              </p>
+              <p>
+                {meeting.isHost ? 'Anda host' : `Host ${meeting.hostName}`} <span className={ui.mono}>{meeting.code}</span>
+              </p>
+              <div className={styles.sheetMeta}>
+                <StatusTag state={state} />
+                <PeopleStack hostName={meeting.hostName} invitees={meeting.invitees} />
+              </div>
+            </div>
+          }
+          trigger={(props) => (
+            <button type="button" className={styles.rowButton} {...props} aria-label={`${meeting.title}, ${formatClock(occurrence.start)}. Buka aksi`}>
+              <span className={styles.time}>
+                <span className={ui.mono}>{formatClock(occurrence.start)}</span>
+                <span>{meeting.durationMin} mnt</span>
+              </span>
+              <span className={styles.what}>
+                <span className={styles.title}>{meeting.title}</span>
+                <span className={styles.sub}>
+                  <span>{meeting.isHost ? 'Anda host' : `Host ${meeting.hostName}`}</span>
+                  {meeting.recurrence !== 'none' && (
+                    <span className={styles.repeat}>
+                      <Repeat size={12} strokeWidth={1.75} aria-hidden="true" />
+                      Berulang
+                    </span>
+                  )}
+                </span>
+              </span>
+              <StatusTag state={state} />
+            </button>
+          )}
+        />
+      </li>
+    )
+  }
 
   return (
     <li className={styles.row} data-state={state}>

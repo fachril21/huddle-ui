@@ -79,7 +79,7 @@ export function CommandBar({ codeRef, joinError, onClearError, onJoinCode, onIns
               inputMode="text"
               autoComplete="off"
               spellCheck={false}
-              placeholder="Masukkan kode atau tautan rapat"
+              placeholder="Kode atau tautan rapat"
               value={code}
               aria-invalid={joinError ? true : undefined}
               aria-describedby={joinError ? 'join-error' : undefined}

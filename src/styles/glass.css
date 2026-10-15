@@ -63,3 +63,8 @@
   font-weight: 600;
   text-shadow: none;
 }
+
+/* shortcut hints mean nothing on a touch screen */
+@media (pointer: coarse) {
+  .keycap { display: none; }
+}

@@ -81,3 +81,15 @@ select.input option { background: var(--ink-800); color: var(--text-1); }
 @media (prefers-reduced-motion: reduce) {
   .btn { transition: none; }
 }
+
+/* touch: a finger needs 44px, and there is no hover to reveal anything */
+@media (pointer: coarse) {
+  .btn { min-height: var(--tap); }
+  .small { min-height: var(--tap); padding: 0 var(--space-4); }
+  .icon { width: var(--tap); height: var(--tap); }
+}
+
+@media (max-width: 767px) {
+  .input { height: var(--tap); font-size: 16px; }
+  textarea.input { font-size: 16px; }
+}

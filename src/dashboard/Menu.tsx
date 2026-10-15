@@ -1,5 +1,7 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import type { KeyboardEvent as ReactKeyboardEvent, ReactNode } from 'react'
+import { Sheet } from '../mobile/Sheet'
+import { useViewport } from '../mobile/useViewport'
 import styles from './Menu.module.css'
 
 export interface MenuItem {
@@ -8,7 +10,7 @@ export interface MenuItem {
   readonly description?: string
   readonly icon?: ReactNode
   readonly keyHint?: string
-  readonly tone?: 'danger'
+  readonly tone?: 'danger' | 'primary'
   readonly onSelect: () => void
 }
 
@@ -29,12 +31,18 @@ interface MenuProps {
   width?: number
   /** Called when the menu opens or closes, so a parent can raise the row that owns it */
   onOpenChange?: (open: boolean) => void
+  /** Phone only: the sheet's title, and what to show above the choices */
+  title?: string
+  sheetHeader?: ReactNode
+  /** Fill the width of the parent instead of the trigger */
+  block?: boolean
 }
 
 const ESTIMATED_ITEM_PX = 56
 
 /** A button-triggered menu with arrow-key roving focus. Opens below, flips above when the viewport is short. */
-export function Menu({ items, trigger, align = 'start', width = 300, onOpenChange }: MenuProps) {
+export function Menu({ items, trigger, align = 'start', width = 300, onOpenChange, title = 'Pilih aksi', sheetHeader, block }: MenuProps) {
+  const asSheet = useViewport().sizeClass === 'phone'
   const [open, setOpen] = useState(false)
   const [flip, setFlip] = useState(false)
   const root = useRef<HTMLDivElement>(null)
@@ -55,18 +63,18 @@ export function Menu({ items, trigger, align = 'start', width = 300, onOpenChang
   }, [open, items.length])
 
   useEffect(() => {
-    if (open) itemEls.current[0]?.focus()
-  }, [open])
+    if (open && !asSheet) itemEls.current[0]?.focus()
+  }, [open, asSheet])
 
   useEffect(() => {
-    if (!open) return
+    if (!open || asSheet) return
     const onDown = (e: PointerEvent) => {
       if (!root.current?.contains(e.target as Node)) set(false)
     }
     document.addEventListener('pointerdown', onDown)
     return () => document.removeEventListener('pointerdown', onDown)
     // eslint-disable-next-line react-hooks/exhaustive-deps -- set only wraps state setters
-  }, [open])
+  }, [open, asSheet])
 
   const focusItem = (index: number) => itemEls.current[(index + items.length) % items.length]?.focus()
 
@@ -102,9 +110,41 @@ export function Menu({ items, trigger, align = 'start', width = 300, onOpenChang
   }
 
   return (
-    <div ref={root} className={styles.root}>
+    <div ref={root} className={styles.root} data-block={block || undefined}>
       {trigger(props, open)}
-      {open && (
+      {open && asSheet && (
+        <Sheet
+          title={title}
+          onClose={() => {
+            set(false)
+            triggerEl.current?.focus()
+          }}
+        >
+          {sheetHeader}
+          <div className={styles.sheetList} role="menu" aria-label={title}>
+            {items.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                role="menuitem"
+                className={styles.sheetItem}
+                data-tone={item.tone}
+                onClick={() => {
+                  set(false)
+                  item.onSelect()
+                }}
+              >
+                {item.icon && <span className={styles.icon}>{item.icon}</span>}
+                <span className={styles.text}>
+                  <span className={styles.label}>{item.label}</span>
+                  {item.description && <span className={styles.desc}>{item.description}</span>}
+                </span>
+              </button>
+            ))}
+          </div>
+        </Sheet>
+      )}
+      {open && !asSheet && (
         <div
           id={menuId}
           role="menu"

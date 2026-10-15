@@ -52,3 +52,13 @@
 @media (prefers-reduced-motion: reduce) {
   .strip[data-hot]::before { animation: none; }
 }
+
+@media (max-width: 767px) {
+  .inner { flex-wrap: wrap; gap: var(--space-4); padding: var(--space-4); }
+  .strip:not([data-hot]) .inner { padding-left: var(--space-1); padding-right: var(--space-1); }
+  .main { flex: 1 1 100%; }
+  .main h2 { font-size: 20px; line-height: 28px; white-space: normal; }
+  .actions { flex: 1 1 100%; }
+  .actions > button:last-child { flex: 1; }
+  .empty { flex-direction: column; align-items: stretch; gap: var(--space-4); padding: var(--space-4); }
+}

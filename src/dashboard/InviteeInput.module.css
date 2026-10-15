@@ -55,3 +55,10 @@
 }
 .chip button:hover { background: var(--veil-press); color: var(--text-1); }
 .chip button:focus-visible { box-shadow: var(--focus-ring); }
+
+@media (max-width: 767px) {
+  .box { min-height: var(--tap); }
+  .box input { min-width: 120px; height: 36px; font-size: 16px; }
+  .chip { height: 32px; }
+  .chip button { width: 28px; height: 28px; }
+}
