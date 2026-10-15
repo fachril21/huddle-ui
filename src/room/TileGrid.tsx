@@ -1,5 +1,5 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { AnimatePresence, motion } from 'motion/react'
+import { AnimatePresence, animate, motion, useMotionValue } from 'motion/react'
 import { useMemo, useRef, useState } from 'react'
 import type { Dispatch, KeyboardEvent } from 'react'
 import type { RoomAction } from '../state/roomReducer'
@@ -11,7 +11,11 @@ import { useVoiceSnapshot } from '../voice/VoiceContext'
 import { useElementSize } from './gridLayout'
 import { resolveFocusId } from './focus'
 import { useActiveSpeaker } from './hooks/useActiveSpeaker'
-import { gridLayout, shareLayout, speakerLayout, spotlightLayout } from './layoutMath'
+import { gridLayout, pageCount, shareLayout, speakerLayout, spotlightLayout } from './layoutMath'
+import { nearestPipCorner, phoneGridLayout, phonePageCount, phoneShareLayout, phoneSpeakerLayout, usesPip } from './layoutMath.compact'
+import type { PipCorner } from './layoutMath.compact'
+import { useViewport } from '../mobile/useViewport'
+import { useSwipe } from './useSwipe'
 import { ScreenFrame } from './ScreenFrame'
 import { useReducedMotion } from './useReducedMotion'
 import styles from './TileGrid.module.css'
@@ -27,6 +31,11 @@ interface TileGridProps {
   cameraQuality: CameraQuality
   layoutSettings: LayoutSettings
   dispatch: Dispatch<RoomAction>
+  /** Upright phone: tall layouts, swipe between pages, no drag-to-reorder */
+  phone?: boolean
+  onGridPage?: (page: number) => void
+  /** Someone on another page is talking: that page's dot glows */
+  speakingElsewhere?: boolean
 }
 
 /** After a swap, ignore further swaps briefly so tiles do not ping-pong while layout animates. */
@@ -40,13 +49,19 @@ const TILE_RADIUS = 20
  * Positions every tile absolutely from computed rectangles. The same elements stay mounted when the layout
  * switches between grid and share-screen, so Motion can animate each box (FLIP) without reloading anything.
  */
-export function TileGrid({ participants, offers, sharerId, gridPage, soundPlayers, cameraQuality, layoutSettings, dispatch }: TileGridProps) {
+export function TileGrid({ participants, offers, sharerId, gridPage, soundPlayers, cameraQuality, layoutSettings, dispatch, phone = false, onGridPage, speakingElsewhere = false }: TileGridProps) {
   const [stageRef, size] = useElementSize<HTMLDivElement>()
   const reduced = useReducedMotion()
   const voice = useVoiceSnapshot()
   const [page, setPage] = useState(0)
   const cells = useRef(new Map<string, HTMLElement>())
   const lastSwap = useRef(0)
+  // on a touch screen the pin has no hover to appear on, so it is offered only where pinning does something (Sorotan)
+  const { coarse } = useViewport()
+  // one-to-one on a phone: your own tile floats over theirs, and settles in whichever corner you drop it
+  const [pipCorner, setPipCorner] = useState<PipCorner>('br')
+  const pipX = useMotionValue(0)
+  const pipY = useMotionValue(0)
 
   const { mode, pinnedId, hideNoVideo } = layoutSettings
   const speakerId = useActiveSpeaker(voice.dominantId)
@@ -58,16 +73,21 @@ export function TileGrid({ participants, offers, sharerId, gridPage, soundPlayer
     const withVideo = participants.filter((p) => p.camOn || p.id === SELF_ID).map((p) => p.id)
     return withVideo.length ? withVideo : ids
   }, [participants, ids, hideNoVideo, sharerId])
-  const grid = useMemo(() => gridLayout(layoutIds, size.width, size.height, gridPage), [layoutIds, size.width, size.height, gridPage])
+  const grid = useMemo(
+    () => (phone ? phoneGridLayout(layoutIds, size.width, size.height, gridPage, { selfId: SELF_ID, corner: pipCorner }) : gridLayout(layoutIds, size.width, size.height, gridPage)),
+    [phone, layoutIds, size.width, size.height, gridPage, pipCorner],
+  )
   const focusId = mode === 'gallery' ? null : resolveFocusId(layoutIds, { mode, pinnedId, speakerId, selfId: SELF_ID })
+  // on a phone, a one-to-one call is always their picture with yours floating over it, whatever the layout mode
+  const pipActive = phone && !sharerId && usesPip(layoutIds, { selfId: SELF_ID, corner: pipCorner })
   const layout = sharerId
-    ? shareLayout(ids, sharerId, size.width, size.height, page)
-    : focusId && mode === 'speaker'
-      ? speakerLayout(layoutIds, focusId, size.width, size.height, page)
-      : focusId && mode === 'spotlight'
-        ? spotlightLayout(layoutIds, focusId, size.width, size.height, page)
-        : grid
-  const reorderable = !sharerId && mode === 'gallery'
+    ? (phone ? phoneShareLayout : shareLayout)(ids, sharerId, size.width, size.height, page)
+    : pipActive
+      ? grid
+      : focusId && (mode === 'speaker' || mode === 'spotlight')
+      ? (phone ? phoneSpeakerLayout : mode === 'speaker' ? speakerLayout : spotlightLayout)(layoutIds, focusId, size.width, size.height, page)
+      : grid
+  const reorderable = !sharerId && mode === 'gallery' && !phone
   const parkedRect = layout.rects[layoutIds[0]]
   const ready = size.width > 0 && size.height > 0
   const presenter = participants.find((p) => p.id === sharerId)
@@ -101,8 +121,16 @@ export function TileGrid({ participants, offers, sharerId, gridPage, soundPlayer
   const pages = layout.pager?.pages ?? 1
   const currentPage = Math.min(page, pages - 1)
 
+  // phone: a swipe turns the page of whatever is paged (the strip, or the grid when there is no strip)
+  const galleryPages = phone ? phonePageCount(layoutIds.length) : pageCount(layoutIds.length)
+  const swipe = useSwipe((direction) => {
+    if (layout.pager) setPage(Math.max(0, Math.min(pages - 1, currentPage + direction)))
+    else if (!sharerId && mode === 'gallery' && onGridPage) onGridPage(Math.max(0, Math.min(galleryPages - 1, gridPage + direction)))
+  }, phone)
+  const showDots = phone && !layout.pager && !sharerId && mode === 'gallery' && galleryPages > 1
+
   return (
-    <div ref={stageRef} className={styles.stage} data-sharing={sharerId ? 'true' : 'false'}>
+    <div ref={stageRef} className={styles.stage} data-sharing={sharerId ? 'true' : 'false'} data-phone={phone || undefined} {...swipe}>
       {ready && (
         <div className={styles.field} role="list" aria-label="Peserta">
           <AnimatePresence custom={origin}>
@@ -126,6 +154,7 @@ export function TileGrid({ participants, offers, sharerId, gridPage, soundPlayer
             if (!rect) return null
             const hidden = layout.hidden.has(p.id) || !own
             const stagger = Math.min(index, MAX_STAGGER_TILES) * STAGGER_S
+            const isPip = pipActive && p.id === SELF_ID
             return (
               <motion.div
                 key={p.id}
@@ -141,8 +170,9 @@ export function TileGrid({ participants, offers, sharerId, gridPage, soundPlayer
                 aria-hidden={hidden || undefined}
                 aria-roledescription="kartu peserta"
                 aria-description={reorderable ? 'Seret untuk memindah, atau tahan Alt dan tekan tombol panah' : undefined}
-                style={{ left: rect.x, top: rect.y, width: rect.w, height: rect.h, borderRadius: TILE_RADIUS, pointerEvents: hidden ? 'none' : undefined }}
-                layout
+                style={{ left: rect.x, top: rect.y, width: rect.w, height: rect.h, borderRadius: TILE_RADIUS, pointerEvents: hidden ? 'none' : undefined, ...(isPip ? { x: pipX, y: pipY, zIndex: 4 } : null) }}
+                layout={!isPip}
+                data-pip={isPip || undefined}
                 initial={false}
                 animate={{ opacity: hidden ? 0 : 1 }}
                 transition={
@@ -154,12 +184,26 @@ export function TileGrid({ participants, offers, sharerId, gridPage, soundPlayer
                   if (offers.some((o) => o.fromId === p.id) && p.id !== SELF_ID)
                     dispatch({ type: 'hfRespond', fromId: p.id, byId: SELF_ID, now: performance.now() })
                 }}
-                drag={reorderable}
-                dragSnapToOrigin
-                dragElastic={0.12}
+                drag={reorderable || isPip}
+                dragSnapToOrigin={!isPip}
+                dragConstraints={isPip ? stageRef : undefined}
                 dragMomentum={false}
                 whileDrag={{ scale: 1.03, zIndex: 5, cursor: 'grabbing' }}
-                onDrag={(_, info) => onDrag(p.id, info.point)}
+                dragElastic={isPip ? 0.04 : 0.12}
+                onDrag={(_, info) => reorderable && onDrag(p.id, info.point)}
+                onDragEnd={() => {
+                  if (!isPip) return
+                  const dropX = rect.x + pipX.get()
+                  const dropY = rect.y + pipY.get()
+                  const corner = nearestPipCorner(dropX + rect.w / 2, dropY + rect.h / 2, size.width, size.height)
+                  // glide from where it was dropped to the corner it settles in
+                  const target = phoneGridLayout(layoutIds, size.width, size.height, 0, { selfId: SELF_ID, corner }).rects[SELF_ID]
+                  pipX.set(dropX - target.x)
+                  pipY.set(dropY - target.y)
+                  animate(pipX, 0, { type: 'spring', stiffness: 360, damping: 34 })
+                  animate(pipY, 0, { type: 'spring', stiffness: 360, damping: 34 })
+                  setPipCorner(corner)
+                }}
                 onKeyDown={(e) => onKeyDown(e, p.id, index)}
               >
                 <Tile
@@ -175,11 +219,28 @@ export function TileGrid({ participants, offers, sharerId, gridPage, soundPlayer
                   soundPlaying={soundPlayers.has(p.id)}
                   cameraQuality={p.id === SELF_ID ? cameraQuality : undefined}
                   pinned={mode === 'spotlight' && pinnedId === p.id}
-                  onPin={sharerId ? undefined : () => dispatch({ type: 'pinParticipant', id: mode === 'spotlight' && pinnedId === p.id ? null : p.id })}
+                  onPin={sharerId || (coarse && mode !== 'spotlight') ? undefined : () => dispatch({ type: 'pinParticipant', id: mode === 'spotlight' && pinnedId === p.id ? null : p.id })}
                 />
               </motion.div>
             )
           })}
+
+          {showDots && (
+            <nav className={styles.dots} aria-label="Halaman peserta">
+              {Array.from({ length: galleryPages }, (_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  aria-label={`Halaman ${i + 1} dari ${galleryPages}${speakingElsewhere && i !== gridPage ? ', ada yang bicara' : ''}`}
+                  aria-current={i === gridPage ? 'page' : undefined}
+                  data-hint={(speakingElsewhere && i !== gridPage) || undefined}
+                  onClick={() => onGridPage?.(i)}
+                >
+                  <i />
+                </button>
+              ))}
+            </nav>
+          )}
 
           {layout.pager && (
             <div className={`glass-1 ${styles.pager}`} style={{ left: layout.pager.x, top: layout.pager.y, width: layout.pager.w }}>

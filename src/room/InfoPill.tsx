@@ -22,10 +22,12 @@ interface InfoPillProps {
   locked: boolean
   onInviteToggle: () => void
   onInviteClose: () => void
+  /** Phone: the invite link opens in a sheet owned by the room, not in a popover here */
+  phone?: boolean
 }
 
 /** Bottom-left glass-1 pill: title, meeting code (mono), elapsed timer, and the invite-link button. */
-export function InfoPill({ inviteOpen, locked, onInviteToggle, onInviteClose }: InfoPillProps) {
+export function InfoPill({ inviteOpen, locked, onInviteToggle, onInviteClose, phone = false }: InfoPillProps) {
   const [elapsed, setElapsed] = useState(START_OFFSET_S)
   const wrapRef = useRef<HTMLDivElement>(null)
 
@@ -36,7 +38,7 @@ export function InfoPill({ inviteOpen, locked, onInviteToggle, onInviteClose }: 
 
   // Esc or a click outside closes the popover; Esc returns focus to the trigger
   useEffect(() => {
-    if (!inviteOpen) return
+    if (!inviteOpen || phone) return
     const onPointer = (e: PointerEvent) => {
       if (!wrapRef.current?.contains(e.target as Node)) onInviteClose()
     }
@@ -51,7 +53,7 @@ export function InfoPill({ inviteOpen, locked, onInviteToggle, onInviteClose }: 
       document.removeEventListener('pointerdown', onPointer)
       document.removeEventListener('keydown', onKey)
     }
-  }, [inviteOpen, onInviteClose])
+  }, [inviteOpen, onInviteClose, phone])
 
   return (
     <div ref={wrapRef} className={styles.wrap}>
@@ -80,7 +82,7 @@ export function InfoPill({ inviteOpen, locked, onInviteToggle, onInviteClose }: 
           </span>
         </button>
       </div>
-      <AnimatePresence>{inviteOpen && <InvitePopover key="invite" title={MEETING_TITLE} url={INVITE_URL} locked={locked} />}</AnimatePresence>
+      <AnimatePresence>{inviteOpen && !phone && <InvitePopover key="invite" title={MEETING_TITLE} url={INVITE_URL} locked={locked} />}</AnimatePresence>
     </div>
   )
 }

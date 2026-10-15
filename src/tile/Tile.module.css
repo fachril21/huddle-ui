@@ -116,3 +116,8 @@
 .pin[aria-pressed='true'] { opacity: 1; }
 .pin[aria-pressed='true'] { background: var(--primary); border-color: transparent; color: var(--on-primary); }
 .pin:focus-visible { box-shadow: var(--focus-ring); }
+
+/* touch: the pin cannot wait for a hover, and it needs a finger-sized target */
+@media (hover: none) {
+  .pin { opacity: 1; width: 40px; height: 40px; top: var(--space-2); left: var(--space-2); }
+}

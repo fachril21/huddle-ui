@@ -68,3 +68,10 @@
 @media (prefers-reduced-motion: reduce) {
   .bar button { transition: none; }
 }
+
+@media (pointer: coarse) {
+  .bar button { min-width: var(--tap); min-height: var(--tap); }
+}
+@media (max-width: 767px) {
+  .bar { top: var(--space-2); flex-wrap: wrap; justify-content: center; }
+}

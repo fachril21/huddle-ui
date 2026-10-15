@@ -32,3 +32,7 @@
 @media (min-width: 1920px) {
   .item { scale: 1.28; }
 }
+
+@media (max-width: 1099px), (max-height: 500px) and (pointer: coarse) {
+  .layer { bottom: calc(var(--phone-bottom) + var(--space-2)); width: 200px; }
+}

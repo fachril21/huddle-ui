@@ -46,3 +46,8 @@
 .action:hover { background: color-mix(in srgb, var(--primary) 82%, var(--primary-glow)); }
 .action:active { transform: scale(0.96); }
 .action:focus-visible { box-shadow: var(--focus-ring); }
+
+@media (max-width: 1099px), (max-height: 500px) and (pointer: coarse) {
+  .stack { top: var(--phone-top); width: calc(100% - 16px); }
+  .toast { max-width: 100%; }
+}

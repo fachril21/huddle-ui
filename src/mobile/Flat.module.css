@@ -1,0 +1,24 @@
+/* Inline styles from the entrance animation are overridden on purpose, hence !important. */
+.flat > * {
+  position: static !important;
+  translate: none !important;
+  transform: none !important;
+  inset: auto !important;
+  width: auto !important;
+  height: auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  overflow: visible !important;
+}
+.flat > *::after { display: none !important; }
+
+/* grids inside must not grow past the sheet because of one wide child */
+.flat > * { grid-template-columns: minmax(0, 1fr) !important; }

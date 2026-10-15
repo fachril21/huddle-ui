@@ -2,6 +2,7 @@ import { ChevronDown, LayoutGrid, PanelRight, PinOff, Presentation } from 'lucid
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useRef } from 'react'
 import type { ReactNode } from 'react'
+import { useViewport } from '../mobile/useViewport'
 import type { LayoutMode, LayoutSettings } from '../state/types'
 import { shortcutKey } from './shortcuts'
 import styles from './LayoutMenu.module.css'
@@ -75,6 +76,59 @@ const MODES: readonly ModeOption[] = [
   },
 ]
 
+interface LayoutOptionsProps {
+  settings: LayoutSettings
+  pinnedName: string | null
+  sharing: boolean
+  onMode: (mode: LayoutMode) => void
+  onHideNoVideo: (on: boolean) => void
+  onUnpin: () => void
+  /** The sheet already has the title; the popover needs its own */
+  showTitle?: boolean
+}
+
+/** The choices inside the layout menu. Shown in the top-bar popover, or in a bottom sheet on a phone. */
+export function LayoutOptions({ settings, pinnedName, sharing, onMode, onHideNoVideo, onUnpin, showTitle = true }: LayoutOptionsProps) {
+  const { coarse } = useViewport()
+  return (
+    <>
+    {showTitle && <h2>Tampilan layar</h2>}
+    <div className={styles.modes} role="radiogroup" aria-label="Mode tampilan">
+      {MODES.map((m) => (
+        <button key={m.mode} type="button" role="radio" aria-checked={settings.mode === m.mode} onClick={() => onMode(m.mode)}>
+          {m.sketch}
+          <span className={styles.label}>{m.label}</span>
+          <span className={styles.hint}>{m.hint}</span>
+        </button>
+      ))}
+    </div>
+
+    {settings.mode === 'spotlight' && (
+      <p className={styles.note}>
+        {pinnedName ? (
+          <>
+            Disorot: <b>{pinnedName}</b>
+            <button type="button" onClick={onUnpin}>
+              <PinOff size={13} strokeWidth={1.75} aria-hidden="true" />
+              Lepas
+            </button>
+          </>
+        ) : (
+          coarse ? 'Ketuk ikon pin di kartu peserta. Tanpa pin, yang sedang bicara yang disorot.' : 'Arahkan ke kartu peserta lalu klik ikon pin. Tanpa pin, yang sedang bicara yang disorot.'
+        )}
+      </p>
+    )}
+
+    <button type="button" role="switch" aria-checked={settings.hideNoVideo} className={styles.switch} onClick={() => onHideNoVideo(!settings.hideNoVideo)}>
+      <span>Sembunyikan peserta tanpa kamera</span>
+      <i aria-hidden="true" />
+    </button>
+
+    {sharing && <p className={styles.note}>Layar sedang dibagikan. Tampilan ini dipakai lagi setelah berbagi layar selesai.</p>}
+    </>
+  )
+}
+
 /** "Tampilan" menu in the top bar: gallery / speaker / spotlight, plus hiding people without video. */
 export function LayoutMenu({ settings, pinnedName, sharing, open, onToggle, onClose, onMode, onHideNoVideo, onUnpin }: LayoutMenuProps) {
   const wrapRef = useRef<HTMLDivElement>(null)
@@ -129,39 +183,7 @@ export function LayoutMenu({ settings, pinnedName, sharing, open, onToggle, onCl
             exit={{ opacity: 0, y: -6, scale: 0.98, transition: { duration: 0.12 } }}
             transition={{ type: 'spring', stiffness: 380, damping: 30 }}
           >
-            <h2>Tampilan layar</h2>
-            <div className={styles.modes} role="radiogroup" aria-label="Mode tampilan">
-              {MODES.map((m) => (
-                <button key={m.mode} type="button" role="radio" aria-checked={settings.mode === m.mode} onClick={() => onMode(m.mode)}>
-                  {m.sketch}
-                  <span className={styles.label}>{m.label}</span>
-                  <span className={styles.hint}>{m.hint}</span>
-                </button>
-              ))}
-            </div>
-
-            {settings.mode === 'spotlight' && (
-              <p className={styles.note}>
-                {pinnedName ? (
-                  <>
-                    Disorot: <b>{pinnedName}</b>
-                    <button type="button" onClick={onUnpin}>
-                      <PinOff size={13} strokeWidth={1.75} aria-hidden="true" />
-                      Lepas
-                    </button>
-                  </>
-                ) : (
-                  'Arahkan ke kartu peserta lalu klik ikon pin. Tanpa pin, yang sedang bicara yang disorot.'
-                )}
-              </p>
-            )}
-
-            <button type="button" role="switch" aria-checked={settings.hideNoVideo} className={styles.switch} onClick={() => onHideNoVideo(!settings.hideNoVideo)}>
-              <span>Sembunyikan peserta tanpa kamera</span>
-              <i aria-hidden="true" />
-            </button>
-
-            {sharing && <p className={styles.note}>Layar sedang dibagikan. Tampilan ini dipakai lagi setelah berbagi layar selesai.</p>}
+            <LayoutOptions settings={settings} pinnedName={pinnedName} sharing={sharing} onMode={onMode} onHideNoVideo={onHideNoVideo} onUnpin={onUnpin} />
           </motion.div>
         )}
       </AnimatePresence>

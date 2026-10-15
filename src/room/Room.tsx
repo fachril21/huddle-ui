@@ -1,3 +1,4 @@
+import { AudioLines, ChartColumn, Hand, Handshake, LayoutGrid, MonitorUp, PenLine, ShieldCheck, SlidersHorizontal, UserPlus, Users } from 'lucide-react'
 import { AnimatePresence } from 'motion/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { CSSProperties, Dispatch } from 'react'
@@ -8,6 +9,11 @@ import { useVoiceEngine, useVoiceSnapshot } from '../voice/VoiceContext'
 import { AnnotationProvider, useAnnotationController } from '../features/annotation/AnnotationContext'
 import { ChatBubbles } from '../features/chat/ChatBubbles'
 import { ClaimHostBanner } from '../features/host/ClaimHostBanner'
+import { InvitePopover } from '../features/invite/InvitePopover'
+import { buildInviteUrl } from '../features/invite/inviteLink'
+import { Flat } from '../mobile/Flat'
+import { Sheet } from '../mobile/Sheet'
+import { useViewport } from '../mobile/useViewport'
 import { Ambient } from './Ambient'
 import { AnnouncementBanner } from './AnnouncementBanner'
 import { ClosingScreen } from './ClosingScreen'
@@ -22,7 +28,12 @@ import { usePolls } from './hooks/usePolls'
 import { useShortcuts } from './hooks/useShortcuts'
 import { useSoundboard } from './hooks/useSoundboard'
 import { InfoPill } from './InfoPill'
-import { LayoutMenu } from './LayoutMenu'
+import { LayoutMenu, LayoutOptions } from './LayoutMenu'
+import { PAGE_SIZE } from './layoutMath'
+import { PHONE_PAGE_SIZE } from './layoutMath.compact'
+import { MEETING_CODE, MEETING_TITLE } from './meeting'
+import { MobileDock } from './MobileDock'
+import type { MoreAction } from './MoreSheet'
 import { LeaveMenu } from './LeaveMenu'
 import { MorePopover } from './MorePopover'
 import { MutedBanner } from './MutedBanner'
@@ -60,6 +71,10 @@ function unreadChatCount(state: RoomState): number {
 
 export function Room({ state, dispatch }: RoomProps) {
   const { fx, reduced } = useFx()
+  const { sizeClass } = useViewport()
+  // phone: tall layouts, paging by swipe, the floating self-view. compact: any non-desktop size gets the bottom control bar and sheets.
+  const phone = sizeClass === 'phone'
+  const compact = sizeClass !== 'desktop'
   const engine = useVoiceEngine()
   const voice = useVoiceSnapshot()
   const self = state.participants.find((p) => p.id === SELF_ID)
@@ -71,7 +86,7 @@ export function Room({ state, dispatch }: RoomProps) {
   const layoutSettings = state.settings.layout
   const galleryPeople = layoutSettings.hideNoVideo ? state.participants.filter((p) => p.camOn || p.id === SELF_ID) : state.participants
   // Paging only drives the gallery grid; speaker and spotlight page their own strip
-  const paging = usePaging(layoutSettings.mode === 'gallery' && galleryPeople.length ? galleryPeople : [], voice.speaking, dispatch)
+  const paging = usePaging(layoutSettings.mode === 'gallery' && galleryPeople.length ? galleryPeople : [], voice.speaking, dispatch, phone ? PHONE_PAGE_SIZE : PAGE_SIZE)
   const sentAt = useRef<number[]>([])
   const hasReactions = state.reactions.length > 0
   const hasNotices = state.notices.length > 0
@@ -172,6 +187,35 @@ export function Room({ state, dispatch }: RoomProps) {
   const needsConsent = state.host.recording !== 'off' && !canManage && !state.host.consented
   const style = { '--crosstalk': voice.crosstalk ? 1 : 0, '--panel-space': state.panel ? PANEL_SPACE : '0px' } as CSSProperties
 
+  const cameraNode = <CameraPopover key="camera" quality={state.settings.cameraQuality} camOn={self.camOn} weakConnection={self.connection !== 'good'} onQuality={(quality) => dispatch({ type: 'setCameraQuality', quality })} />
+  const soundboardNode = <SoundboardPopover key="soundboard" lastPlayAt={soundboard.selfLastPlayAt} onPlay={soundboard.onPlay} />
+  const moreNode = <MorePopover key="more" fx={state.settings.fx} onFx={(next) => dispatch({ type: 'setFx', fx: next })} shortcutsOpen={shortcutsOpen} onShortcutsOpen={setShortcutsOpen} />
+  const leaveNode = (
+    <LeaveMenu
+      key="leave"
+      canEndForAll={selfRole === 'Host'}
+      onLeave={() => dispatch({ type: 'leave', phase: 'left' })}
+      onEnd={() => dispatch({ type: 'leave', phase: 'ended' })}
+    />
+  )
+  const onShare = () => dispatch(state.sharerId === SELF_ID ? { type: 'stopShare' } : { type: 'startShare', id: SELF_ID })
+
+  /** Everything that is not on the phone's control bar */
+  const ICON = { size: 24, strokeWidth: 1.75, 'aria-hidden': true } as const
+  const moreActions: MoreAction[] = [
+    { id: 'hand', label: self.hand !== null ? 'Turunkan tangan' : 'Angkat tangan', icon: <Hand {...ICON} />, pressed: self.hand !== null, onSelect: () => dispatch({ type: 'toggleHand', id: SELF_ID }) },
+    { id: 'highfive', label: 'High five', icon: <Handshake {...ICON} />, pressed: highFive.active, unavailable: highFive.disabledReason, onSelect: highFive.onHighFive },
+    { id: 'sound', label: 'Soundboard', icon: <AudioLines {...ICON} />, unavailable: soundboard.disabledReason, onSelect: () => dispatch({ type: 'toggleDock', key: 'soundboard' }) },
+    { id: 'share', label: state.sharerId === SELF_ID ? 'Berhenti berbagi' : 'Bagikan layar', icon: <MonitorUp {...ICON} />, pressed: state.sharerId === SELF_ID, unavailable: shareDisabledReason, onSelect: onShare },
+    ...(annotation.enabled ? [{ id: 'annotate', label: annotation.annotating ? 'Selesai coret' : 'Coret layar', icon: <PenLine {...ICON} />, pressed: annotation.annotating, onSelect: annotation.toggleAnnotating }] : []),
+    { id: 'layout', label: 'Tampilan', icon: <LayoutGrid {...ICON} />, onSelect: () => setLayoutOpen(true) },
+    { id: 'peserta', label: 'Peserta', icon: <Users {...ICON} />, badge: state.participants.length, onSelect: () => dispatch({ type: 'openPanel', panel: 'peserta' }) },
+    { id: 'polling', label: 'Polling', icon: <ChartColumn {...ICON} />, badge: polls.pendingBadge, onSelect: () => dispatch({ type: 'openPanel', panel: 'polling' }) },
+    { id: 'invite', label: 'Undang', icon: <UserPlus {...ICON} />, onSelect: () => setInviteOpen(true) },
+    ...(canManage ? [{ id: 'host', label: 'Alat host', icon: <ShieldCheck {...ICON} />, badge: state.host.waiting.length, onSelect: () => dispatch({ type: 'openPanel', panel: 'host' }) }] : []),
+    { id: 'camera', label: 'Kamera', icon: <SlidersHorizontal {...ICON} />, onSelect: () => dispatch({ type: 'toggleDock', key: 'camera' }) },
+  ]
+
   return (
     <AnnotationProvider value={annotation}>
     <div className={styles.room} data-motion={reduced ? 'reduced' : 'full'} data-fx={fx} data-sharing={sharing} style={style}>
@@ -185,12 +229,17 @@ export function Room({ state, dispatch }: RoomProps) {
         cameraQuality={state.settings.cameraQuality}
         layoutSettings={layoutSettings}
         dispatch={dispatch}
+        phone={phone}
+        onGridPage={paging.setPage}
+        speakingElsewhere={paging.speakingElsewhere}
       />
       <TopBar
         recording={state.host.recording}
         locked={state.host.locked}
-        leading={paging.pages > 1 && !sharing && layoutSettings.mode === 'gallery' ? <GridPager page={paging.page} pages={paging.pages} speakingElsewhere={paging.speakingElsewhere} onPage={paging.setPage} /> : null}
+        people={compact ? { count: state.participants.length, active: state.panel === 'peserta', onClick: () => dispatch({ type: 'togglePanel', panel: 'peserta' }) } : undefined}
+        leading={!phone && paging.pages > 1 && !sharing && layoutSettings.mode === 'gallery' ? <GridPager page={paging.page} pages={paging.pages} speakingElsewhere={paging.speakingElsewhere} onPage={paging.setPage} /> : null}
         menu={
+          compact ? undefined : (
           <LayoutMenu
             settings={layoutSettings}
             pinnedName={state.participants.find((p) => p.id === layoutSettings.pinnedId)?.name ?? null}
@@ -202,6 +251,7 @@ export function Room({ state, dispatch }: RoomProps) {
             onHideNoVideo={(on) => dispatch({ type: 'setHideNoVideo', on })}
             onUnpin={() => dispatch({ type: 'pinParticipant', id: null })}
           />
+          )
         }
       />
       <AnnouncementBanner announcement={state.host.announcement} onDismiss={dismissAnnouncement} />
@@ -235,10 +285,11 @@ export function Room({ state, dispatch }: RoomProps) {
         <SoundChips plays={soundboard.plays} participants={state.participants} />
       </div>
       <ChatBubbles messages={state.chat.messages} people={[...state.participants, ...state.bench]} chatOpen={state.panel === 'chat'} onOpenChat={() => dispatch({ type: 'openPanel', panel: 'chat' })} />
-      <InfoPill inviteOpen={inviteOpen} locked={state.host.locked} onInviteToggle={toggleInvite} onInviteClose={closeInvite} />
+      <InfoPill inviteOpen={inviteOpen} locked={state.host.locked} onInviteToggle={toggleInvite} onInviteClose={closeInvite} phone={compact} />
       <AnimatePresence>
         {state.panel && <SidePanel key="panel" panel={state.panel} state={state} selfRole={selfRole} dispatch={dispatch} onInvite={() => setInviteOpen(true)} onClose={() => dispatch({ type: 'openPanel', panel: null })} />}
       </AnimatePresence>
+      {!compact && (
       <Dock
         self={self}
         toggles={state.toggles}
@@ -249,24 +300,19 @@ export function Room({ state, dispatch }: RoomProps) {
         onClose={onClose}
         onReact={onReact}
         onHighFive={highFive.onHighFive}
-        onShare={() => dispatch(state.sharerId === SELF_ID ? { type: 'stopShare' } : { type: 'startShare', id: SELF_ID })}
+        onShare={onShare}
         shareActive={state.sharerId === SELF_ID}
         shareDisabledReason={shareDisabledReason}
         highFiveActive={highFive.active}
         highFiveDisabledReason={highFive.disabledReason}
         soundboardDisabledReason={soundboard.disabledReason}
-        camera={<CameraPopover key="camera" quality={state.settings.cameraQuality} camOn={self.camOn} weakConnection={self.connection !== 'good'} onQuality={(quality) => dispatch({ type: 'setCameraQuality', quality })} />}
-        soundboard={<SoundboardPopover key="soundboard" lastPlayAt={soundboard.selfLastPlayAt} onPlay={soundboard.onPlay} />}
-        more={<MorePopover key="more" fx={state.settings.fx} onFx={(next) => dispatch({ type: 'setFx', fx: next })} shortcutsOpen={shortcutsOpen} onShortcutsOpen={setShortcutsOpen} />}
-        leave={
-          <LeaveMenu
-            key="leave"
-            canEndForAll={selfRole === 'Host'}
-            onLeave={() => dispatch({ type: 'leave', phase: 'left' })}
-            onEnd={() => dispatch({ type: 'leave', phase: 'ended' })}
-          />
-        }
+        camera={cameraNode}
+        soundboard={soundboardNode}
+        more={moreNode}
+        leave={leaveNode}
       />
+      )}
+      {!compact && (
       <PanelPill
         active={state.panel}
         participantCount={state.participants.length}
@@ -276,6 +322,48 @@ export function Room({ state, dispatch }: RoomProps) {
         hostBadge={state.host.waiting.length}
         onSelect={(panel) => dispatch({ type: 'togglePanel', panel })}
       />
+      )}
+      {compact && (
+        <>
+          <MobileDock
+            self={self}
+            toggles={state.toggles}
+            unreadChat={unreadChatCount(state)}
+            onToggleMic={() => dispatch({ type: 'toggleMic', id: SELF_ID })}
+            onToggleCam={() => dispatch({ type: 'toggleCam', id: SELF_ID })}
+            onToggle={(key) => dispatch({ type: 'toggleDock', key })}
+            onClose={onClose}
+            onReact={onReact}
+            onHighFive={highFive.onHighFive}
+            onChat={() => dispatch({ type: 'togglePanel', panel: 'chat' })}
+            actions={moreActions}
+            settings={moreNode}
+            soundboard={soundboardNode}
+            camera={cameraNode}
+            leave={leaveNode}
+          />
+          {layoutOpen && (
+            <Sheet title="Tampilan layar" onClose={closeLayout}>
+              <LayoutOptions
+                settings={layoutSettings}
+                pinnedName={state.participants.find((p) => p.id === layoutSettings.pinnedId)?.name ?? null}
+                sharing={sharing}
+                onMode={(mode) => dispatch({ type: 'setLayoutMode', mode })}
+                onHideNoVideo={(on) => dispatch({ type: 'setHideNoVideo', on })}
+                onUnpin={() => dispatch({ type: 'pinParticipant', id: null })}
+                showTitle={false}
+              />
+            </Sheet>
+          )}
+          {inviteOpen && (
+            <Sheet title="Undang lewat tautan" onClose={closeInvite}>
+              <Flat>
+                <InvitePopover title={MEETING_TITLE} url={buildInviteUrl(MEETING_CODE)} locked={state.host.locked} />
+              </Flat>
+            </Sheet>
+          )}
+        </>
+      )}
       {needsConsent && <RecordingConsent onAgree={() => dispatch({ type: 'recordingConsent' })} onLeave={() => dispatch({ type: 'leave', phase: 'left' })} />}
     </div>
     </AnnotationProvider>

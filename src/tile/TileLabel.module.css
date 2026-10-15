@@ -74,3 +74,12 @@
   color: var(--text-2);
   font-variant-numeric: tabular-nums;
 }
+
+.role, .quality { flex: none; white-space: nowrap; }
+
+/* phone: a small tile keeps just the name; the role and resolution would wrap or push it out */
+@media (max-width: 767px) {
+  .label[data-compact] { left: var(--space-2); bottom: var(--space-2); max-width: calc(100% - var(--space-4)); padding: 0 var(--space-2); }
+  .label[data-compact] .role,
+  .label[data-compact] .quality { display: none; }
+}

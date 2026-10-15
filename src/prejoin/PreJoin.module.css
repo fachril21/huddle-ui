@@ -218,4 +218,6 @@
   .field input { height: var(--tap); font-size: 16px; }
   .back { height: var(--tap); }
   .join { height: var(--tap); }
+  /* the panel scrolls; Masuk stays pinned to its bottom edge */
+  .cta { position: sticky; bottom: calc(var(--space-4) * -1); margin: auto calc(var(--space-4) * -1) calc(var(--space-4) * -1); padding: var(--space-3) var(--space-4); background: linear-gradient(180deg, transparent, var(--glass-solid) 38%); }
 }

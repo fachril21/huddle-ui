@@ -26,8 +26,8 @@ const PAGER_GAP = 8
 /** Up to 9 tiles per page once the room has more people (PRD 6.6). */
 export const PAGE_SIZE = 9
 
-export function pageCount(total: number): number {
-  return Math.max(1, Math.ceil(total / PAGE_SIZE))
+export function pageCount(total: number, size: number = PAGE_SIZE): number {
+  return Math.max(1, Math.ceil(total / size))
 }
 
 /** One page of the regular grid: tiles of the largest 16:9 size, last row centered. */

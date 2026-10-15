@@ -12,9 +12,9 @@ const PROMOTE_AFTER_MS = 3000
  * Grid paging for rooms over 9 people: current page, a hint when someone on another page is speaking,
  * and promotion of a long-time speaker from a later page (the quietest person on page 1 swaps down).
  */
-export function usePaging(participants: readonly Participant[], speaking: ReadonlySet<string>, dispatch: Dispatch<RoomAction>) {
+export function usePaging(participants: readonly Participant[], speaking: ReadonlySet<string>, dispatch: Dispatch<RoomAction>, pageSize: number = PAGE_SIZE) {
   const [page, setPage] = useState(0)
-  const pages = pageCount(participants.length)
+  const pages = pageCount(participants.length, pageSize)
   const current = Math.min(page, pages - 1)
   const lastSpoke = useRef(new Map<string, number>())
   const timers = useRef(new Map<string, number>())
@@ -27,13 +27,13 @@ export function usePaging(participants: readonly Participant[], speaking: Readon
 
     const indexOf = (id: string) => latest.current.participants.findIndex((p) => p.id === id)
     for (const id of speaking) {
-      if (indexOf(id) < PAGE_SIZE || timers.current.has(id)) continue
+      if (indexOf(id) < pageSize || timers.current.has(id)) continue
       const timer = window.setTimeout(() => {
         timers.current.delete(id)
         const { participants: list, speaking: still } = latest.current
-        if (!still.has(id) || list.findIndex((p) => p.id === id) < PAGE_SIZE) return
+        if (!still.has(id) || list.findIndex((p) => p.id === id) < pageSize) return
         const quiet = list
-          .slice(0, PAGE_SIZE)
+          .slice(0, pageSize)
           .filter((p) => p.id !== SELF_ID && !still.has(p.id))
           .sort((a, b) => (lastSpoke.current.get(a.id) ?? 0) - (lastSpoke.current.get(b.id) ?? 0))[0]
         if (quiet) dispatch({ type: 'swapParticipants', a: id, b: quiet.id })
@@ -46,7 +46,7 @@ export function usePaging(participants: readonly Participant[], speaking: Readon
       window.clearTimeout(timer)
       timers.current.delete(id)
     }
-  }, [speaking, dispatch])
+  }, [speaking, dispatch, pageSize])
 
   useEffect(
     () => () => {
@@ -56,7 +56,7 @@ export function usePaging(participants: readonly Participant[], speaking: Readon
     [],
   )
 
-  const speakingElsewhere = participants.some((p, i) => speaking.has(p.id) && Math.floor(i / PAGE_SIZE) !== current)
+  const speakingElsewhere = participants.some((p, i) => speaking.has(p.id) && Math.floor(i / pageSize) !== current)
 
   return { page: current, setPage, pages, speakingElsewhere }
 }

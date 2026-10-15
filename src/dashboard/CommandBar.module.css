@@ -58,3 +58,11 @@ button[data-open] .chevron { transform: rotate(180deg); }
   .roomText { flex: 1 1 100%; flex-direction: column; gap: 2px; }
   .room > button { flex: 1; }
 }
+
+/* tablet: the code field gets a line of its own so it has room to type in */
+@media (min-width: 768px) and (max-width: 1099px) {
+  .row { flex-wrap: wrap; row-gap: var(--space-3); }
+  .join { flex: 1 1 100%; }
+  .input { height: var(--tap); border-radius: var(--radius-md); }
+  .join > button { height: var(--tap); }
+}

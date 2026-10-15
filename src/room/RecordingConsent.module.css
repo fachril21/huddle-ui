@@ -28,3 +28,13 @@
 .actions button:focus-visible { box-shadow: var(--focus-ring); }
 .actions .agree { border: 0; background: var(--primary); color: var(--on-primary); }
 .actions .agree:hover { background: color-mix(in srgb, var(--primary) 82%, var(--primary-glow)); }
+
+@media (pointer: coarse) {
+  .actions button { height: var(--tap); }
+}
+@media (max-width: 767px) {
+  .scrim { place-items: end center; padding-bottom: var(--safe-bottom); }
+  .dialog { width: 100%; border-radius: var(--radius-xl) var(--radius-xl) 0 0; padding: var(--space-5) var(--space-5) max(var(--space-5), var(--safe-bottom)); }
+  .actions { flex-direction: column-reverse; }
+  .actions button { width: 100%; }
+}

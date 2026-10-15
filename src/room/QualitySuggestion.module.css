@@ -44,3 +44,8 @@
 }
 .close:hover { background: var(--veil-press); color: var(--text-1); }
 .close:focus-visible { box-shadow: var(--focus-ring); }
+
+@media (max-width: 1099px), (max-height: 500px) and (pointer: coarse) {
+  .chip { max-width: 100%; }
+  .text { white-space: normal; }
+}

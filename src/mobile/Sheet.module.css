@@ -74,3 +74,5 @@
   .sheet[open], .sheet::backdrop { animation: none; }
   .sheet { transition: none; }
 }
+
+.body[data-flush] { display: flex; flex-direction: column; padding: 0; overflow: hidden; }

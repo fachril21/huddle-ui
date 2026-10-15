@@ -45,3 +45,9 @@
 .highFive:hover { background: color-mix(in srgb, var(--primary) 55%, transparent); }
 .highFive:active { transform: scale(0.98); }
 .highFive:focus-visible { box-shadow: var(--focus-ring); }
+
+/* phone: the seven emoji share the sheet's width instead of overflowing it */
+@media (max-width: 767px) {
+  .row { gap: 0; }
+  .emoji { flex: 1 1 0; width: auto; min-width: 44px; height: 56px; }
+}

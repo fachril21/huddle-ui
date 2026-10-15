@@ -94,3 +94,7 @@
 .bubble:focus-within .close { opacity: 1; }
 .close:hover { background: var(--veil-press); color: var(--text-1); }
 .close:focus-visible { box-shadow: var(--focus-ring); }
+
+@media (max-width: 1099px), (max-height: 500px) and (pointer: coarse) {
+  .stack { left: var(--space-2); bottom: calc(var(--phone-bottom) + var(--space-2)); width: min(320px, calc(100% - 16px)); }
+}

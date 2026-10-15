@@ -54,3 +54,8 @@
 .body { flex: 1; min-height: 0; overflow-y: auto; padding: var(--space-4); }
 
 .body[data-panel="chat"] { padding: 0; overflow: hidden; }
+
+/* phone: the panel is a sheet; the tabs sit under its title and every tab is a full-height target */
+.phoneTabs { flex: none; margin: var(--space-3) var(--space-4) 0; }
+.phoneTabs button { flex: 1; height: 40px; font-size: 14px; }
+.close { width: var(--tap); height: var(--tap); }

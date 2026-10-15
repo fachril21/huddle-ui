@@ -45,3 +45,7 @@
 }
 .close:hover { background: var(--veil-press); color: var(--text-1); }
 .close:focus-visible { box-shadow: var(--focus-ring); }
+
+@media (max-width: 1099px), (max-height: 500px) and (pointer: coarse) {
+  .slot { top: calc(var(--phone-top) + var(--space-1)); left: var(--space-2); right: var(--space-2); }
+}

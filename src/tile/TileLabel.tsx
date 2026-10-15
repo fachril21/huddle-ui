@@ -5,10 +5,10 @@ import { PoorSignalIcon } from './TileOverlays'
 import styles from './TileLabel.module.css'
 
 /** Glass-1 name chip. The equalizer shows only while the tile is lit (colour is never the only speaking cue). */
-export function TileLabel({ participant, quality }: { participant: Participant; quality?: CameraQuality }) {
+export function TileLabel({ participant, quality, compact = false }: { participant: Participant; quality?: CameraQuality; compact?: boolean }) {
   const showRole = participant.role === 'Host' || participant.role === 'Co-host'
   return (
-    <div className={`glass-1 ${styles.label}`}>
+    <div className={`glass-1 ${styles.label}`} data-compact={compact || undefined}>
       <span className={styles.eq} aria-hidden="true">
         <i /><i /><i />
       </span>

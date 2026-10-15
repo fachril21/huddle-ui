@@ -7,6 +7,8 @@ import { HostPanel } from '../features/host/HostPanel'
 import { ParticipantsPanel } from '../features/participants/ParticipantsPanel'
 import { PollingPanel } from '../features/polls/PollingPanel'
 import type { RoomAction } from '../state/roomReducer'
+import { Sheet } from '../mobile/Sheet'
+import { useViewport } from '../mobile/useViewport'
 import { SELF_ID } from '../state/types'
 import type { PanelName, Role, RoomState } from '../state/types'
 import styles from './SidePanel.module.css'
@@ -31,8 +33,11 @@ const PANEL_TITLES: Record<PanelName, string> = { peserta: 'Peserta', chat: 'Cha
 /** Floating glass-2 card on the right (Design.md 15.2). Esc closes it and returns focus to its trigger. */
 export function SidePanel({ panel, state, selfRole, dispatch, onInvite, onClose }: SidePanelProps) {
   const canManage = selfRole === 'Host' || selfRole === 'Co-host'
+  const phone = useViewport().sizeClass !== 'desktop'
 
   useEffect(() => {
+    // a phone's sheet closes itself on Esc
+    if (phone) return
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape' || e.defaultPrevented) return
       onClose()
@@ -40,9 +45,85 @@ export function SidePanel({ panel, state, selfRole, dispatch, onInvite, onClose 
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
-  }, [panel, onClose])
+  }, [panel, onClose, phone])
 
   const now = () => performance.now()
+
+  const content = (
+    <div className={styles.body} data-panel={panel}>
+      {panel === 'peserta' && (
+        <ParticipantsPanel
+          participants={state.participants}
+          selfRole={selfRole}
+          onInvite={onInvite}
+          onMute={(id) => dispatch({ type: 'toggleMic', id })}
+          onCoHost={(id) => dispatch({ type: 'setRole', id, role: 'Co-host' })}
+          onMakeHost={(id) => dispatch({ type: 'makeHost', id })}
+          onRemove={(id) => dispatch({ type: 'removeParticipant', id, now: now() })}
+        />
+      )}
+      {panel === 'chat' && (
+        <ChatPanel chat={state.chat} participants={state.participants} onSend={(text, toId) => dispatch({ type: 'chatSend', fromId: SELF_ID, toId, text, now: now() })} />
+      )}
+      {panel === 'polling' && (
+        <PollingPanel
+          polls={state.polls}
+          participantCount={state.participants.length}
+          selfId={SELF_ID}
+          canManage={canManage}
+          onStart={(draft) =>
+            dispatch({
+              type: 'pollStart',
+              poll: {
+                question: draft.question,
+                options: draft.options.map((text, i) => ({ id: `o${i + 1}`, text })),
+                multiple: draft.multiple,
+                anonymous: draft.anonymous,
+                liveResults: draft.liveResults,
+                autoCloseS: draft.autoCloseS,
+                startedAt: now(),
+                creatorId: SELF_ID,
+              },
+            })
+          }
+          onVote={(optionIds) => dispatch({ type: 'pollVote', voterId: SELF_ID, optionIds })}
+          onClose={() => dispatch({ type: 'pollClose' })}
+        />
+      )}
+      {panel === 'host' && canManage && (
+        <HostPanel
+          host={state.host}
+          soundboardAllowed={state.soundboard.allowed}
+          annotationAllowed={state.annotation.allowed}
+          onDecide={(id, admit) => dispatch({ type: 'guestDecide', id, admit, now: now() })}
+          onLock={(on) => dispatch({ type: 'hostLock', on, now: now() })}
+          onRestrictShare={(on) => dispatch({ type: 'hostRestrictShare', on })}
+          onSoundboard={(on) => dispatch({ type: 'sbAllow', on })}
+          onAnnotation={(on) => dispatch({ type: 'annotationAllow', on })}
+          onMuteAll={() => dispatch({ type: 'muteAll', now: now() })}
+          onAnnounce={(text) => dispatch({ type: 'announce', text })}
+          onRecording={(s) => dispatch({ type: 'hostRecording', state: s })}
+        />
+      )}
+    </div>
+  )
+
+  if (phone) {
+    return (
+      <Sheet title={PANEL_TITLES[panel]} size="tall" flush onClose={onClose}>
+        {panel !== 'host' && (
+          <div className={`${styles.tabs} ${styles.phoneTabs}`} role="tablist" aria-label="Panel samping">
+            {TABS.map((t) => (
+              <button key={t.name} type="button" role="tab" aria-selected={panel === t.name} onClick={() => dispatch({ type: 'openPanel', panel: t.name })}>
+                {t.label}
+              </button>
+            ))}
+          </div>
+        )}
+        {content}
+      </Sheet>
+    )
+  }
 
   return (
     <motion.aside
@@ -70,62 +151,7 @@ export function SidePanel({ panel, state, selfRole, dispatch, onInvite, onClose 
         </button>
       </header>
 
-      <div className={styles.body} data-panel={panel}>
-        {panel === 'peserta' && (
-          <ParticipantsPanel
-            participants={state.participants}
-            selfRole={selfRole}
-            onInvite={onInvite}
-            onMute={(id) => dispatch({ type: 'toggleMic', id })}
-            onCoHost={(id) => dispatch({ type: 'setRole', id, role: 'Co-host' })}
-            onMakeHost={(id) => dispatch({ type: 'makeHost', id })}
-            onRemove={(id) => dispatch({ type: 'removeParticipant', id, now: now() })}
-          />
-        )}
-        {panel === 'chat' && (
-          <ChatPanel chat={state.chat} participants={state.participants} onSend={(text, toId) => dispatch({ type: 'chatSend', fromId: SELF_ID, toId, text, now: now() })} />
-        )}
-        {panel === 'polling' && (
-          <PollingPanel
-            polls={state.polls}
-            participantCount={state.participants.length}
-            selfId={SELF_ID}
-            canManage={canManage}
-            onStart={(draft) =>
-              dispatch({
-                type: 'pollStart',
-                poll: {
-                  question: draft.question,
-                  options: draft.options.map((text, i) => ({ id: `o${i + 1}`, text })),
-                  multiple: draft.multiple,
-                  anonymous: draft.anonymous,
-                  liveResults: draft.liveResults,
-                  autoCloseS: draft.autoCloseS,
-                  startedAt: now(),
-                  creatorId: SELF_ID,
-                },
-              })
-            }
-            onVote={(optionIds) => dispatch({ type: 'pollVote', voterId: SELF_ID, optionIds })}
-            onClose={() => dispatch({ type: 'pollClose' })}
-          />
-        )}
-        {panel === 'host' && canManage && (
-          <HostPanel
-            host={state.host}
-            soundboardAllowed={state.soundboard.allowed}
-            annotationAllowed={state.annotation.allowed}
-            onDecide={(id, admit) => dispatch({ type: 'guestDecide', id, admit, now: now() })}
-            onLock={(on) => dispatch({ type: 'hostLock', on, now: now() })}
-            onRestrictShare={(on) => dispatch({ type: 'hostRestrictShare', on })}
-            onSoundboard={(on) => dispatch({ type: 'sbAllow', on })}
-            onAnnotation={(on) => dispatch({ type: 'annotationAllow', on })}
-            onMuteAll={() => dispatch({ type: 'muteAll', now: now() })}
-            onAnnounce={(text) => dispatch({ type: 'announce', text })}
-            onRecording={(s) => dispatch({ type: 'hostRecording', state: s })}
-          />
-        )}
-      </div>
+      {content}
     </motion.aside>
   )
 }

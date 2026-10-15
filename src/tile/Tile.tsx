@@ -88,7 +88,7 @@ export function Tile({ participant, tileW, tileH, lit, dominant, mutedSpeaking, 
           <MicOff size={14} strokeWidth={1.75} aria-hidden="true" />
         </span>
       )}
-      <TileLabel participant={participant} quality={cameraQuality} />
+      <TileLabel participant={participant} quality={cameraQuality} compact={compact} />
       {onPin && (
         <button
           type="button"

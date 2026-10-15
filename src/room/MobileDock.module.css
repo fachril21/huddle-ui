@@ -1,0 +1,71 @@
+.dock {
+  position: absolute;
+  left: max(var(--space-2), var(--safe-left));
+  right: max(var(--space-2), var(--safe-right));
+  bottom: calc(var(--space-2) + var(--safe-bottom));
+  z-index: var(--z-chrome);
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  padding: var(--space-1);
+  border-radius: var(--radius-dock);
+}
+
+.btn {
+  position: relative;
+  display: grid;
+  flex: 1 1 0;
+  min-width: 44px;
+  justify-items: center;
+  align-content: center;
+  gap: 2px;
+  min-height: 56px;
+  padding: var(--space-1) 0;
+  border: 0;
+  border-radius: var(--radius-lg);
+  background: transparent;
+  color: var(--text-1);
+  transition: background-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+}
+.btn:active { background: var(--veil-press); transform: scale(0.96); }
+.btn:focus-visible { box-shadow: var(--focus-ring); }
+.btn[aria-pressed='true'] { background: var(--primary); color: var(--on-primary); }
+.btn[data-tone='off'],
+.btn[data-tone='danger'] { background: var(--danger); color: var(--on-danger); }
+
+.caption { font-size: 12px; line-height: 16px; font-weight: 600; }
+
+/* Keluar sits apart from the rest, like Meet: far from the thumb's usual landing spot */
+.gap { flex: none; width: var(--space-3); }
+
+.badge {
+  position: absolute;
+  top: 2px;
+  right: calc(50% - 22px);
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: var(--radius-pill);
+  background: var(--aurora-amber);
+  color: var(--on-aurora);
+  font-size: 11px;
+  line-height: 18px;
+  font-weight: 700;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* a phone on its side has little height: icons only, a slimmer bar */
+@media (max-height: 500px) and (pointer: coarse) {
+  .btn { min-height: 44px; }
+  .caption { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn { transition: none; }
+}
+
+/* a tablet or a phone on its side: the same bar, centred and no wider than it needs to be */
+@media (min-width: 768px) {
+  .dock { left: 50%; right: auto; width: min(560px, calc(100% - 16px)); translate: -50% 0; }
+}

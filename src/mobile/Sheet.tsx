@@ -17,13 +17,15 @@ interface SheetProps {
   footer?: ReactNode
   /** Hide the visible title (the dialog still has it as its accessible name) */
   quietTitle?: boolean
+  /** No padding: the content lays itself out (a chat that fills the sheet and keeps its composer at the bottom) */
+  flush?: boolean
 }
 
 /**
  * A bottom sheet on a native modal <dialog>: focus is trapped, Esc and a backdrop tap close it, and dragging the
  * handle or header down closes it. On a wider screen the same sheet is a centered panel, so callers need no branch.
  */
-export function Sheet({ title, onClose, size = 'auto', children, footer, quietTitle }: SheetProps) {
+export function Sheet({ title, onClose, size = 'auto', children, footer, quietTitle, flush }: SheetProps) {
   const ref = useDialog()
   const drag = useSheetDrag(ref, onClose)
   const keyboard = useKeyboardInset()
@@ -55,7 +57,9 @@ export function Sheet({ title, onClose, size = 'auto', children, footer, quietTi
           </button>
         </div>
       </header>
-      <div className={styles.body}>{children}</div>
+      <div className={styles.body} data-flush={flush || undefined}>
+        {children}
+      </div>
       {footer && <footer className={styles.foot}>{footer}</footer>}
     </dialog>
   )
