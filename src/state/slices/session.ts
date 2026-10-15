@@ -1,6 +1,7 @@
 import { createInitialState } from '../initialState'
+import { SELF_ID } from '../types'
 import type { ChatMessage, DockToggle, PanelName, RoomState } from '../types'
-import { canManage, nextId, NOTICE_MS, roleOf, withNotice } from './shared'
+import { canManage, mapParticipant, nextId, NOTICE_MS, roleOf, withNotice } from './shared'
 import type { Slice } from './shared'
 
 /** Popovers share one slot above the dock, so opening one closes the others. */
@@ -102,6 +103,10 @@ export const sessionSlice: Slice = (state, action) => {
       return { ...state, phase: action.phase, toggles: { reaction: false, soundboard: false, more: false, camera: false, leave: false } }
     case 'reset':
       return createInitialState(state.settings)
+    case 'joinRoom': {
+      const joined = mapParticipant(state, SELF_ID, (p) => ({ ...p, name: action.name, micOn: action.micOn, camOn: action.camOn }))
+      return { ...joined, settings: { ...joined.settings, cameraQuality: action.quality } }
+    }
     case 'setFx':
       return { ...state, settings: { ...state.settings, fx: action.fx } }
     case 'setCameraQuality':

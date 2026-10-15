@@ -1,0 +1,62 @@
+.wrap { display: grid; gap: var(--space-2); }
+.line { display: flex; align-items: center; gap: var(--space-3); min-height: 32px; }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-pill);
+  background: var(--veil-hover);
+  color: var(--text-1);
+  font-size: 12px;
+  font-weight: 600;
+  transition: background-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+}
+.btn:hover:not(:disabled) { background: var(--veil-press); }
+.btn:active:not(:disabled) { transform: scale(0.97); }
+.btn:disabled { color: var(--text-3); border-style: dashed; }
+.btn:focus-visible { box-shadow: var(--focus-ring); }
+
+.ask { display: inline-flex; align-items: center; gap: var(--space-2); font-size: 12px; font-weight: 600; color: var(--text-1); }
+.chip {
+  height: 28px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-1);
+  font-size: 12px;
+  font-weight: 600;
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+.chip:hover { background: var(--veil-hover); }
+.chip:focus-visible { box-shadow: var(--focus-ring); }
+
+.note { margin: 0; min-height: 18px; font-size: 12px; line-height: 18px; color: var(--text-2); }
+
+/* three-second recording clock; the bar fills in step with the clip */
+.progress {
+  flex: 1;
+  height: 4px;
+  border-radius: var(--radius-pill);
+  background: var(--veil-press);
+  overflow: hidden;
+  position: relative;
+}
+.progress::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--aurora-cyan);
+  transform-origin: left;
+  animation: fill linear forwards;
+  animation-duration: inherit;
+}
+@keyframes fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .progress::after { animation: none; transform: scaleX(1); }
+}

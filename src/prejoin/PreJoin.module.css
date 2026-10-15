@@ -1,0 +1,152 @@
+.screen {
+  --panel-w: 360px;
+  --frame-gap: var(--space-6);
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--ink-950);
+}
+
+.frame {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-stage);
+  padding: var(--frame-gap);
+}
+
+/* the stage is the screen; the panel floats on top of its right edge */
+.stageWrap { position: relative; width: 100%; height: 100%; }
+
+.wordmark {
+  position: absolute;
+  top: var(--space-6);
+  left: var(--space-6);
+  z-index: var(--z-chrome);
+  font-family: var(--font-display);
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-shadow: var(--glass-text-shadow);
+}
+
+.panel {
+  position: absolute;
+  top: calc(var(--frame-gap) + var(--space-4));
+  right: calc(var(--frame-gap) + var(--space-4));
+  bottom: calc(var(--frame-gap) + var(--space-4));
+  z-index: var(--z-chrome);
+  width: var(--panel-w);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-6);
+  border-radius: var(--radius-xl);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* name */
+.field { display: grid; gap: var(--space-2); }
+.field label { font-size: 13px; line-height: 20px; font-weight: 600; }
+.field input {
+  height: 44px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  background: var(--veil-hover);
+  color: var(--text-1);
+  font: inherit;
+  font-size: 14px;
+  caret-color: var(--aurora-cyan);
+  transition: border-color var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-out);
+}
+.field input::placeholder { color: var(--text-3); }
+.field input:hover { background: var(--veil-press); }
+.field input:focus-visible { box-shadow: var(--focus-ring); border-color: var(--aurora-cyan); }
+.field input[aria-invalid='true'] { border-color: var(--warning); }
+.error { margin: 0; font-size: 12px; line-height: 18px; color: var(--warning); }
+
+/* checklist */
+.checks { display: grid; gap: var(--space-3); }
+.checks ul { margin: 0; padding: 0; list-style: none; }
+.checksHead { display: flex; align-items: baseline; justify-content: space-between; }
+.checksHead h2 { margin: 0; font-family: var(--font-display); font-size: 15px; line-height: 20px; font-weight: 600; }
+.summary { font-size: 12px; line-height: 16px; font-weight: 600; color: var(--text-2); }
+.summary[data-ready='true'] { color: var(--success); }
+
+.meterLine { display: flex; align-items: center; min-height: 20px; }
+
+/* camera quality, same segmented control as the room's camera menu */
+.segment { display: flex; gap: var(--space-1); padding: 3px; border-radius: var(--radius-md); background: var(--hairline); }
+.segment button {
+  display: flex;
+  flex: 1;
+  align-items: baseline;
+  justify-content: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: calc(var(--radius-md) - 3px);
+  background: transparent;
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 600;
+  align-items: center;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.segment button small { font-family: var(--font-mono); font-size: 10px; font-weight: 500; opacity: 0.85; }
+.segment button:hover { color: var(--text-1); }
+.segment button[aria-pressed='true'] { background: var(--primary); color: var(--on-primary); }
+.segment button:focus-visible { box-shadow: var(--focus-ring); }
+
+/* the way in */
+.cta { margin-top: auto; display: grid; gap: var(--space-2); }
+.soft { margin: 0; font-size: 12px; line-height: 18px; color: var(--text-2); text-align: center; }
+
+.join {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  height: 52px;
+  border: 0;
+  border-radius: var(--radius-lg);
+  background: var(--primary);
+  color: var(--on-primary);
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  box-shadow: 0 10px 26px color-mix(in srgb, var(--primary-glow) 45%, transparent);
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out);
+}
+.join:hover { background: color-mix(in srgb, var(--primary) 82%, var(--primary-glow)); box-shadow: 0 14px 34px color-mix(in srgb, var(--primary-glow) 55%, transparent); }
+.join:active { transform: scale(0.98); }
+.join:focus-visible { box-shadow: var(--focus-ring); }
+.join[aria-disabled='true'] { background: var(--ink-700); color: var(--text-2); box-shadow: none; cursor: not-allowed; }
+.join .keycap { color: inherit; border-color: color-mix(in srgb, currentColor 40%, transparent); background: transparent; }
+
+@media (prefers-reduced-motion: reduce) {
+  .join { transition: none; }
+}
+
+/* the lobby is desktop-first like the room; below this width we say so instead of squashing */
+@media (max-width: 1099px) {
+  .screen::after {
+    content: 'Layar terlalu sempit. Gunakan layar desktop (minimal 1100 px).';
+    position: absolute;
+    inset: 0;
+    z-index: var(--z-demo);
+    display: grid;
+    place-items: center;
+    padding: var(--space-8);
+    background: var(--ink-950);
+    color: var(--text-2);
+    text-align: center;
+  }
+}

@@ -1,0 +1,224 @@
+import { Mic, Video, Volume2 } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { CAMERA_QUALITIES, loadCameraQuality } from '../room/cameraQuality'
+import type { CameraQuality } from '../room/cameraQuality'
+import { Ambient } from '../room/Ambient'
+import { useFx } from '../room/MotionContext'
+import { canPickSpeaker } from './audioTests'
+import { CheckRow } from './CheckRow'
+import { MicTest, SpeakerTest } from './DeviceTests'
+import { isValidName, loadName, normalizeName, MAX_NAME_LENGTH, saveName } from './displayName'
+import { MeetingInfo } from './MeetingInfo'
+import { MicMeter } from './MicMeter'
+import { cameraCheck, micCheck, speakerCheck, summarize } from './mediaState'
+import { PreviewStage } from './PreviewStage'
+import { PREJOIN_KEYS, matchPrejoinShortcut } from './prejoinShortcuts'
+import { StageControls } from './StageControls'
+import { useMediaPreview } from './useMediaPreview'
+import { useMicLevel } from './useMicLevel'
+import styles from './PreJoin.module.css'
+
+/** What the lobby hands to the room. A device that never worked arrives switched off. */
+export interface JoinChoice {
+  readonly name: string
+  readonly micOn: boolean
+  readonly camOn: boolean
+  readonly cameraQuality: CameraQuality
+}
+
+/** The lobby: a full-screen mirror with a glass panel to check devices, name yourself, and enter. */
+export function PreJoin({ onJoin }: { onJoin: (choice: JoinChoice) => void }) {
+  const { fx, reduced } = useFx()
+  const [name, setName] = useState(loadName)
+  const [nameTouched, setNameTouched] = useState(false)
+  const [micOn, setMicOn] = useState(true)
+  const [camOn, setCamOn] = useState(true)
+  const [quality, setQuality] = useState<CameraQuality>(loadCameraQuality)
+  const [cameraId, setCameraId] = useState('')
+  const [micId, setMicId] = useState('')
+  const [speakerId, setSpeakerId] = useState('')
+  const [speakerHeard, setSpeakerHeard] = useState(false)
+  const nameRef = useRef<HTMLInputElement>(null)
+
+  const media = useMediaPreview({ camOn, micOn, quality, cameraId, micId })
+  const mic = useMicLevel(media.audioStream)
+  const { cameras, mics, speakers } = media.devices
+
+  const nameOk = isValidName(name)
+  const camStatus = camOn || media.cameraStatus !== 'granted' ? media.cameraStatus : 'granted'
+  const checks = [
+    cameraCheck({ status: camOn ? camStatus : 'idle' }),
+    micCheck({ status: micOn ? media.micStatus : 'idle', heardSignal: mic.heardSignal }),
+    speakerCheck({ confirmed: speakerHeard }),
+  ]
+  const summary = summarize(checks)
+  const needsAttention = checks.includes('attention')
+
+  // A chosen device that disappears falls back to the system default
+  useEffect(() => {
+    if (cameraId && cameras.length > 0 && !cameras.some((d) => d.id === cameraId)) setCameraId('')
+    if (micId && mics.length > 0 && !mics.some((d) => d.id === micId)) setMicId('')
+    if (speakerId && speakers.length > 0 && !speakers.some((d) => d.id === speakerId)) setSpeakerId('')
+  }, [cameras, mics, speakers, cameraId, micId, speakerId])
+
+  // Land on the name field only when it's empty, so a returning user can press Enter right away
+  useEffect(() => {
+    if (!nameOk) nameRef.current?.focus()
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- first paint only
+  }, [])
+
+  const join = () => {
+    if (!nameOk) {
+      setNameTouched(true)
+      nameRef.current?.focus()
+      return
+    }
+    const clean = normalizeName(name)
+    saveName(clean)
+    onJoin({
+      name: clean,
+      micOn: micOn && media.micStatus === 'granted',
+      camOn: camOn && media.cameraStatus === 'granted',
+      cameraQuality: quality,
+    })
+  }
+
+  const toggleMic = () => setMicOn((on) => !on)
+  const toggleCam = () => setCamOn((on) => !on)
+  const handlers = useRef({ join, mic: toggleMic, camera: toggleCam })
+  useEffect(() => {
+    handlers.current = { join, mic: toggleMic, camera: toggleCam }
+  })
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const hit = matchPrejoinShortcut(e)
+      if (!hit) return
+      e.preventDefault()
+      handlers.current[hit]()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
+  const showNameError = nameTouched && !nameOk
+
+  return (
+    <div className={styles.screen} data-motion={reduced ? 'reduced' : 'full'} data-fx={fx}>
+      <Ambient />
+      <main className={styles.frame}>
+        <div className={styles.stageWrap}>
+          <PreviewStage videoStream={media.videoStream} camOn={camOn} cameraStatus={media.cameraStatus} micOn={micOn} name={name} mic={mic} />
+          <span className={styles.wordmark}>Huddle</span>
+          <StageControls
+            micOn={micOn}
+            camOn={camOn}
+            micStatus={media.micStatus}
+            cameraStatus={media.cameraStatus}
+            heard={mic.heardSignal}
+            onToggleMic={toggleMic}
+            onToggleCam={toggleCam}
+          />
+        </div>
+
+        <form className={`glass-3 ${styles.panel}`} onSubmit={(e) => {
+            e.preventDefault()
+            join()
+          }} noValidate aria-label="Persiapan bergabung">
+          <MeetingInfo />
+
+          <div className={styles.field}>
+            <label htmlFor="display-name">Nama tampilan</label>
+            <input
+              ref={nameRef}
+              id="display-name"
+              type="text"
+              value={name}
+              maxLength={MAX_NAME_LENGTH}
+              autoComplete="nickname"
+              placeholder="Nama yang dilihat peserta lain"
+              aria-invalid={showNameError}
+              aria-describedby={showNameError ? 'name-error' : undefined}
+              onChange={(e) => setName(e.target.value)}
+              onBlur={() => setNameTouched(true)}
+            />
+            {showNameError && (
+              <p id="name-error" className={styles.error} role="alert">
+                Isi nama dulu supaya peserta lain tahu siapa Anda.
+              </p>
+            )}
+          </div>
+
+          <section className={styles.checks} aria-labelledby="checks-title">
+            <div className={styles.checksHead}>
+              <h2 id="checks-title">Cek perangkat</h2>
+              <span className={styles.summary} data-ready={summary.allReady}>
+                {summary.label}
+              </span>
+            </div>
+            <ul>
+              <CheckRow
+                icon={<Video size={16} strokeWidth={1.75} />}
+                title="Kamera"
+                state={checks[0]}
+                options={cameras}
+                value={cameraId}
+                onChange={setCameraId}
+                issue={camOn ? media.cameraStatus : undefined}
+                onRetry={() => media.retry('camera')}
+              >
+                <div className={styles.segment} role="group" aria-label="Kualitas kamera">
+                  {CAMERA_QUALITIES.map((q) => (
+                    <button key={q.id} type="button" aria-pressed={quality === q.id} onClick={() => setQuality(q.id)}>
+                      {q.label}
+                      <small>{q.resolution}</small>
+                    </button>
+                  ))}
+                </div>
+              </CheckRow>
+              <CheckRow
+                icon={<Mic size={16} strokeWidth={1.75} />}
+                title="Mikrofon"
+                state={checks[1]}
+                options={mics}
+                value={micId}
+                onChange={setMicId}
+                issue={micOn ? media.micStatus : undefined}
+                onRetry={() => media.retry('mic')}
+              >
+                <div className={styles.meterLine}>
+                  <MicMeter mic={mic} active={micOn && media.micStatus === 'granted'} />
+                </div>
+                <MicTest stream={micOn ? media.audioStream : null} speakerId={speakerId} />
+              </CheckRow>
+              <CheckRow
+                icon={<Volume2 size={16} strokeWidth={1.75} />}
+                title="Speaker"
+                state={checks[2]}
+                options={speakers}
+                value={speakerId}
+                onChange={(id) => {
+                  setSpeakerId(id)
+                  setSpeakerHeard(false)
+                }}
+                hidePicker={!canPickSpeaker() || speakers.length === 0}
+              >
+                <SpeakerTest speakerId={speakerId} confirmed={speakerHeard} onConfirm={setSpeakerHeard} />
+              </CheckRow>
+            </ul>
+          </section>
+
+          <div className={styles.cta}>
+            {needsAttention && <p className={styles.soft}>Perangkat bisa diatur nanti. Anda tetap bisa masuk dulu.</p>}
+            <button type="submit" className={styles.join} aria-disabled={!nameOk || undefined} aria-keyshortcuts={PREJOIN_KEYS.join}>
+              Masuk
+              <kbd className="keycap" aria-hidden="true">
+                Enter
+              </kbd>
+            </button>
+          </div>
+        </form>
+      </main>
+    </div>
+  )
+}

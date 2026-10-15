@@ -91,6 +91,7 @@ export type RoomAction =
   | { type: 'reset' }
   | { type: 'setFx'; fx: FxTier }
   | { type: 'setCameraQuality'; quality: CameraQuality }
+| { type: 'joinRoom'; name: string; micOn: boolean; camOn: boolean; quality: CameraQuality }
   | { type: 'setLayoutMode'; mode: LayoutMode }
   | { type: 'pinParticipant'; id: string | null }
   | { type: 'setHideNoVideo'; on: boolean }

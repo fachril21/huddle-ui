@@ -21,6 +21,9 @@ Bun tidak terpasang di mesin pengembangan, jadi dipakai npm.
 
 Tekan `Shift+D` untuk membuka/menutup panel kontrol demo (di luar produk), atau klik tombol "Demo" di kiri atas.
 
+## Lobby sebelum masuk
+Aplikasi dibuka di lobby: pratinjau kamera sungguhan, level mikrofon, tes speaker, pilihan perangkat, nama tampilan, lalu **Masuk** (`Enter`). Izin ditolak atau perangkat tidak ada tidak menghalangi masuk. Pintasan: `M` mic, `V` kamera. Lihat `docs/PLAN - Pre-Join Lobby.md`.
+
 ## Yang bisa dicoba
 
 - **Mode otomatis**: Demo Director > Skenario > Putar. "Brainstorm sprint" berjalan sekitar 4 menit tanpa campur tangan; ada skenario pendek (Aurora, High five, Share screen, Voting) dan kecepatan 1x/1,5x. Tutup panel dengan  saat presentasi.

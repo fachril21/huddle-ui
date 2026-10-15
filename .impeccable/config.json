@@ -10,5 +10,6 @@
         "reason": "Design.md 3.1/16.1 defines --ease-spring for emoji and button entrances; the brief pins it, not the model's choice"
       }
     ]
-  }
+  },
+  "buildPath": "code"
 }
