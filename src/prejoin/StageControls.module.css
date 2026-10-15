@@ -1,6 +1,6 @@
 .wrap {
   position: absolute;
-  left: calc((100% - 392px) / 2);
+  left: calc((100% - var(--panel-offset, 392px)) / 2);
   bottom: var(--space-6);
   transform: translateX(-50%);
   z-index: var(--z-chrome);
@@ -30,3 +30,7 @@
 .hint[data-heard='true'] { color: var(--success); }
 
 .hint[hidden] { display: none; }
+
+@media (max-width: 767px) {
+  .wrap { bottom: var(--space-4); }
+}

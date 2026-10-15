@@ -12,6 +12,8 @@ interface PreviewStageProps {
   micOn: boolean
   name: string
   mic: MicLevel
+  /** The front camera is shown like a mirror; the back camera is not */
+  mirrored?: boolean
 }
 
 /** Level (0..1) to the CSS variables the shared Aurora and the edge glow read. */
@@ -31,7 +33,7 @@ function emptyCaption(camOn: boolean, status: MediaStatus): string {
 }
 
 /** The full-bleed mirror: camera if there is one, otherwise the initial on an aurora that answers the voice. */
-export function PreviewStage({ videoStream, camOn, cameraStatus, micOn, name, mic }: PreviewStageProps) {
+export function PreviewStage({ videoStream, camOn, cameraStatus, micOn, name, mic, mirrored = true }: PreviewStageProps) {
   const stageRef = useRef<HTMLDivElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const { subscribe } = mic
@@ -58,7 +60,7 @@ export function PreviewStage({ videoStream, camOn, cameraStatus, micOn, name, mi
   return (
     <div ref={stageRef} className={styles.stage} data-palette="borealis" data-cam={showVideo ? 'on' : 'off'} data-motion={reduced ? 'reduced' : 'full'}>
       {showVideo ? (
-        <video ref={videoRef} className={styles.video} muted playsInline aria-label="Pratinjau kamera Anda" />
+        <video ref={videoRef} className={styles.video} data-mirrored={mirrored} muted playsInline aria-label="Pratinjau kamera Anda" />
       ) : (
         <div className={styles.empty}>
           {fx !== 'off' && (

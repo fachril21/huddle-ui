@@ -159,3 +159,63 @@
 @media (prefers-reduced-motion: reduce) {
   .join { transition: none; }
 }
+
+/* ---- touch screens ---- */
+.checksToggle { display: flex; align-items: center; gap: var(--space-3); width: 100%; min-height: var(--tap); padding: 0; border: 0; background: transparent; color: inherit; text-align: left; }
+.checksToggle h2 { margin: 0; flex: 1; font-family: var(--font-display); font-size: 15px; line-height: 20px; font-weight: 600; }
+.chevron { color: var(--text-2); transition: transform var(--dur-base) var(--ease-out); }
+.checksToggle[aria-expanded='true'] .chevron { transform: rotate(180deg); }
+.checksToggle:focus-visible { box-shadow: var(--focus-ring); border-radius: var(--radius-sm); }
+.checks ul[hidden] { display: none; }
+
+.screen { --panel-offset: calc(var(--panel-w) + var(--space-8)); }
+
+/* phone portrait: the mirror on top, the form below it, Masuk always reachable */
+@media (max-width: 767px) {
+  .screen { --panel-offset: 0px; display: flex; flex-direction: column; }
+  .frame { position: relative; inset: auto; display: flex; flex: 1; flex-direction: column; min-height: 0; padding: 0; }
+  .stageWrap { flex: none; height: min(44dvh, 420px); padding-top: var(--demo-strip); }
+  .stageWrap > div:first-child { border-radius: 0 0 var(--radius-xl) var(--radius-xl); }
+  .brand { top: calc(var(--safe-top) + var(--demo-strip) + var(--space-3)); left: max(var(--space-4), var(--safe-left)); }
+  .back { height: var(--tap); padding: 0 var(--space-4); font-size: 13px; }
+
+  form.panel {
+    position: relative;
+    inset: auto;
+    flex: 1;
+    min-height: 0;
+    width: auto;
+    gap: var(--space-4);
+    padding: var(--space-5) max(var(--space-4), var(--safe-left)) calc(var(--space-4) + var(--kb, 0px)) max(var(--space-4), var(--safe-right));
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    backdrop-filter: none;
+    box-shadow: none;
+  }
+  form.panel::after { display: none; }
+
+  .field input { height: var(--tap); font-size: 16px; }
+  .segment button { height: 40px; }
+
+  /* the way in sticks to the bottom edge while the checklist scrolls under it */
+  .cta {
+    position: sticky;
+    bottom: calc(var(--space-4) * -1);
+    margin: auto calc(var(--space-4) * -1) calc(var(--space-4) * -1);
+    padding: var(--space-3) var(--space-4) max(var(--space-3), var(--safe-bottom));
+    background: linear-gradient(180deg, transparent, var(--ink-950) 34%);
+  }
+
+  /* with the keyboard up, the picture shrinks to a strip so the name field and Masuk stay in view */
+  .screen[data-keyboard] .stageWrap { height: calc(104px + var(--demo-strip)); }
+}
+
+/* a phone turned sideways: the desktop arrangement, tightened */
+@media (max-height: 500px) and (pointer: coarse) and (min-width: 768px) {
+  .screen { --panel-w: 330px; --frame-gap: var(--space-3); }
+  .panel { padding: var(--space-4); gap: var(--space-3); }
+  .field input { height: var(--tap); font-size: 16px; }
+  .back { height: var(--tap); }
+  .join { height: var(--tap); }
+}

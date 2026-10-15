@@ -60,3 +60,8 @@
 @media (prefers-reduced-motion: reduce) {
   .progress::after { animation: none; transform: scaleX(1); }
 }
+
+@media (pointer: coarse) {
+  .btn { height: var(--tap); padding: 0 var(--space-4); font-size: 13px; }
+  .chip { min-height: var(--tap); padding: 0 var(--space-4); }
+}

@@ -74,3 +74,9 @@
 .retry:focus-visible { box-shadow: var(--focus-ring); }
 
 .issue[hidden] { display: none; }
+
+/* touch: pickers and retry buttons are finger-sized */
+@media (pointer: coarse) {
+  .select { height: var(--tap); font-size: 16px; }
+  .row button { min-height: var(--tap); }
+}

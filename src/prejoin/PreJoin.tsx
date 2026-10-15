@@ -1,6 +1,8 @@
-import { ArrowLeft, Mic, Video, Volume2 } from 'lucide-react'
+import { ArrowLeft, ChevronDown, Mic, Video, Volume2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import type { CSSProperties } from 'react'
 import type { JoinTarget } from '../dashboard/types'
+import { useKeyboardInset, useViewport } from '../mobile/useViewport'
 import { CAMERA_QUALITIES, loadCameraQuality } from '../room/cameraQuality'
 import type { CameraQuality } from '../room/cameraQuality'
 import { Ambient } from '../room/Ambient'
@@ -39,9 +41,15 @@ export function PreJoin({ meeting, onJoin, onBack }: { meeting: JoinTarget; onJo
   const [micId, setMicId] = useState('')
   const [speakerId, setSpeakerId] = useState('')
   const [speakerHeard, setSpeakerHeard] = useState(false)
+  // phone only: front or back camera, and whether the device checklist is unfolded (null = follow whether anything needs attention)
+  const [facing, setFacing] = useState<'user' | 'environment'>('user')
+  const [checksOpen, setChecksOpen] = useState<boolean | null>(null)
+  const { sizeClass } = useViewport()
+  const phone = sizeClass === 'phone'
+  const keyboard = useKeyboardInset()
   const nameRef = useRef<HTMLInputElement>(null)
 
-  const media = useMediaPreview({ camOn, micOn, quality, cameraId, micId })
+  const media = useMediaPreview({ camOn, micOn, quality, cameraId, micId, facing })
   const mic = useMicLevel(media.audioStream)
   const { cameras, mics, speakers } = media.devices
 
@@ -54,6 +62,15 @@ export function PreJoin({ meeting, onJoin, onBack }: { meeting: JoinTarget; onJo
   ]
   const summary = summarize(checks)
   const needsAttention = checks.includes('attention')
+  const checksVisible = !phone || (checksOpen ?? needsAttention)
+  const keyboardOpen = phone && keyboard > 0
+  const flipCamera =
+    cameras.length > 1
+      ? () => {
+          setCameraId('')
+          setFacing((f) => (f === 'user' ? 'environment' : 'user'))
+        }
+      : undefined
 
   // A chosen device that disappears falls back to the system default
   useEffect(() => {
@@ -64,7 +81,8 @@ export function PreJoin({ meeting, onJoin, onBack }: { meeting: JoinTarget; onJo
 
   // Land on the name field only when it's empty, so a returning user can press Enter right away
   useEffect(() => {
-    if (!nameOk) nameRef.current?.focus()
+    // on a touch screen, focusing here would pop the keyboard over the picture before the user has seen it
+    if (!nameOk && !window.matchMedia('(pointer: coarse)').matches) nameRef.current?.focus()
     // eslint-disable-next-line react-hooks/exhaustive-deps -- first paint only
   }, [])
 
@@ -105,11 +123,11 @@ export function PreJoin({ meeting, onJoin, onBack }: { meeting: JoinTarget; onJo
   const showNameError = nameTouched && !nameOk
 
   return (
-    <div className={styles.screen} data-motion={reduced ? 'reduced' : 'full'} data-fx={fx}>
+    <div className={styles.screen} data-motion={reduced ? 'reduced' : 'full'} data-fx={fx} data-keyboard={keyboardOpen || undefined} style={{ '--kb': `${keyboard}px` } as CSSProperties}>
       <Ambient />
       <main className={styles.frame}>
         <div className={styles.stageWrap}>
-          <PreviewStage videoStream={media.videoStream} camOn={camOn} cameraStatus={media.cameraStatus} micOn={micOn} name={name} mic={mic} />
+          <PreviewStage videoStream={media.videoStream} camOn={camOn} cameraStatus={media.cameraStatus} micOn={micOn} name={name} mic={mic} mirrored={facing === 'user'} />
           <div className={styles.brand}>
             <span className={styles.wordmark}>Huddle</span>
             <button type="button" className={styles.back} onClick={onBack}>
@@ -117,6 +135,7 @@ export function PreJoin({ meeting, onJoin, onBack }: { meeting: JoinTarget; onJo
               Beranda
             </button>
           </div>
+          {!keyboardOpen && (
           <StageControls
             micOn={micOn}
             camOn={camOn}
@@ -125,7 +144,9 @@ export function PreJoin({ meeting, onJoin, onBack }: { meeting: JoinTarget; onJo
             heard={mic.heardSignal}
             onToggleMic={toggleMic}
             onToggleCam={toggleCam}
+            onFlipCamera={flipCamera}
           />
+          )}
         </div>
 
         <form className={`glass-3 ${styles.panel}`} onSubmit={(e) => {
@@ -157,13 +178,23 @@ export function PreJoin({ meeting, onJoin, onBack }: { meeting: JoinTarget; onJo
           </div>
 
           <section className={styles.checks} aria-labelledby="checks-title">
-            <div className={styles.checksHead}>
-              <h2 id="checks-title">Cek perangkat</h2>
-              <span className={styles.summary} data-ready={summary.allReady}>
-                {summary.label}
-              </span>
-            </div>
-            <ul>
+            {phone ? (
+              <button type="button" className={styles.checksToggle} aria-expanded={checksVisible} aria-controls="checks-list" onClick={() => setChecksOpen(!checksVisible)}>
+                <h2 id="checks-title">Cek perangkat</h2>
+                <span className={styles.summary} data-ready={summary.allReady}>
+                  {summary.label}
+                </span>
+                <ChevronDown size={18} strokeWidth={1.75} aria-hidden="true" className={styles.chevron} />
+              </button>
+            ) : (
+              <div className={styles.checksHead}>
+                <h2 id="checks-title">Cek perangkat</h2>
+                <span className={styles.summary} data-ready={summary.allReady}>
+                  {summary.label}
+                </span>
+              </div>
+            )}
+            <ul id="checks-list" hidden={!checksVisible}>
               <CheckRow
                 icon={<Video size={16} strokeWidth={1.75} />}
                 title="Kamera"

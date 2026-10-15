@@ -23,6 +23,8 @@ interface Options {
   quality: CameraQuality
   cameraId: string
   micId: string
+  /** Front (user) or back (environment) camera; only used while no specific camera is picked */
+  facing?: 'user' | 'environment'
 }
 
 export interface MediaPreview {
@@ -49,7 +51,7 @@ function stopAll(stream: MediaStream | null) {
  * Real camera and mic for the lobby. Each kind is requested on its own so a refused camera never
  * takes the mic down with it. Turning a toggle off stops its tracks, so the camera light goes out.
  */
-export function useMediaPreview({ camOn, micOn, quality, cameraId, micId }: Options): MediaPreview {
+export function useMediaPreview({ camOn, micOn, quality, cameraId, micId, facing }: Options): MediaPreview {
   const [videoStream, setVideoStream] = useState<MediaStream | null>(null)
   const [audioStream, setAudioStream] = useState<MediaStream | null>(null)
   const [cameraStatus, setCameraStatus] = useState<MediaStatus>('idle')
@@ -92,7 +94,7 @@ export function useMediaPreview({ camOn, micOn, quality, cameraId, micId }: Opti
     let cancelled = false
     let acquired: MediaStream | null = null
     setCameraStatus('requesting')
-    const video: MediaTrackConstraints = { ...videoConstraintsFor(quality), ...(cameraId ? { deviceId: { exact: cameraId } } : {}) }
+    const video: MediaTrackConstraints = { ...videoConstraintsFor(quality), ...(cameraId ? { deviceId: { exact: cameraId } } : facing ? { facingMode: { ideal: facing } } : {}) }
     navigator.mediaDevices
       .getUserMedia({ video })
       .then((stream) => {
@@ -116,7 +118,7 @@ export function useMediaPreview({ camOn, micOn, quality, cameraId, micId }: Opti
       cancelled = true
       stopAll(acquired)
     }
-  }, [camOn, quality, cameraId, attempt.camera, refreshDevices])
+  }, [camOn, quality, cameraId, facing, attempt.camera, refreshDevices])
 
   useEffect(() => {
     if (!micOn) {

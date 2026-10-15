@@ -1,4 +1,4 @@
-import { Mic, MicOff, Video, VideoOff } from 'lucide-react'
+import { Mic, MicOff, SwitchCamera, Video, VideoOff } from 'lucide-react'
 import { DockButton } from '../room/DockButton'
 import { PREJOIN_KEYS } from './prejoinShortcuts'
 import type { MediaStatus } from './mediaState'
@@ -15,6 +15,8 @@ interface StageControlsProps {
   heard: boolean
   onToggleMic: () => void
   onToggleCam: () => void
+  /** Present only when the device has more than one camera */
+  onFlipCamera?: () => void
 }
 
 /** What to tell the user to do next with their voice; empty when there's nothing to add. */
@@ -25,7 +27,7 @@ function micHint(micOn: boolean, status: MediaStatus, heard: boolean): string {
 }
 
 /** Floating glass dock over the preview: mic, camera, and a live line about what the mic hears. */
-export function StageControls({ micOn, camOn, micStatus, cameraStatus, heard, onToggleMic, onToggleCam }: StageControlsProps) {
+export function StageControls({ micOn, camOn, micStatus, cameraStatus, heard, onToggleMic, onToggleCam, onFlipCamera }: StageControlsProps) {
   const micBlocked = micStatus === 'denied' || micStatus === 'no-device'
   const camBlocked = cameraStatus === 'denied' || cameraStatus === 'no-device'
   const hint = micHint(micOn, micStatus, heard)
@@ -49,6 +51,7 @@ export function StageControls({ micOn, camOn, micStatus, cameraStatus, heard, on
           disabledReason={camBlocked ? 'Kamera belum tersedia' : undefined}
           onClick={onToggleCam}
         />
+        {onFlipCamera && camOn && <DockButton icon={<SwitchCamera {...ICON} />} label="Balik kamera" onClick={onFlipCamera} />}
       </div>
       <p className={`glass-1 ${styles.hint}`} role="status" data-heard={heard} hidden={!hint}>
         {hint}
