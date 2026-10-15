@@ -49,3 +49,7 @@
 @media (prefers-reduced-motion: reduce) {
   .tile { transition: none; }
 }
+
+/* a last tile left alone on its row takes the whole row */
+.grid li:last-child:nth-child(3n + 1) { grid-column: 1 / -1; }
+.grid li:last-child:nth-child(3n + 2) { grid-column: span 2; }

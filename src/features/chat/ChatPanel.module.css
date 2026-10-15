@@ -113,3 +113,7 @@
   text-align: left;
 }
 .mentions li[aria-selected='true'] button, .mentions button:hover { background: var(--veil-press); }
+
+@media (pointer: coarse) {
+  .to select { min-height: var(--tap); }
+}

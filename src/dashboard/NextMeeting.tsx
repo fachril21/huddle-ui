@@ -50,8 +50,8 @@ export function NextMeeting({ occurrence, now, actions, onSchedule }: NextMeetin
           <p className={styles.meta}>
             <StatusTag state={state} label={statusLabel} />
             <span className={ui.mono}>{formatTimeRange(occurrence)}</span>
-            <span className={ui.mono}>{meeting.code}</span>
-            <span>{meeting.isHost ? 'Anda host' : `Host ${meeting.hostName}`}</span>
+            <span className={styles.secondary}>{meeting.isHost ? 'Anda host' : `Host ${meeting.hostName}`}</span>
+            <span className={`${ui.mono} ${styles.secondary}`}>{meeting.code}</span>
             {meeting.recurrence !== 'none' && (
               <span className={styles.repeat}>
                 <Repeat size={13} strokeWidth={1.75} aria-hidden="true" />
@@ -66,6 +66,7 @@ export function NextMeeting({ occurrence, now, actions, onSchedule }: NextMeetin
         <div className={styles.actions}>
           <button type="button" className={`${ui.btn} ${ui.icon}`} onClick={() => actions.copyLink(occurrence)} aria-label={`Salin tautan ${meeting.title}`} title="Salin tautan">
             <Copy size={18} strokeWidth={1.75} aria-hidden="true" />
+            <span className={styles.copyLabel}>Salin tautan</span>
           </button>
           {action && (
             <button

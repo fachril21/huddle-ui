@@ -128,3 +128,11 @@
 .secondary:hover { background: var(--veil-hover); }
 .primary:active:not(:disabled), .secondary:active { transform: scale(0.97); }
 .primary:focus-visible, .secondary:focus-visible { box-shadow: var(--focus-ring); }
+
+/* touch: every control in the form is a finger-sized target */
+@media (pointer: coarse) {
+  .link { min-height: var(--tap); padding: 0 var(--space-2); }
+  .add, .remove, .secondary, .primary { min-height: var(--tap); }
+  .remove { min-width: var(--tap); }
+  .inline select { min-height: var(--tap); }
+}

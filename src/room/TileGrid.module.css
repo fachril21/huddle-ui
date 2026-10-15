@@ -50,10 +50,10 @@
 /* phone: tiles do not drag (a swipe turns the page), and a row of dots says which page this is */
 .stage[data-phone] .cell { cursor: default; touch-action: pan-y; }
 .dots { position: absolute; left: 50%; bottom: -22px; display: flex; transform: translateX(-50%); }
-.dots button { display: grid; place-items: center; width: 32px; height: 32px; padding: 0; border: 0; background: transparent; }
+.dots button { display: grid; place-items: center; width: var(--tap); height: 32px; padding: 0; border: 0; background: transparent; }
 .dots button:focus-visible { box-shadow: var(--focus-ring); border-radius: var(--radius-md); }
-.dots i { display: block; width: 6px; height: 6px; border-radius: 50%; background: var(--text-3); opacity: 0.55; transition: width var(--dur-base) var(--ease-out), opacity var(--dur-base) var(--ease-out), background-color var(--dur-base) var(--ease-out); }
-.dots button[aria-current='page'] i { width: 18px; border-radius: var(--radius-pill); background: var(--text-1); opacity: 1; }
+.dots i { display: block; width: 6px; height: 6px; border-radius: 50%; background: var(--text-3); opacity: 0.55; transition: transform var(--dur-base) var(--ease-out), opacity var(--dur-base) var(--ease-out), background-color var(--dur-base) var(--ease-out); }
+.dots button[aria-current='page'] i { transform: scaleX(3); background: var(--text-1); opacity: 1; }
 .dots button[data-hint] i { background: var(--aurora-mint); opacity: 1; box-shadow: 0 0 8px var(--aurora-mint); }
 @media (prefers-reduced-motion: reduce) {
   .dots i { transition: none; }

@@ -41,7 +41,8 @@
     gap: var(--space-5);
     padding: calc(var(--space-2) + var(--safe-top) + var(--demo-strip)) max(var(--space-4), var(--safe-left)) calc(72px + var(--safe-bottom) + var(--space-6)) max(var(--space-4), var(--safe-right));
   }
-  .sectionHead { padding: 0 var(--space-1); }
+  .column > * { min-width: 0; }
+  .sectionHead { flex-wrap: wrap; row-gap: var(--space-1); padding: 0 var(--space-1); }
   .sectionHead h2 { font-size: 18px; line-height: 26px; }
   .more { min-height: var(--tap); }
 }

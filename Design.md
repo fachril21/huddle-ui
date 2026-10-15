@@ -905,3 +905,17 @@ Halaman setelah login (`src/dashboard/`), mode Operate, desktop 1440 x 900. Duni
 - **Dialog** memakai `<dialog>` native dengan `glass-3`. Form jadwal meniru Zoom (judul, catatan, tanggal, jam, durasi, zona waktu, berulang, undangan chip, Room, keamanan). Ruang tunggu, kode sandi, dan mute saat masuk hanya tampilan.
 - **Token baru: tidak ada.** Memakai token section 2-3; kontrol bersama di `dashboard/ui.module.css` (tombol 40/52/32 px, input 44 px, segmented, switch 44 x 26).
 - **Gerak.** Satu momen: tepi aurora pada rapat yang bisa dimasuki. Selebihnya transisi 120-220 ms pada hover/fokus dan putaran chevron menu.
+
+---
+
+## 24. Mobile [Baru]
+
+Dashboard, lobby, dan room berjalan di HP (320-430 px, portrait dan landscape) dan tablet. Dunia visual sama (Huddle Aurora); yang berubah adalah susunan, target sentuh, dan tempat kontrol.
+
+- **Ukuran**: phone sampai 767 px, tablet 768-1099 px, desktop 1100 px ke atas; HP landscape dihitung tablet dengan aturan tinggi-pendek. Sentuh = `pointer: coarse`.
+- **Target sentuh**: minimal 44 px (`--tap`); input 16 px; tanpa hover (tooltip diganti penjelasan saat diketuk); safe area dan `dvh`.
+- **Lembar bawah** (`Sheet`): glass-3, sudut atas `--radius-xl`, pegangan 40 x 4, tombol tutup 44 px, tinggi isi atau 92% layar; naik di atas keyboard layar. Semua popover dan panel room menjadi lembar.
+- **Dashboard**: tab bar bawah (glass-2) menggantikan rail; bar perintah bertumpuk; baris rapat dua baris, ketuk membuka lembar aksi; form jadwal layar penuh.
+- **Lobby**: preview 44% tinggi, form di bawah, Masuk menempel di tepi bawah.
+- **Room**: bilah bawah berlabel (Mic, Kamera, Reaksi, Chat, Lainnya, Keluar terpisah jarak), bilah atas ringkas (judul + timer, sinyal, jumlah peserta), grid tinggi 6 per halaman dengan swipe dan titik halaman, PiP untuk rapat berdua, share screen di atas baris peserta. Tidak ada auto-hide kontrol di portrait.
+- **Gerak**: lembar masuk dari bawah 420 ms, geser tutup mengikuti jari; reduced motion mematikan animasi masuk. Tier efek default Hemat di HP.

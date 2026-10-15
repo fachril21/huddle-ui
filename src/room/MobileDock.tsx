@@ -96,12 +96,12 @@ export function MobileDock({ self, toggles, unreadChat, onToggleMic, onToggleCam
         </Sheet>
       )}
       {toggles.soundboard && (
-        <Sheet title="Soundboard" size="tall" onClose={() => onClose('soundboard')}>
+        <Sheet title="Soundboard" size="tall" quietTitle onClose={() => onClose('soundboard')}>
           <Flat>{soundboard}</Flat>
         </Sheet>
       )}
       {toggles.camera && (
-        <Sheet title="Pengaturan kamera" onClose={() => onClose('camera')}>
+        <Sheet title="Kualitas kamera" onClose={() => onClose('camera')}>
           <Flat>{camera}</Flat>
         </Sheet>
       )}

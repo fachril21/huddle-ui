@@ -90,3 +90,11 @@
 }
 .invite:hover { background: var(--veil-hover); }
 .invite:focus-visible { box-shadow: var(--focus-ring); }
+
+/* touch: bigger rows, a real target for the per-person menu, no hover to open it */
+@media (pointer: coarse) {
+  .search { min-height: var(--tap); }
+  .invite { min-height: var(--tap); }
+  .more { width: var(--tap); height: var(--tap); }
+  .menu button { min-height: var(--tap); }
+}

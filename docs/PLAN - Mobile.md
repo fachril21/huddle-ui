@@ -1,6 +1,6 @@
 # Plan: Mobile view (Huddle)
 
-Status: **disetujui, dalam pengerjaan**. Jawaban bagian 11: 1) tablet memakai layout desktop yang dirapatkan, 2) PiP melayang untuk 1:1, 3) bagikan layar tetap ada, 4) landscape phone didukung penuh, 5) zoom cubit ditunda.
+Status: **selesai dibangun** (fase 0-5; verifikasi dengan emulasi sentuh, belum di HP fisik). Jawaban bagian 11: 1) tablet memakai layout desktop yang dirapatkan, 2) PiP melayang untuk 1:1, 3) bagikan layar tetap ada, 4) landscape phone didukung penuh, 5) zoom cubit ditunda.
 Acuan: pola mobile Zoom dan Google Meet, panduan `adapt` Impeccable, `Design.md` (Huddle Aurora), `PRODUCT.md`, kode di `src/`.
 
 ## 1. Tujuan dan cakupan

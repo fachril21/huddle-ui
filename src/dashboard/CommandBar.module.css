@@ -66,3 +66,19 @@ button[data-open] .chevron { transform: rotate(180deg); }
   .input { height: var(--tap); border-radius: var(--radius-md); }
   .join > button { height: var(--tap); }
 }
+
+/* narrow phones: tighter buttons, and below 340px each action gets its own line */
+@media (max-width: 389px) {
+  .make .btn.large { padding: 0 14px; font-size: 14px; }
+  .make > :first-child > button { gap: 6px; }
+}
+@media (max-width: 339px) {
+  .make { flex-wrap: wrap; }
+  .make > :first-child { flex: 1 1 100%; }
+  .schedule { flex: 1 1 100%; }
+}
+
+/* phone: the two Room saya buttons sit as soft fills inside the card, not as boxes within a box */
+@media (max-width: 767px) {
+  .room > button { border-color: transparent; background: var(--veil-hover); }
+}

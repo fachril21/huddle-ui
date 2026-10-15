@@ -30,3 +30,9 @@
 .menu button:hover { background: var(--veil-press); }
 .menu button:focus-visible { box-shadow: var(--focus-ring); }
 .menu .danger { color: var(--aurora-rose); }
+
+/* in a sheet the two choices are full-width, bordered rows a thumb can hit */
+@media (max-width: 1099px), (max-height: 500px) and (pointer: coarse) {
+  .menu { gap: var(--space-2); }
+  .menu button { min-height: 56px; border: 1px solid var(--glass-border); background: var(--veil-hover); }
+}

@@ -213,7 +213,7 @@ export function Room({ state, dispatch }: RoomProps) {
     { id: 'polling', label: 'Polling', icon: <ChartColumn {...ICON} />, badge: polls.pendingBadge, onSelect: () => dispatch({ type: 'openPanel', panel: 'polling' }) },
     { id: 'invite', label: 'Undang', icon: <UserPlus {...ICON} />, onSelect: () => setInviteOpen(true) },
     ...(canManage ? [{ id: 'host', label: 'Alat host', icon: <ShieldCheck {...ICON} />, badge: state.host.waiting.length, onSelect: () => dispatch({ type: 'openPanel', panel: 'host' }) }] : []),
-    { id: 'camera', label: 'Kamera', icon: <SlidersHorizontal {...ICON} />, onSelect: () => dispatch({ type: 'toggleDock', key: 'camera' }) },
+    { id: 'camera', label: 'Kualitas kamera', icon: <SlidersHorizontal {...ICON} />, onSelect: () => dispatch({ type: 'toggleDock', key: 'camera' }) },
   ]
 
   return (
@@ -356,7 +356,7 @@ export function Room({ state, dispatch }: RoomProps) {
             </Sheet>
           )}
           {inviteOpen && (
-            <Sheet title="Undang lewat tautan" onClose={closeInvite}>
+            <Sheet title="Undang" onClose={closeInvite}>
               <Flat>
                 <InvitePopover title={MEETING_TITLE} url={buildInviteUrl(MEETING_CODE)} locked={state.host.locked} />
               </Flat>

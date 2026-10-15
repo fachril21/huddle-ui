@@ -103,6 +103,6 @@
 
 /* the avatar and its caption centre on the picture when there is no side panel beside it */
 @media (max-width: 767px) {
-  .avatar { --size: clamp(80px, 26cqh, 140px); top: 44%; }
-  .caption { top: calc(44% + clamp(40px, 13cqh, 70px) + 20px); }
+  .avatar { --size: clamp(72px, 22cqh, 120px); top: 38%; }
+  .caption { top: calc(38% + clamp(36px, 11cqh, 60px) + 12px); }
 }

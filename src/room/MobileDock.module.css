@@ -69,3 +69,14 @@
 @media (min-width: 768px) {
   .dock { left: 50%; right: auto; width: min(560px, calc(100% - 16px)); translate: -50% 0; }
 }
+
+/* very narrow phones: a little air between the labelled buttons so two red ones do not merge */
+@media (max-width: 359px) {
+  .dock { gap: 4px; }
+  .gap { width: 4px; }
+}
+
+/* muted or camera-off is a state, leaving is an action: only Keluar is solid red */
+.btn[data-tone='off'] { border: 1px solid color-mix(in srgb, var(--danger) 70%, transparent); background: color-mix(in srgb, var(--danger) 26%, transparent); color: var(--aurora-rose); }
+.dock { gap: 4px; }
+.gap { width: var(--space-3); }
