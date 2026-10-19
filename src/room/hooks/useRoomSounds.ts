@@ -1,13 +1,17 @@
 import { useEffect, useRef } from 'react'
 import { deriveCues } from '../../audio/roomCues'
 import { playCue, preloadSoundCues } from '../../audio/fileSounds'
+import { preloadSoundboard } from '../../audio/soundboardSounds'
 import type { RoomState } from '../../state/types'
 
 /** Plays the sound effect that matches each room event (mic, hand, share, chat, join/leave, connection). */
 export function useRoomSounds(state: RoomState) {
   const previous = useRef<RoomState | null>(null)
 
-  useEffect(() => preloadSoundCues(), [])
+  useEffect(() => {
+    preloadSoundCues()
+    preloadSoundboard()
+  }, [])
 
   useEffect(() => {
     const before = previous.current

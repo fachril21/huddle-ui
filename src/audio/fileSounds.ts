@@ -25,7 +25,7 @@ const lastPlayedAt = new Map<SoundCue, number>()
 let preloadStarted = false
 
 /** data:audio/mpeg;base64,... -> raw bytes, without a network request. */
-function bytesOf(dataUri: string): ArrayBuffer {
+export function bytesOf(dataUri: string): ArrayBuffer {
   const binary = atob(dataUri.slice(dataUri.indexOf(',') + 1))
   const bytes = new Uint8Array(binary.length)
   for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)

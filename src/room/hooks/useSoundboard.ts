@@ -8,12 +8,14 @@ import type { RoomState } from '../../state/types'
 /** Soundboard wiring: plays each new sound once (for everyone), expires chips, exposes the local play action. */
 export function useSoundboard(state: RoomState, dispatch: Dispatch<RoomAction>) {
   const { plays, allowed, lastPlayAt } = state.soundboard
-  const played = useRef(new Set<number>())
+  /** Play ids restart at 1 once every chip has expired, so a play is told apart by id and start time */
+  const played = useRef(new Set<string>())
 
   useEffect(() => {
     for (const p of plays) {
-      if (played.current.has(p.id)) continue
-      played.current.add(p.id)
+      const key = `${p.id}:${p.startedAt}`
+      if (played.current.has(key)) continue
+      played.current.add(key)
       playSound(p.soundId)
     }
   }, [plays])

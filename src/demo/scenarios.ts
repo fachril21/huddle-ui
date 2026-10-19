@@ -1,3 +1,4 @@
+import { SOUND_BY_ID } from '../audio/soundboardSounds'
 import { SAMPLE_POLL } from '../features/polls/pollMath'
 import type { RoomAction } from '../state/roomReducer'
 import { doodleStroke } from './doodles'
@@ -29,7 +30,7 @@ const hand = (id: string): ScenarioStep['run'] => () => [{ type: 'toggleHand', i
 const react = (senderId: string, name: Extract<RoomAction, { type: 'react' }>['name'], x: number): ScenarioStep['run'] => (now) => [{ type: 'react', senderId, name, x, now }]
 const offer = (fromId: string): ScenarioStep['run'] => (now) => [{ type: 'hfOffer', fromId, now }]
 const accept = (fromId: string, byId: string): ScenarioStep['run'] => (now) => [{ type: 'hfRespond', fromId, byId, now }]
-const play = (fromId: string, soundId: string, durationMs: number): ScenarioStep['run'] => (now) => [{ type: 'sbPlay', fromId, soundId, durationMs, now }]
+const play = (fromId: string, soundId: string): ScenarioStep['run'] => (now) => [{ type: 'sbPlay', fromId, soundId, durationMs: SOUND_BY_ID[soundId].durationMs, now }]
 const doodle = (kind: DoodleKind, authorId: string, color: AnnotationColor): ScenarioStep['run'] => (now) => [{ type: 'annotationAdd', stroke: doodleStroke(kind, authorId, color, now, 8000) }]
 const startPoll = (creatorId: string): ScenarioStep['run'] => (now) => [
   {
@@ -72,8 +73,8 @@ const BRAINSTORM: Scenario = {
     { at: mm(1, 40), run: hush('dewi') },
     { at: mm(1, 45), run: offer('andi') },
     { at: mm(1, 53), run: () => [{ type: 'toggleDock', key: 'soundboard' }] },
-    { at: mm(1, 55), run: play(SELF_ID, 'tada', 1700) },
-    { at: mm(1, 59), run: play('fajar', 'clap', 1800) },
+    { at: mm(1, 55), run: play(SELF_ID, 'tada') },
+    { at: mm(1, 59), run: play('fajar', 'clap') },
     { at: mm(2, 3), run: () => [{ type: 'closeDock', key: 'soundboard' }] },
     { at: mm(2, 15), run: () => [{ type: 'openPanel', panel: 'polling' }] },
     { at: mm(2, 17), run: startPoll(SELF_ID) },
