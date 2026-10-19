@@ -139,6 +139,8 @@ export interface ChatState {
 export interface Guest {
   readonly id: string
   readonly name: string
+  /** When the guest asked to come in (performance.now), for "menunggu 0:42" */
+  readonly at: number
 }
 
 export type RecordingState = 'off' | 'on' | 'paused'
@@ -151,6 +153,8 @@ export interface HostState {
   readonly recording: RecordingState
   /** Non-hosts must agree once to be recorded */
   readonly consented: boolean
+  /** Guests must be let in by a host or co-host. Off means anyone with the link walks in. */
+  readonly waitingRoom: boolean
   readonly waiting: readonly Guest[]
   readonly announcement: { readonly id: number; readonly text: string } | null
 }

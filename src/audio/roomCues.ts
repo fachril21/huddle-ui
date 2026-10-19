@@ -30,6 +30,10 @@ export function deriveCues(prev: RoomState, next: RoomState): SoundCue[] {
 
   if (incomingChatCount(next) > incomingChatCount(prev)) cues.push('incomingChat')
 
+  // a guest knocking is heard only by the people who can answer the door
+  const canAnswer = nextSelf?.role === 'Host' || nextSelf?.role === 'Co-host'
+  if (canAnswer && next.host.waiting.length > prev.host.waiting.length) cues.push('incomingChat')
+
   if (prev.phase === 'live' && next.phase !== 'live') {
     cues.push('leaveRoom')
   } else if (prev.phase !== 'live' && next.phase === 'live') {

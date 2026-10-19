@@ -72,6 +72,14 @@ function insideNote(o: Occurrence, now: Date): string {
   return `${o.meeting.hostName} akan segera membuka rapat`
 }
 
+const needsApproval = (meeting: Meeting): boolean => meeting.security.waitingRoom && !meeting.isHost
+
+/** The lobby's view of one session. The host counts as present once the session is live. */
+function sessionTarget(o: Occurrence, now: Date): JoinTarget {
+  const { meeting } = o
+  return { code: meeting.code, title: meeting.title, hostName: meeting.hostName, insideNote: insideNote(o, now), needsApproval: needsApproval(meeting), hostPresent: meeting.isHost || occurrenceState(o, now) === 'live' }
+}
+
 /** Home and meetings pages. Owns dialogs, shortcuts and every way into the lobby. */
 export function Dashboard({ meetings, dispatch, onEnter, recordings, settings, roomDispatch }: DashboardProps) {
   const { fx, reduced } = useFx()
@@ -106,8 +114,7 @@ export function Dashboard({ meetings, dispatch, onEnter, recordings, settings, r
 
   /* ---------- ways into the lobby ---------- */
 
-  const enterSession = (o: Occurrence) =>
-    onEnter({ code: o.meeting.code, title: o.meeting.title, hostName: o.meeting.hostName, insideNote: insideNote(o, now) })
+  const enterSession = (o: Occurrence) => onEnter(sessionTarget(o, now))
 
   const startInstant = () => onEnter({ code: generateMeetingCode(), title: 'Rapat dadakan', hostName: USER_NAME, insideNote: 'Anda yang pertama masuk' })
   const startMyRoom = () => onEnter({ code: MY_ROOM_CODE, title: MY_ROOM_TITLE, hostName: USER_NAME, insideNote: 'Anda yang pertama masuk' })
@@ -133,7 +140,8 @@ export function Dashboard({ meetings, dispatch, onEnter, recordings, settings, r
     const meeting = findByCode(meetings, code)
     if (meeting) {
       const session = occurrencesBetween(meeting, new Date(now.getTime() - DAY_MS), new Date(now.getTime() + LOOK_AHEAD_DAYS * DAY_MS)).find((o) => occurrenceState(o, now) !== 'ended')
-      return onEnter({ code, title: meeting.title, hostName: meeting.hostName, insideNote: session ? insideNote(session, now) : 'Belum ada yang masuk' })
+      if (session) return onEnter(sessionTarget(session, now))
+      return onEnter({ code, title: meeting.title, hostName: meeting.hostName, insideNote: 'Belum ada yang masuk', needsApproval: needsApproval(meeting), hostPresent: false })
     }
     if (laterCodes.includes(code)) return onEnter({ code, title: 'Rapat baru', hostName: USER_NAME, insideNote: 'Anda yang pertama masuk' })
     setJoinError(`Rapat dengan kode ${code} tidak ditemukan. Periksa lagi kodenya.`)
@@ -286,7 +294,7 @@ export function Dashboard({ meetings, dispatch, onEnter, recordings, settings, r
           summary={dialog.summary}
           link={dialog.link}
           invitation={dialog.invitation}
-          primary={dialog.enter ? { label: 'Mulai sekarang', onClick: () => onEnter(dialog.enter as JoinTarget) } : undefined}
+          primary={dialog.enter ? { label: 'Join sekarang', onClick: () => onEnter(dialog.enter as JoinTarget) } : undefined}
           onClose={closeDialog}
         />
       )}

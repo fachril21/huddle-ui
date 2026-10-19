@@ -255,7 +255,7 @@ export function PreJoin({ meeting, onJoin, onBack }: { meeting: JoinTarget; onJo
           <div className={styles.cta}>
             {needsAttention && <p className={styles.soft}>Perangkat bisa diatur nanti. Anda tetap bisa masuk dulu.</p>}
             <button type="submit" className={styles.join} aria-disabled={!nameOk || undefined} aria-keyshortcuts={PREJOIN_KEYS.join}>
-              Masuk
+              {meeting.needsApproval ? 'Minta bergabung' : 'Masuk'}
               <kbd className="keycap" aria-hidden="true">
                 Enter
               </kbd>

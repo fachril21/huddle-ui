@@ -39,6 +39,7 @@ import { LeaveMenu } from './LeaveMenu'
 import { MorePopover } from './MorePopover'
 import { MutedBanner } from './MutedBanner'
 import { NoticeStack } from './NoticeStack'
+import { GuestRequestToast } from '../features/host/GuestRequestToast'
 import { PanelPill } from './PanelPill'
 import { QualitySuggestion } from './QualitySuggestion'
 import { PollToast } from './PollToast'
@@ -315,6 +316,13 @@ export function Room({ state, dispatch }: RoomProps) {
         <QualitySuggestion weakConnection={self.connection !== 'good'} camOn={self.camOn} quality={state.settings.cameraQuality} onLower={() => dispatch({ type: 'setCameraQuality', quality: 'low' })} />
         <NoticeStack notices={state.notices} />
         <SoundChips plays={soundboard.plays} participants={state.participants} />
+        <GuestRequestToast
+          guests={state.host.waiting}
+          visible={canManage && state.panel !== 'host' && state.panel !== 'peserta'}
+          onAdmit={(id) => dispatch({ type: 'guestDecide', id, admit: true, now: performance.now() })}
+          onAdmitAll={() => dispatch({ type: 'guestAdmitAll', now: performance.now() })}
+          onOpen={() => dispatch({ type: 'openPanel', panel: 'host' })}
+        />
       </div>
       <ChatBubbles messages={state.chat.messages} people={[...state.participants, ...state.bench]} chatOpen={state.panel === 'chat'} onOpenChat={() => dispatch({ type: 'openPanel', panel: 'chat' })} />
       <InfoPill inviteOpen={inviteOpen} locked={state.host.locked} onInviteToggle={toggleInvite} onInviteClose={closeInvite} phone={compact} />

@@ -7,18 +7,18 @@ export interface EntryAction {
 }
 
 /**
- * The way into a session. Everyone can enter from ten minutes before the start; only the host may open
- * the room earlier. Ended sessions have no way in.
+ * The way into a session. The link works whenever it is opened, so everyone gets the same "Join" and nobody
+ * has to start anything: a guest who arrives before the host waits in the waiting room. Before the session
+ * window opens the button is quieter. Ended sessions have no way in.
  */
-export function entryAction(isHost: boolean, state: OccurrenceState): EntryAction | null {
+export function entryAction(state: OccurrenceState): EntryAction | null {
   switch (state) {
     case 'ended':
       return null
     case 'live':
-      return { label: 'Masuk', variant: 'primary', enabled: true }
     case 'joinable':
-      return { label: isHost ? 'Mulai' : 'Masuk', variant: 'primary', enabled: true }
+      return { label: 'Join', variant: 'primary', enabled: true }
     case 'upcoming':
-      return isHost ? { label: 'Mulai lebih awal', variant: 'secondary', enabled: true } : { label: 'Belum dibuka', variant: 'secondary', enabled: false }
+      return { label: 'Join', variant: 'secondary', enabled: true }
   }
 }

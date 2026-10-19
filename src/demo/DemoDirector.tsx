@@ -10,11 +10,15 @@ import { ParticipantsSection } from './sections/ParticipantsSection'
 import { ScenarioSection } from './sections/ScenarioSection'
 import { ViewSection } from './sections/ViewSection'
 import type { ScenarioPlayer } from './useScenarioPlayer'
+import { WaitingSection } from './sections/WaitingSection'
+import type { Admission, AdmissionAction } from '../waiting/admission'
 
 interface DemoDirectorProps {
   state: RoomState
   dispatch: Dispatch<RoomAction>
   player: ScenarioPlayer
+  admission: Admission | null
+  onAdmission: Dispatch<AdmissionAction>
   open: boolean
   onClose: () => void
 }
@@ -26,7 +30,7 @@ const PRESETS = [
 ] as const
 
 /** Prototype control panel. Deliberately NOT styled like product UI: dashed outline, mono type. */
-export function DemoDirector({ state, dispatch, player, open, onClose }: DemoDirectorProps) {
+export function DemoDirector({ state, dispatch, player, admission, onAdmission, open, onClose }: DemoDirectorProps) {
   return (
     <AnimatePresence>
       {open && (
@@ -64,6 +68,10 @@ export function DemoDirector({ state, dispatch, player, open, onClose }: DemoDir
 
           <Group title="Kejadian cepat">
             <EventsSection state={state} dispatch={dispatch} />
+          </Group>
+
+          <Group title="Ruang tunggu (sisi tamu)" defaultOpen={admission !== null}>
+            <WaitingSection admission={admission} onAdmission={onAdmission} />
           </Group>
 
           <Group title="Peserta" defaultOpen>

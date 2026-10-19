@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useState } from 'react'
+import { useCallback, useEffect, useReducer, useState } from 'react'
 import { installAudioUnlock, setGroupMuted, setOutputDevice } from './audio/audioEngine'
 import { preloadEmoji } from './emoji/AnimatedEmoji'
 import { EMOJI } from './emoji/registry'
@@ -25,6 +25,8 @@ import { SELF_ID } from './state/types'
 import { VoiceEngine } from './voice/engine'
 import type { VoiceInput } from './voice/engine'
 import { VoiceProvider } from './voice/VoiceContext'
+import { admissionReducer } from './waiting/admission'
+import { WaitingRoom } from './waiting/WaitingRoom'
 import type { RoomAction } from './state/actions'
 
 /** The tier chosen in Pengaturan wins. Otherwise a phone starts on the lighter one (smaller blur, still mesh): it spares the battery and the GPU. */
@@ -39,6 +41,9 @@ export function App() {
   // the dashboard shows while no room is chosen; the lobby shows once one is; the room once Masuk is pressed
   const [target, setTarget] = useState<JoinTarget | null>(null)
   const [joined, setJoined] = useState<JoinChoice | null>(null)
+  // a guest of a meeting with a waiting room sits here, between the lobby and the room, until the host answers
+  const [asking, setAsking] = useState<JoinChoice | null>(null)
+  const [admission, admissionDispatch] = useReducer(admissionReducer, null)
   const { meetings, dispatch: meetingDispatch } = useMeetings()
   const player = useScenarioPlayer(dispatch)
   const recordings = useRecordings()
@@ -81,8 +86,20 @@ export function App() {
 
   const join = (choice: JoinChoice) => {
     dispatch({ type: 'joinRoom', name: choice.name, micOn: choice.micOn, camOn: choice.camOn, quality: choice.cameraQuality, devices: choice.devices })
+    setAsking(null)
+    admissionDispatch({ type: 'cancel' })
     setJoined(choice)
   }
+
+  const ask = (choice: JoinChoice, hostPresent: boolean) => {
+    setAsking(choice)
+    admissionDispatch({ type: 'request', now: Date.now(), hostPresent })
+  }
+  const stopAsking = () => {
+    setAsking(null)
+    admissionDispatch({ type: 'cancel' })
+  }
+  const tickAdmission = useCallback((now: number) => admissionDispatch({ type: 'tick', now }), [])
 
   // "Mulai ulang demo" on the closing screen sends people back to the dashboard; the Demo Director's own reset stays in the room
   const roomDispatch = (action: RoomAction) => {
@@ -93,18 +110,33 @@ export function App() {
     dispatch(action)
   }
 
-  const stage = joined ? 'room' : target ? 'lobby' : 'dashboard'
+  const stage = joined ? 'room' : asking && admission ? 'waiting' : target ? 'lobby' : 'dashboard'
 
   return (
     <MotionProvider fx={state.settings.fx} simulateReduced={state.settings.simulateReduced}>
     <VoiceProvider engine={engine}>
       <motion.div key={stage} className={styles.stage} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35, ease: [0.2, 0.8, 0.2, 1] }}>
         {stage === 'room' && <Room state={state} dispatch={roomDispatch} />}
-        {stage === 'lobby' && target && <PreJoin meeting={target} onJoin={join} onBack={() => setTarget(null)} />}
+        {stage === 'lobby' && target && <PreJoin meeting={target} onJoin={target.needsApproval ? (choice) => ask(choice, target.hostPresent ?? true) : join} onBack={() => setTarget(null)} />}
+        {stage === 'waiting' && target && asking && admission && (
+          <WaitingRoom
+            meeting={target}
+            choice={asking}
+            admission={admission}
+            onEnter={join}
+            onTick={tickAdmission}
+            onAskAgain={() => ask(asking, true)}
+            onCancel={stopAsking}
+            onHome={() => {
+              stopAsking()
+              setTarget(null)
+            }}
+          />
+        )}
         {stage === 'dashboard' && <Dashboard meetings={meetings} dispatch={meetingDispatch} onEnter={setTarget} recordings={recordings} settings={state.settings} roomDispatch={dispatch} />}
       </motion.div>
       <DemoToggle open={demoOpen} onClick={() => setDemoOpen((o) => !o)} />
-      <DemoDirector state={state} dispatch={dispatch} player={player} open={demoOpen} onClose={() => setDemoOpen(false)} />
+      <DemoDirector state={state} dispatch={dispatch} player={player} admission={admission} onAdmission={admissionDispatch} open={demoOpen} onClose={() => setDemoOpen(false)} />
     </VoiceProvider>
     </MotionProvider>
   )

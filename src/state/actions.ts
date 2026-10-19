@@ -82,6 +82,8 @@ export type RoomAction =
   | { type: 'recordingConsent' }
   | { type: 'guestRequest'; guest: Guest }
   | { type: 'guestDecide'; id: string; admit: boolean; now: number }
+  | { type: 'guestAdmitAll'; now: number }
+  | { type: 'hostWaitingRoom'; on: boolean; now: number }
   | { type: 'announce'; text: string }
   | { type: 'dismissAnnouncement' }
   // notices

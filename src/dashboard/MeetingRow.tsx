@@ -34,13 +34,13 @@ function menuItems(o: Occurrence, ended: boolean, actions: MeetingActions): Menu
 export function MeetingRow({ occurrence, now, actions }: MeetingRowProps) {
   const { meeting } = occurrence
   const state = occurrenceState(occurrence, now)
-  const entry = entryAction(meeting.isHost, state)
+  const entry = entryAction(state)
   const phone = useViewport().sizeClass === 'phone'
 
   // phone: the whole row is one big target that opens a sheet with every action, instead of small buttons and a menu
   if (phone) {
     const items: MenuItem[] = [
-      ...(entry?.enabled ? [{ id: 'enter', label: entry.label, description: state === 'upcoming' ? 'Buka rapat sebelum jadwal' : undefined, icon: <DoorOpen {...ICON} />, tone: 'primary' as const, onSelect: () => actions.enter(occurrence) }] : []),
+      ...(entry?.enabled ? [{ id: 'enter', label: entry.label, description: state === 'upcoming' ? 'Belum waktunya, tautan tetap bisa dipakai' : undefined, icon: <DoorOpen {...ICON} />, tone: 'primary' as const, onSelect: () => actions.enter(occurrence) }] : []),
       ...menuItems(occurrence, state === 'ended', actions),
     ]
     return (
@@ -116,14 +116,9 @@ export function MeetingRow({ occurrence, now, actions }: MeetingRowProps) {
       <PeopleStack hostName={meeting.hostName} invitees={meeting.invitees} />
 
       <div className={styles.action}>
-        {entry && state !== 'upcoming' && (
+        {entry && (
           <button type="button" className={`${ui.btn} ${ui.small} ${entry.variant === 'primary' ? ui.primary : ''}`} onClick={() => actions.enter(occurrence)}>
             {entry.label}
-          </button>
-        )}
-        {state === 'upcoming' && meeting.isHost && (
-          <button type="button" className={`${ui.btn} ${ui.small}`} onClick={() => actions.edit(occurrence)}>
-            Ubah
           </button>
         )}
       </div>

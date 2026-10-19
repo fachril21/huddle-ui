@@ -10,16 +10,16 @@ const ROUND_MIN = 5
 
 const NO_SECURITY = { passcode: null, waitingRoom: false, muteOnJoin: false } as const
 
-type Seed = Omit<Meeting, 'id' | 'timezone' | 'cancelled' | 'skipped' | 'security' | 'startsAt'> & { at: Date; passcode?: string }
+type Seed = Omit<Meeting, 'id' | 'timezone' | 'cancelled' | 'skipped' | 'security' | 'startsAt'> & { at: Date; passcode?: string; waitingRoom?: boolean }
 
 function make(slug: string, seed: Seed): Meeting {
-  const { at, passcode, ...rest } = seed
+  const { at, passcode, waitingRoom = false, ...rest } = seed
   return {
     ...rest,
     id: `${SEED_PREFIX}${slug}`,
     startsAt: at.toISOString(),
     timezone: DISPLAY_TZ,
-    security: passcode ? { ...NO_SECURITY, passcode } : NO_SECURITY,
+    security: { ...NO_SECURITY, passcode: passcode ?? null, waitingRoom },
     cancelled: false,
     skipped: [],
   }
@@ -64,6 +64,7 @@ export function buildSeed(now: Date): Meeting[] {
       invitees: ['maya@huddle.id', 'fajar@huddle.id', 'laras@huddle.id'],
       hostName: 'Dewi',
       isHost: false,
+      waitingRoom: true,
     }),
     make('satu-satu', {
       code: 'pwt-ldnr-vxa',

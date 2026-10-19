@@ -2,12 +2,15 @@ import { Circle, Megaphone, Pause, Play, Square } from 'lucide-react'
 import { useState } from 'react'
 import type { HostState } from '../../state/types'
 import styles from './HostPanel.module.css'
+import { WaitingGuests } from './WaitingGuests'
 
 interface HostPanelProps {
   host: HostState
   soundboardAllowed: boolean
   annotationAllowed: boolean
   onDecide: (guestId: string, admit: boolean) => void
+  onAdmitAll: () => void
+  onWaitingRoom: (on: boolean) => void
   onLock: (on: boolean) => void
   onRestrictShare: (on: boolean) => void
   onSoundboard: (on: boolean) => void
@@ -20,7 +23,7 @@ interface HostPanelProps {
 const MAX_ANNOUNCEMENT = 140
 
 /** Host tools (PRD 8.8): waiting room, moderation switches, announcement, recording. Actions are mock. */
-export function HostPanel({ host, soundboardAllowed, annotationAllowed, onDecide, onLock, onRestrictShare, onSoundboard, onAnnotation, onMuteAll, onAnnounce, onRecording }: HostPanelProps) {
+export function HostPanel({ host, soundboardAllowed, annotationAllowed, onDecide, onAdmitAll, onWaitingRoom, onLock, onRestrictShare, onSoundboard, onAnnotation, onMuteAll, onAnnounce, onRecording }: HostPanelProps) {
   const [text, setText] = useState('')
 
   const send = (e: React.FormEvent) => {
@@ -32,29 +35,14 @@ export function HostPanel({ host, soundboardAllowed, annotationAllowed, onDecide
 
   return (
     <div className={styles.wrap}>
-      <section aria-label="Tamu menunggu">
-        <h3 className={styles.sub}>Tamu menunggu ({host.waiting.length})</h3>
-        {host.waiting.length === 0 ? (
-          <p className={styles.empty}>Tidak ada tamu yang menunggu.</p>
-        ) : (
-          <ul className={styles.guests}>
-            {host.waiting.map((g) => (
-              <li key={g.id}>
-                <span className={styles.guestName}>{g.name}</span>
-                <button type="button" className={styles.reject} aria-label={`Tolak ${g.name}`} onClick={() => onDecide(g.id, false)}>
-                  Tolak
-                </button>
-                <button type="button" className={styles.admit} aria-label={`Setujui ${g.name}`} onClick={() => onDecide(g.id, true)}>
-                  Setujui
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      {host.waitingRoom ? (
+        <WaitingGuests guests={host.waiting} onDecide={onDecide} onAdmitAll={onAdmitAll} emptyText="Tidak ada tamu yang menunggu." />
+      ) : null}
 
       <section aria-label="Moderasi">
         <h3 className={styles.sub}>Moderasi</h3>
+        <Switch label="Ruang tunggu" on={host.waitingRoom} onChange={onWaitingRoom} />
+        {host.waitingRoom && host.waiting.length > 0 && <p className={styles.recRule}>Mematikannya mengizinkan semua tamu yang sedang menunggu.</p>}
         <Switch label="Kunci meeting" on={host.locked} onChange={onLock} />
         <Switch label="Batasi berbagi layar (hanya host)" on={host.restrictShare} onChange={onRestrictShare} />
         <Switch label="Izinkan soundboard" on={soundboardAllowed} onChange={onSoundboard} />

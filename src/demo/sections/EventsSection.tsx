@@ -136,7 +136,7 @@ export function EventsSection({ state, dispatch }: { state: RoomState; dispatch:
           label="Tamu meminta masuk"
           onClick={() => {
             const name = GUESTS[guestCount.current % GUESTS.length]
-            dispatch({ type: 'guestRequest', guest: { id: `guest-${++guestCount.current}`, name } })
+            dispatch({ type: 'guestRequest', guest: { id: `guest-${++guestCount.current}`, name, at: now() } })
           }}
         />
         <Toggle label="Host mengumumkan" onClick={() => dispatch({ type: 'announce', text: 'Sesi dilanjutkan 5 menit lagi, mohon siapkan catatan Anda.' })} />

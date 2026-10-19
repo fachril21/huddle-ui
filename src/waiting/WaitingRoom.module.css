@@ -1,0 +1,98 @@
+/* The lobby's layout (mirror + glass panel) is reused; this file only adds what waiting needs. */
+
+/* the one moving thing: a slow breath of aurora around the mirror while an answer is pending */
+.halo {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-xl);
+  pointer-events: none;
+  opacity: 0;
+  box-shadow:
+    inset 0 0 0 1.5px color-mix(in srgb, var(--aurora-cyan) 70%, transparent),
+    inset 0 0 64px color-mix(in srgb, var(--aurora-violet) 38%, transparent);
+  transition: opacity var(--dur-slow) var(--ease-out);
+}
+.screen[data-status='waiting'] .halo,
+.screen[data-status='host-absent'] .halo { opacity: 0.35; animation: breathe 3.6s ease-in-out infinite; }
+.screen[data-status='admitted'] .halo { opacity: 0.9; box-shadow: inset 0 0 0 2px var(--aurora-mint), inset 0 0 72px color-mix(in srgb, var(--aurora-mint) 42%, transparent); }
+
+@keyframes breathe { 50% { opacity: 0.95; } }
+
+.card { gap: var(--space-6); }
+
+.status { display: grid; gap: var(--space-2); }
+.status h1 { margin: var(--space-3) 0 0; font-family: var(--font-display); font-size: 24px; line-height: 30px; font-weight: 700; letter-spacing: -0.01em; text-wrap: balance; }
+.status p { margin: 0; max-width: 34ch; color: var(--text-2); font-size: 14px; line-height: 21px; }
+
+/* the verdict is carried by this icon and the words beside it, never by the tint alone */
+.badge { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: color-mix(in srgb, var(--tone, var(--aurora-cyan)) 16%, transparent); color: var(--tone, var(--aurora-cyan)); }
+.status[data-tone='host-absent'] { --tone: var(--aurora-amber); }
+.status[data-tone='admitted'] { --tone: var(--aurora-mint); }
+.status[data-tone='denied'] { --tone: var(--aurora-rose); }
+.status[data-tone='timeout'],
+.status[data-tone='locked'] { --tone: var(--aurora-amber); }
+.status[data-tone='waiting'] .badge svg { animation: turn 3.6s var(--ease-out) infinite; }
+
+@keyframes turn { 0%, 60% { transform: rotate(0); } 80%, 100% { transform: rotate(180deg); } }
+
+.facts { display: grid; gap: 0; margin: 0; }
+.facts > div { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-4); padding: var(--space-3) 0; font-size: 13px; line-height: 20px; }
+.facts > div + div { border-top: 1px solid var(--hairline); }
+.facts dt { color: var(--text-2); }
+.facts dd { margin: 0; min-width: 0; color: var(--text-1); font-weight: 600; text-align: right; overflow-wrap: anywhere; }
+.code { margin-left: var(--space-1); font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--text-2); }
+.timer { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+.actions { gap: var(--space-3); }
+
+.quiet {
+  min-height: var(--tap);
+  padding: 0 var(--space-4);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  background: transparent;
+  color: var(--text-1);
+  font-size: 14px;
+  font-weight: 600;
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+.quiet:hover { background: var(--veil-hover); }
+.quiet:active { background: var(--veil-press); }
+.quiet:focus-visible { box-shadow: var(--focus-ring); }
+
+@media (prefers-reduced-motion: reduce) {
+  .halo,
+  .quiet { transition: none; }
+  .screen .halo { animation: none; }
+  .status[data-tone='waiting'] .badge svg { animation: none; }
+}
+
+/* phone: the mirror on top, the status under it, the way out pinned to the bottom edge */
+@media (max-width: 767px) {
+  .screen .halo { border-radius: 0 0 var(--radius-xl) var(--radius-xl); }
+  .screen .card {
+    position: relative;
+    inset: auto;
+    flex: 1;
+    min-height: 0;
+    width: auto;
+    gap: var(--space-4);
+    padding: var(--space-5) max(var(--space-4), var(--safe-left)) var(--space-4) max(var(--space-4), var(--safe-right));
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    backdrop-filter: none;
+    box-shadow: none;
+  }
+  .screen .card::after { display: none; }
+  .status h1 { font-size: 21px; line-height: 27px; }
+  .actions { position: sticky; bottom: calc(var(--space-4) * -1); margin: auto calc(var(--space-4) * -1) calc(var(--space-4) * -1); padding: var(--space-3) var(--space-4) max(var(--space-3), var(--safe-bottom)); background: linear-gradient(180deg, transparent, var(--ink-950) 34%); }
+}
+
+/* a phone turned sideways: same arrangement as the lobby, tightened */
+@media (max-height: 500px) and (pointer: coarse) and (min-width: 768px) {
+  .card { gap: var(--space-3); padding: var(--space-4); }
+  .status h1 { font-size: 18px; line-height: 24px; margin-top: var(--space-2); }
+  .badge { width: 36px; height: 36px; }
+  .quiet { min-height: var(--tap); }
+}

@@ -54,7 +54,10 @@ export function SidePanel({ panel, state, selfRole, dispatch, onInvite, onClose 
       {panel === 'peserta' && (
         <ParticipantsPanel
           participants={state.participants}
+          waiting={state.host.waitingRoom ? state.host.waiting : []}
           selfRole={selfRole}
+          onDecide={(id, admit) => dispatch({ type: 'guestDecide', id, admit, now: now() })}
+          onAdmitAll={() => dispatch({ type: 'guestAdmitAll', now: now() })}
           onInvite={onInvite}
           onMute={(id) => dispatch({ type: 'toggleMic', id })}
           onCoHost={(id) => dispatch({ type: 'setRole', id, role: 'Co-host' })}
@@ -96,6 +99,8 @@ export function SidePanel({ panel, state, selfRole, dispatch, onInvite, onClose 
           soundboardAllowed={state.soundboard.allowed}
           annotationAllowed={state.annotation.allowed}
           onDecide={(id, admit) => dispatch({ type: 'guestDecide', id, admit, now: now() })}
+          onAdmitAll={() => dispatch({ type: 'guestAdmitAll', now: now() })}
+          onWaitingRoom={(on) => dispatch({ type: 'hostWaitingRoom', on, now: now() })}
           onLock={(on) => dispatch({ type: 'hostLock', on, now: now() })}
           onRestrictShare={(on) => dispatch({ type: 'hostRestrictShare', on })}
           onSoundboard={(on) => dispatch({ type: 'sbAllow', on })}

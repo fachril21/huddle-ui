@@ -113,7 +113,7 @@ export function CommandBar({ codeRef, joinError, onClearError, onJoinCode, onIns
         </button>
         <button type="button" className={`${ui.btn} ${ui.small}`} onClick={onStartMyRoom}>
           <Video size={14} strokeWidth={1.75} aria-hidden="true" />
-          Mulai
+          Join
         </button>
       </div>
     </section>

@@ -3,7 +3,7 @@ export type Recurrence = 'none' | 'daily' | 'weekly' | 'monthly'
 export interface MeetingSecurity {
   /** Shown in the invitation; the prototype never enforces it */
   readonly passcode: string | null
-  /** UI only: the room has no host-admit flow yet */
+  /** Guests (not the host) wait in the waiting room until the host lets them in */
   readonly waitingRoom: boolean
   readonly muteOnJoin: boolean
 }
@@ -46,4 +46,8 @@ export interface JoinTarget {
   readonly hostName: string
   /** The "who is inside" line */
   readonly insideNote: string
+  /** The viewer is a guest of a meeting with a waiting room, so Join becomes a request */
+  readonly needsApproval?: boolean
+  /** The host is already in the room; false means the guest also waits for the host to arrive */
+  readonly hostPresent?: boolean
 }

@@ -130,3 +130,5 @@ details.group summary:focus-visible { box-shadow: var(--focus-ring); border-radi
 @media (max-width: 767px) {
   .panel { top: auto; left: 0; right: 0; bottom: 0; width: 100%; max-height: 72dvh; padding-bottom: max(var(--space-3), var(--safe-bottom)); border-radius: var(--radius-md) var(--radius-md) 0 0; }
 }
+
+.note { margin: 0; color: var(--text-3); font-size: 11px; line-height: 16px; }

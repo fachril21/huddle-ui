@@ -2,10 +2,6 @@
 .sub { margin: 0 0 var(--space-2); font-size: 12px; line-height: 16px; font-weight: 600; color: var(--text-3); }
 .empty { margin: 0; font-size: 13px; color: var(--text-3); }
 
-.guests { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-2); }
-.guests li { display: flex; align-items: center; gap: var(--space-2); min-height: 44px; padding: 0 var(--space-3); border: 1px solid var(--glass-border); border-radius: var(--radius-md); background: var(--hairline); }
-.guestName { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; font-weight: 600; }
-
 .admit, .reject, .outline, .stop {
   display: inline-flex;
   align-items: center;

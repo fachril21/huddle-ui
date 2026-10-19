@@ -68,12 +68,25 @@ export const hostSlice: Slice = (state, action) => {
     case 'recordingConsent':
       return { ...state, host: { ...host, consented: true } }
     case 'guestRequest':
-      return host.waiting.some((g) => g.id === action.guest.id) ? state : { ...state, host: { ...host, waiting: [...host.waiting, action.guest] } }
+      if (host.waiting.some((g) => g.id === action.guest.id)) return state
+      // with the waiting room off nobody queues up: the guest just joins
+      return host.waitingRoom ? { ...state, host: { ...host, waiting: [...host.waiting, action.guest] } } : withNotice(state, `${action.guest.name} bergabung`, action.guest.at)
+    case 'guestAdmitAll': {
+      if (host.waiting.length === 0) return state
+      const count = host.waiting.length
+      return withNotice({ ...state, host: { ...host, waiting: [] } }, count === 1 ? `${host.waiting[0].name} diizinkan masuk` : `${count} tamu diizinkan masuk`, action.now)
+    }
+    case 'hostWaitingRoom': {
+      if (host.waitingRoom === action.on) return state
+      // turning it off lets everyone already queued in, since there is no one left to ask
+      const next = { ...state, host: { ...host, waitingRoom: action.on, waiting: action.on ? host.waiting : [] } }
+      return withNotice(next, action.on ? 'Ruang tunggu dinyalakan' : 'Ruang tunggu dimatikan', action.now)
+    }
     case 'guestDecide': {
       const guest = host.waiting.find((g) => g.id === action.id)
       if (!guest) return state
       const next = { ...state, host: { ...host, waiting: host.waiting.filter((g) => g.id !== action.id) } }
-      return withNotice(next, action.admit ? `${guest.name} disetujui masuk` : `${guest.name} ditolak`, action.now)
+      return withNotice(next, action.admit ? `${guest.name} diizinkan masuk` : `${guest.name} ditolak`, action.now)
     }
     case 'announce':
       return { ...state, host: { ...host, announcement: { id: (host.announcement?.id ?? 0) + 1, text: action.text.trim() } } }

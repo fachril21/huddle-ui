@@ -37,7 +37,7 @@ export function NextMeeting({ occurrence, now, actions, onSchedule }: NextMeetin
 
   const { meeting } = occurrence
   const state = occurrenceState(occurrence, now)
-  const action = entryAction(meeting.isHost, state)
+  const action = entryAction(state)
   const hot = state === 'joinable' || state === 'live'
   const countdown = countdownLabel(occurrence, now)
   const statusLabel = state === 'joinable' ? `Bisa masuk, ${countdown.toLowerCase()}` : countdown
@@ -72,8 +72,7 @@ export function NextMeeting({ occurrence, now, actions, onSchedule }: NextMeetin
             <button
               type="button"
               className={`${ui.btn} ${ui.large} ${action.variant === 'primary' ? ui.primary : ''}`}
-              aria-disabled={!action.enabled || undefined}
-              onClick={() => action.enabled && actions.enter(occurrence)}
+              onClick={() => actions.enter(occurrence)}
             >
               {action.label}
             </button>

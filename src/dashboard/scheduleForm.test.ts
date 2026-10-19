@@ -103,16 +103,17 @@ describe('duplicate', () => {
 })
 
 describe('entryAction', () => {
-  it('lets everyone in from ten minutes before and nobody into an ended session', () => {
-    expect(entryAction(false, 'joinable')).toEqual({ label: 'Masuk', variant: 'primary', enabled: true })
-    expect(entryAction(true, 'joinable')?.label).toBe('Mulai')
-    expect(entryAction(false, 'live')?.enabled).toBe(true)
-    expect(entryAction(true, 'ended')).toBeNull()
+  it('says Join for everyone, whenever the link is opened', () => {
+    expect(entryAction('joinable')).toEqual({ label: 'Join', variant: 'primary', enabled: true })
+    expect(entryAction('live')).toEqual({ label: 'Join', variant: 'primary', enabled: true })
   })
 
-  it('lets only the host open early', () => {
-    expect(entryAction(true, 'upcoming')).toEqual({ label: 'Mulai lebih awal', variant: 'secondary', enabled: true })
-    expect(entryAction(false, 'upcoming')?.enabled).toBe(false)
+  it('keeps Join available before the session window, only quieter', () => {
+    expect(entryAction('upcoming')).toEqual({ label: 'Join', variant: 'secondary', enabled: true })
+  })
+
+  it('offers no way into an ended session', () => {
+    expect(entryAction('ended')).toBeNull()
   })
 })
 

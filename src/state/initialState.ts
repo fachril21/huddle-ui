@@ -33,7 +33,7 @@ export function createInitialState(settings: Settings = DEFAULT_SETTINGS): RoomS
     polls: [],
     chat: { messages: SEED_CHAT, typingId: null, readCount: 2 },
     annotation: { allowed: true, strokes: [] },
-    host: { locked: false, hostKey: DEMO_HOST_KEY, restrictShare: false, recording: 'off', consented: false, waiting: [], announcement: null },
+    host: { locked: false, hostKey: DEMO_HOST_KEY, restrictShare: false, recording: 'off', consented: false, waitingRoom: true, waiting: [], announcement: null },
     notices: [],
     phase: 'live',
     settings,
