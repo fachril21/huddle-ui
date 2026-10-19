@@ -152,3 +152,13 @@ Host dan co-host membagi peserta ke 2–8 ruang kecil dari panel **Ruang** (di P
 - Momen bergerak tunggal: `RoomWash`, warna ruang tujuan menyapu layar sekali (mati saat reduced motion).
 - Demo Director punya grup "Ruang diskusi": minta bantuan dari ruang, masuk/keluar ruang, habiskan timer, selesaikan hitungan.
 - **Batasan yang diketahui:** `sharerId` hanya satu untuk seluruh rapat, jadi hanya satu orang bisa berbagi layar di semua ruang sekaligus. Belum ada: broadcast audio, host berbagi ke semua ruang, penempatan tersimpan untuk rapat berulang, rekaman per ruang, seret-dan-lepas (penempatan lewat menu pilih per orang).
+
+## BRB / AFK (kehadiran)
+
+- Status hanya berubah karena pilihan orangnya sendiri (Lainnya > "Status saya", atau ubin "BRB 5 mnt" di HP). Tidak ada AFK otomatis dari idle: diam tanpa input tidak bisa dibedakan dari mendengarkan.
+- BRB boleh membawa perkiraan kembali (2/5/10/15 mnt atau "belum tahu"); AFK tidak. "Matikan mic dan kamera juga" aktif secara default dan dipulihkan saat kembali. Menyalakan mic atau kamera juga berarti kembali.
+- State: `Participant.status` + `Participant.away { since, backAt, before }` (performance.now). Aksi `setPresence`; `toggleStatus` tinggal untuk Demo Director.
+- Jam: `PresenceClockProvider` (tick 5 dtk, hanya jalan saat ada yang pergi). Teks durasi di `src/presence/presence.ts`.
+- Chat: pesan ke orang yang pergi (penerima pribadi atau @sebutan) menyimpan `awayIds`, dan menampilkan catatan "mungkin belum membaca". Saran @ menampilkan chip status.
+- Saat kembali: sapaan di kartu dan ringkasan "Selama Anda pergi" (pesan untuk Anda, polling baru).
+- Belum: peserta yang pergi masih bisa menyala sebagai pembicara aktif kalau mic-nya hidup; tombol "panggil" dari host; pintasan keyboard.

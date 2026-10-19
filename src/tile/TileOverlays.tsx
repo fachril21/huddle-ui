@@ -1,5 +1,6 @@
-import { RefreshCw, SignalLow } from 'lucide-react'
+import { Check, RefreshCw, SignalLow } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
+import { useEffect, useRef, useState } from 'react'
 import { AnimatedEmoji } from '../emoji/AnimatedEmoji'
 import type { Participant } from '../state/types'
 import styles from './TileOverlays.module.css'
@@ -9,6 +10,9 @@ interface OverlayProps {
   tileW: number
   tileH: number
 }
+
+/** How long the "back" greeting stays on a card */
+const WAKE_MS = 2400
 
 const clamp = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v))
 
@@ -58,26 +62,77 @@ export function HandOverlay({ participant, tileW, tileH }: OverlayProps) {
   )
 }
 
-/** AFK / BRB: status emoji beside the avatar. The tile itself is dimmed by Tile. */
+/**
+ * AFK / BRB: the card steps back. A veil settles over it in the status hue (a thin warm rim for BRB, a slow-breathing
+ * vignette for AFK), one flash marks the moment, and the status emoji springs in beside the avatar.
+ */
 export function StatusOverlay({ participant, tileW, tileH }: OverlayProps) {
   const g = geometry(participant, tileW, tileH)
   const size = g.narrow ? 36 : 56
-  const left = g.narrow ? tileW - size - 10 : g.camOn ? tileW * 0.86 - size : tileW / 2 + g.avatar / 2 + size * 0.15
+  // a narrow card has no room beside the avatar: the emoji sits at the top, clear of the hand, the pin and the mic mark
+  const left = g.narrow ? (tileW - size) / 2 : g.camOn ? tileW * 0.86 - size : tileW / 2 + g.avatar / 2 + size * 0.15
   const top = g.narrow ? 10 : tileH / 2 - size / 2
+  const { status, name } = participant
 
   return (
-    <AnimatePresence mode="popLayout">
-      {participant.status !== 'none' && (
-        <motion.div
-          key={participant.status}
-          className={styles.status}
-          style={{ left, top }}
-          initial={{ scale: 0.4, opacity: 0, y: 12 }}
-          animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.5, opacity: 0, transition: { duration: 0.18 } }}
-          transition={{ type: 'spring', stiffness: 260, damping: 20 }}
-        >
-          <AnimatedEmoji name={participant.status === 'afk' ? 'sleep' : 'coffee'} size={size} />
+    <>
+      <AnimatePresence>
+        {status !== 'none' && (
+          <motion.span key={`veil-${status}`} className={styles.veil} data-status={status} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5, ease: 'easeOut' }} aria-hidden="true">
+            <span className={styles.settle} />
+          </motion.span>
+        )}
+      </AnimatePresence>
+      <AnimatePresence mode="popLayout">
+        {status !== 'none' && (
+          <motion.div
+            key={status}
+            className={styles.status}
+            style={{ left, top }}
+            initial={{ scale: 0.4, opacity: 0, y: 12 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.5, opacity: 0, y: -10, transition: { duration: 0.22 } }}
+            transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+          >
+            <AnimatedEmoji name={status === 'afk' ? 'sleep' : 'coffee'} size={size} />
+            <span className="sr-only" role="status">{`${name} ${status === 'afk' ? 'AFK' : 'BRB'}`}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  )
+}
+
+/** Back from a break: the card lights up once and says so for a moment. */
+export function WakeOverlay({ participant }: { participant: Participant }) {
+  const { status, name } = participant
+  const previous = useRef(status)
+  const [wake, setWake] = useState(0)
+
+  useEffect(() => {
+    const was = previous.current
+    previous.current = status
+    if (was === 'none' || status !== 'none') return
+    setWake((k) => k + 1)
+    const id = window.setTimeout(() => setWake(0), WAKE_MS)
+    return () => window.clearTimeout(id)
+  }, [status])
+
+  return (
+    <AnimatePresence>
+      {wake > 0 && (
+        <motion.div key={wake} className={styles.wake} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: 0.3 } }}>
+          <span className={styles.wakeRing} aria-hidden="true" />
+          <motion.span
+            className={`glass-1 ${styles.welcome}`}
+            role="status"
+            initial={{ y: -8, scale: 0.9, opacity: 0 }}
+            animate={{ y: 0, scale: 1, opacity: 1 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 22 }}
+          >
+            <Check size={14} strokeWidth={2} aria-hidden="true" />
+            {`${name} kembali`}
+          </motion.span>
         </motion.div>
       )}
     </AnimatePresence>

@@ -7,7 +7,7 @@ import { Aurora } from './Aurora'
 import { Avatar } from './Avatar'
 import { NeonBorder } from './NeonBorder'
 import { TileLabel } from './TileLabel'
-import { ConnectionOverlay, HandOverlay, OfferOverlay, StatusOverlay } from './TileOverlays'
+import { ConnectionOverlay, HandOverlay, OfferOverlay, StatusOverlay, WakeOverlay } from './TileOverlays'
 import { VideoPlaceholder } from './VideoPlaceholder'
 import styles from './Tile.module.css'
 
@@ -54,7 +54,7 @@ export function Tile({ participant, tileW, tileH, lit, dominant, mutedSpeaking, 
       data-cam={camOn ? 'on' : 'off'}
       data-lit={lit}
       data-dominant={lit && dominant}
-      data-away={status !== 'none'}
+      data-away={status === 'none' ? undefined : status}
       data-sound={soundPlaying}
       aria-label={[name, ...notes].join(', ')}
     >
@@ -78,6 +78,7 @@ export function Tile({ participant, tileW, tileH, lit, dominant, mutedSpeaking, 
       <HandOverlay participant={participant} tileW={tileW} tileH={tileH} />
       <OfferOverlay participant={participant} tileW={tileW} tileH={tileH} offer={offer} />
       <StatusOverlay participant={participant} tileW={tileW} tileH={tileH} />
+      <WakeOverlay participant={participant} />
       {isSelf && (
         <div className={styles.muted} data-on={mutedSpeaking} aria-hidden="true">
           <div className={styles.mutedPulse} />

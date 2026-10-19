@@ -40,8 +40,8 @@ function ParticipantRow({ participant: p, state, dispatch }: { participant: Part
       </div>
       <div className={styles.toggles}>
         <Toggle label="Tangan" on={p.hand !== null} onClick={() => dispatch({ type: 'toggleHand', id: p.id })} />
-        <Toggle label="AFK" on={p.status === 'afk'} onClick={() => dispatch({ type: 'toggleStatus', id: p.id, status: 'afk' })} />
-        <Toggle label="BRB" on={p.status === 'brb'} onClick={() => dispatch({ type: 'toggleStatus', id: p.id, status: 'brb' })} />
+        <Toggle label="AFK" on={p.status === 'afk'} onClick={() => dispatch({ type: 'toggleStatus', id: p.id, status: 'afk', now: performance.now() })} />
+        <Toggle label="BRB" on={p.status === 'brb'} onClick={() => dispatch({ type: 'toggleStatus', id: p.id, status: 'brb', now: performance.now() })} />
         <Toggle label="Koneksi buruk" on={p.connection === 'poor'} onClick={() => dispatch({ type: 'toggleConnection', id: p.id, connection: 'poor' })} />
         <Toggle label="Menyambung" on={p.connection === 'reconnecting'} onClick={() => dispatch({ type: 'toggleConnection', id: p.id, connection: 'reconnecting' })} />
       </div>

@@ -1,6 +1,8 @@
 import { Lock, SendHorizontal } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { KeyboardEvent } from 'react'
+import { AwayChip } from '../../presence/AwayChip'
+import { isAway, statusWord } from '../../presence/presence'
 import { SELF_ID } from '../../state/types'
 import type { ChatState, Participant } from '../../state/types'
 import { activeMention, applyMention, formatChatTime } from './chatTime'
@@ -15,6 +17,25 @@ interface ChatPanelProps {
 const MENTION_LIMIT = 5
 
 /** Public and private messages, @mention suggestions, and a typing indicator (PRD 8.8). */
+/** Under a message you sent to someone who was away: they may not have seen it, and since when. */
+function AwayNote({ person }: { person: Participant | undefined }) {
+  if (!person) return null
+  return (
+    <p className={styles.awayNote} role="note">
+      {isAway(person) ? (
+        <>
+          <b>{person.name}</b> sedang {statusWord(person)}, mungkin belum membaca
+          <AwayChip participant={person} />
+        </>
+      ) : (
+        <>
+          <b>{person.name}</b> tadi sedang pergi saat pesan ini dikirim, kini sudah kembali
+        </>
+      )}
+    </p>
+  )
+}
+
 export function ChatPanel({ chat, participants, onSend }: ChatPanelProps) {
   const [text, setText] = useState('')
   const [toId, setToId] = useState<string | null>(null)
@@ -96,6 +117,7 @@ export function ChatPanel({ chat, participants, onSend }: ChatPanelProps) {
               <p className={styles.bubble} data-mention={mentionsMe}>
                 {m.text}
               </p>
+              {mine && m.awayIds?.map((id) => <AwayNote key={id} person={participants.find((p) => p.id === id)} />)}
             </li>
           )
         })}
@@ -115,6 +137,7 @@ export function ChatPanel({ chat, participants, onSend }: ChatPanelProps) {
                 <button type="button" tabIndex={-1} onMouseDown={(e) => e.preventDefault()} onClick={() => setText(applyMention(text, p.name))}>
                   <i className={styles.dot} aria-hidden="true" />
                   {p.name}
+                  {isAway(p) && <AwayChip participant={p} />}
                 </button>
               </li>
             ))}

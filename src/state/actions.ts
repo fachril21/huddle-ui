@@ -28,7 +28,9 @@ export type RoomAction =
   | { type: 'moveParticipant'; id: string; toIndex: number }
   | { type: 'swapParticipants'; a: string; b: string }
   | { type: 'toggleHand'; id: string }
-  | { type: 'toggleStatus'; id: string; status: Exclude<PresenceStatus, 'none'> }
+  | { type: 'toggleStatus'; id: string; status: Exclude<PresenceStatus, 'none'>; now: number }
+  /** Step away (BRB, AFK) or come back ('none'). minutes is the BRB estimate; quiet also mutes mic and camera. */
+  | { type: 'setPresence'; id: string; status: PresenceStatus; now: number; minutes?: number | null; quiet?: boolean }
   | { type: 'toggleConnection'; id: string; connection: Exclude<ConnectionState, 'good'> }
   | { type: 'setCount'; count: number }
   | { type: 'setRole'; id: string; role: Role }

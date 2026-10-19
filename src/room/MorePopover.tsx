@@ -2,11 +2,15 @@ import { motion } from 'motion/react'
 import { useState } from 'react'
 import { getGroupVolume, isGroupMuted, setGroupMuted, setGroupVolume } from '../audio/audioEngine'
 import type { SoundGroup } from '../audio/audioEngine'
-import type { FxTier } from '../state/types'
+import { PresenceControl } from '../presence/PresenceControl'
+import type { FxTier, Participant } from '../state/types'
 import { PUSH_TO_TALK, SHORTCUTS } from './shortcuts'
 import styles from './MorePopover.module.css'
 
 interface MorePopoverProps {
+  self: Participant
+  onPresenceStart: (status: 'brb' | 'afk', minutes: number | null, quiet: boolean) => void
+  onPresenceBack: () => void
   fx: FxTier
   onFx: (fx: FxTier) => void
   /** Whether the keyboard shortcut list is expanded; lifted so the "?" key can open it */
@@ -26,8 +30,8 @@ const GROUPS: readonly { group: SoundGroup; label: string }[] = [
   { group: 'soundboard', label: 'Soundboard' },
 ]
 
-/** "Lainnya": effects tier (Design.md 19.1) and the three sound volume groups (Design.md 17). */
-export function MorePopover({ fx, onFx, shortcutsOpen, onShortcutsOpen }: MorePopoverProps) {
+/** "Lainnya": my status, effects tier (Design.md 19.1) and the three sound volume groups (Design.md 17). */
+export function MorePopover({ self, onPresenceStart, onPresenceBack, fx, onFx, shortcutsOpen, onShortcutsOpen }: MorePopoverProps) {
   return (
     <motion.div
       className={`glass-2 ${styles.popover}`}
@@ -38,6 +42,8 @@ export function MorePopover({ fx, onFx, shortcutsOpen, onShortcutsOpen }: MorePo
       exit={{ opacity: 0, y: 6, scale: 0.97, transition: { duration: 0.12 } }}
       transition={{ type: 'spring', stiffness: 380, damping: 30 }}
     >
+      <PresenceControl self={self} onStart={onPresenceStart} onBack={onPresenceBack} />
+
       <section aria-label="Efek visual">
         <h2>Efek visual</h2>
         <div className={styles.segment} role="group" aria-label="Tingkat efek visual">

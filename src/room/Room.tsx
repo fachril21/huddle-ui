@@ -1,4 +1,4 @@
-import { AudioLines, ChartColumn, DoorOpen, Hand, Handshake, LayoutGrid, Mic, MonitorUp, PenLine, ShieldCheck, UserPlus, Users, Video } from 'lucide-react'
+import { AudioLines, ChartColumn, Coffee, DoorOpen, Hand, Handshake, LayoutGrid, Mic, MonitorUp, PenLine, ShieldCheck, UserPlus, Users, Video } from 'lucide-react'
 import { AnimatePresence } from 'motion/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { CSSProperties, Dispatch } from 'react'
@@ -7,6 +7,9 @@ import { BreakoutPrompts } from '../breakout/BreakoutPrompts'
 import { BreakoutSetup } from '../breakout/BreakoutSetup'
 import { RoomStrip } from '../breakout/RoomStrip'
 import { RoomWash } from '../breakout/RoomWash'
+import { AwayBar } from '../presence/AwayBar'
+import { AwayDigest } from '../presence/AwayDigest'
+import { PresenceClockProvider } from '../presence/PresenceClock'
 import { invitationFor, isLive, locationOf } from '../breakout/rooms'
 import { useBreakoutClock } from '../breakout/useBreakoutClock'
 import { MAIN_ROOM, SELF_ID } from '../state/types'
@@ -233,7 +236,15 @@ export function Room({ state, all, dispatch }: RoomProps) {
     />
   )
   const soundboardNode = <SoundboardPopover key="soundboard" lastPlayAt={soundboard.selfLastPlayAt} onPlay={soundboard.onPlay} />
-  const moreNode = <MorePopover key="more" fx={state.settings.fx} onFx={(next) => dispatch({ type: 'setFx', fx: next })} shortcutsOpen={shortcutsOpen} onShortcutsOpen={setShortcutsOpen} />
+  const stepAway = (status: 'brb' | 'afk', minutes: number | null, quiet: boolean) => {
+    dispatch({ type: 'setPresence', id: SELF_ID, status, now: performance.now(), minutes, quiet })
+    dispatch({ type: 'closeDock', key: 'more' })
+  }
+  const stepBack = () => {
+    dispatch({ type: 'setPresence', id: SELF_ID, status: 'none', now: performance.now() })
+    dispatch({ type: 'closeDock', key: 'more' })
+  }
+  const moreNode = <MorePopover key="more" self={self} onPresenceStart={stepAway} onPresenceBack={stepBack} fx={state.settings.fx} onFx={(next) => dispatch({ type: 'setFx', fx: next })} shortcutsOpen={shortcutsOpen} onShortcutsOpen={setShortcutsOpen} />
   const leaveNode = (
     <LeaveMenu
       key="leave"
@@ -250,6 +261,7 @@ export function Room({ state, all, dispatch }: RoomProps) {
   const ICON = { size: 24, strokeWidth: 1.75, 'aria-hidden': true } as const
   const moreActions: MoreAction[] = [
     { id: 'hand', label: self.hand !== null ? 'Turunkan tangan' : 'Angkat tangan', icon: <Hand {...ICON} />, pressed: self.hand !== null, onSelect: () => dispatch({ type: 'toggleHand', id: SELF_ID }) },
+    { id: 'away', label: self.status !== 'none' ? 'Saya kembali' : 'BRB 5 mnt', icon: <Coffee {...ICON} />, pressed: self.status !== 'none', onSelect: () => (self.status !== 'none' ? stepBack() : stepAway('brb', 5, true)) },
     { id: 'highfive', label: 'High five', icon: <Handshake {...ICON} />, pressed: highFive.active, unavailable: highFive.disabledReason, onSelect: highFive.onHighFive },
     { id: 'sound', label: 'Soundboard', icon: <AudioLines {...ICON} />, unavailable: soundboard.disabledReason, onSelect: () => dispatch({ type: 'toggleDock', key: 'soundboard' }) },
     { id: 'share', label: state.sharerId === SELF_ID ? 'Berhenti berbagi' : 'Bagikan layar', icon: <MonitorUp {...ICON} />, pressed: state.sharerId === SELF_ID, unavailable: shareDisabledReason, onSelect: onShare },
@@ -266,6 +278,7 @@ export function Room({ state, all, dispatch }: RoomProps) {
 
   return (
     <AnnotationProvider value={annotation}>
+    <PresenceClockProvider active={state.participants.some((p) => p.status !== 'none')}>
     <div className={styles.room} data-motion={reduced ? 'reduced' : 'full'} data-fx={fx} data-sharing={sharing} style={style}>
       <Ambient />
       <RoomWash state={all} dispatch={dispatch} />
@@ -332,6 +345,8 @@ export function Room({ state, all, dispatch }: RoomProps) {
         <QualitySuggestion weakConnection={self.connection !== 'good'} camOn={self.camOn} quality={state.settings.cameraQuality} onLower={() => dispatch({ type: 'setCameraQuality', quality: 'low' })} />
         <NoticeStack notices={state.notices} />
         <SoundChips plays={soundboard.plays} participants={state.participants} />
+        <AwayBar self={self} onBack={stepBack} />
+        <AwayDigest state={state} dispatch={dispatch} />
         <BreakoutPrompts state={all} now={breakoutNow} dispatch={dispatch} />
         <RoomStrip state={all} now={breakoutNow} dispatch={dispatch} />
         <GuestRequestToast
@@ -429,6 +444,7 @@ export function Room({ state, all, dispatch }: RoomProps) {
       {setupOpen && canManage && <BreakoutSetup state={all} now={breakoutNow} dispatch={dispatch} onClose={() => setSetupOpen(false)} />}
       {needsConsent && <RecordingConsent onAgree={() => dispatch({ type: 'recordingConsent' })} onLeave={() => dispatch({ type: 'leave', phase: 'left' })} />}
     </div>
+    </PresenceClockProvider>
     </AnnotationProvider>
   )
 }

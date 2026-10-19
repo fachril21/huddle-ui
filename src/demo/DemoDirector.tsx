@@ -8,6 +8,7 @@ import styles from './DemoDirector.module.css'
 import { BreakoutSection } from './sections/BreakoutSection'
 import { EventsSection } from './sections/EventsSection'
 import { ParticipantsSection } from './sections/ParticipantsSection'
+import { PresenceSection } from './sections/PresenceSection'
 import { ScenarioSection } from './sections/ScenarioSection'
 import { ViewSection } from './sections/ViewSection'
 import type { ScenarioPlayer } from './useScenarioPlayer'
@@ -73,6 +74,10 @@ export function DemoDirector({ state, dispatch, player, admission, onAdmission, 
 
           <Group title="Ruang diskusi" defaultOpen={state.breakout.phase === 'open' || state.breakout.phase === 'closing'}>
             <BreakoutSection state={state} dispatch={dispatch} />
+          </Group>
+
+          <Group title="Kehadiran (BRB / AFK)">
+            <PresenceSection state={state} dispatch={dispatch} />
           </Group>
 
           <Group title="Ruang tunggu (sisi tamu)" defaultOpen={admission !== null}>

@@ -75,9 +75,10 @@
 
 :global([data-motion='reduced']) .mutedPulse { animation: none; }
 
-/* AFK / BRB: media dims to 65% (Design.md 9.2) */
-.media { transition: opacity var(--dur-slow) var(--ease-out); }
-.tile[data-away='true'] .media { opacity: 0.65; }
+/* AFK / BRB: media dims to 65% (Design.md 9.2). AFK is a little deeper and drained of colour, so the two read apart at a glance */
+.media { transition: opacity var(--dur-slow) var(--ease-out), filter var(--dur-slow) var(--ease-out); }
+.tile[data-away='brb'] .media { opacity: 0.65; }
+.tile[data-away='afk'] .media { opacity: 0.5; filter: saturate(0.55); }
 
 /* Playing a soundboard sound: neon ring pulses (does not change the speaking state) */
 .soundPulse {

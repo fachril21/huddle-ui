@@ -1,0 +1,32 @@
+/* BRB is warm and short, AFK is cool and long; the word and the icon always say which, so the hue never carries it alone */
+.tone { --tone: var(--aurora-amber); }
+.tone[data-status='afk'] { --tone: var(--aurora-violet); }
+
+.chip { display: inline-flex; align-items: center; gap: 4px; flex: none; height: 20px; padding: 0 var(--space-2); border-radius: var(--radius-pill); background: var(--aurora-amber); color: var(--on-aurora); font-size: 11px; line-height: 16px; font-weight: 700; text-shadow: none; white-space: nowrap; }
+.chip[data-status='afk'] { background: var(--aurora-violet); }
+.chip { animation: chipIn 380ms var(--ease-spring) both; }
+@keyframes chipIn { from { opacity: 0; transform: scale(0.7); } }
+:global([data-motion='reduced']) .chip { animation: none; }
+.chip svg { flex: none; }
+.clock { font-weight: 600; font-variant-numeric: tabular-nums; }
+.chip[data-overdue='true'] .clock { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
+
+/* the bar the person who stepped away sees: where they are and the one way back */
+.bar { display: flex; align-items: center; gap: var(--space-3); max-width: min(560px, 100%); padding: var(--space-2) var(--space-2) var(--space-2) var(--space-3); border-radius: var(--radius-pill); color: var(--text-1); font-size: 13px; line-height: 19px; pointer-events: auto; }
+.mark { flex: none; display: grid; place-items: center; width: 28px; height: 28px; border-radius: var(--radius-sm); background: color-mix(in srgb, var(--tone) 18%, transparent); color: var(--tone); }
+.text { flex: 1; min-width: 0; }
+.text b { font-weight: 700; }
+.bar button { white-space: nowrap; }
+
+/* what came in while they were gone */
+.digest { display: flex; align-items: center; gap: var(--space-2); max-width: min(560px, 100%); min-height: 52px; padding: var(--space-2) var(--space-2) var(--space-2) var(--space-3); border-radius: var(--radius-pill); color: var(--text-1); font-size: 13px; line-height: 19px; pointer-events: auto; }
+.digest button { white-space: nowrap; }
+.digest ul { display: flex; flex-wrap: wrap; gap: 0 var(--space-3); margin: 0; padding: 0; list-style: none; color: var(--text-2); }
+.digest li b { color: var(--text-1); font-weight: 700; font-variant-numeric: tabular-nums; }
+
+@media (max-width: 767px) {
+  .bar, .digest { width: 100%; border-radius: var(--radius-xl); }
+  /* the words get their own row; the two buttons share the one below */
+  .digest { flex-wrap: wrap; justify-content: flex-end; }
+  .digest .text { flex: 1 1 100%; }
+}

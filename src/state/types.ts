@@ -12,6 +12,16 @@ export type ConnectionState = 'good' | 'poor' | 'reconnecting'
 /** Visual effects tier (Design.md 19.1): Penuh, Hemat, Mati */
 export type FxTier = 'full' | 'lite' | 'off'
 
+/** Someone who stepped away: since when, when they said they would be back, and what their mic and camera were. */
+export interface Away {
+  /** performance.now() when they went */
+  readonly since: number
+  /** BRB only: when they said they would be back, null if they did not say */
+  readonly backAt: number | null
+  /** Mic and camera as they were, to be restored on return; null when the status left them alone */
+  readonly before: { readonly micOn: boolean; readonly camOn: boolean } | null
+}
+
 export interface Participant {
   readonly id: string
   readonly name: string
@@ -22,6 +32,8 @@ export interface Participant {
   /** Raise-hand queue position (1 = first), null when the hand is down */
   readonly hand: number | null
   readonly status: PresenceStatus
+  /** Present while status is not 'none' */
+  readonly away?: Away
   readonly connection: ConnectionState
 }
 
@@ -124,6 +136,8 @@ export interface ChatMessage {
   /** null = public; otherwise a private message to this participant */
   readonly toId: string | null
   readonly text: string
+  /** People this message was meant for who were away when it was sent (the recipient, or an @mention) */
+  readonly awayIds?: readonly string[]
   /** seconds on the mock meeting clock (see formatChatTime) */
   readonly at: number
   /** The Ruang diskusi it was said in; missing means the main room */

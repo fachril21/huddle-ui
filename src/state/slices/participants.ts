@@ -1,6 +1,6 @@
 import type { VoicePreset } from '../actions'
 import { SELF_ID } from '../types'
-import type { Participant, RoomState } from '../types'
+import type { Participant, PresenceStatus, RoomState } from '../types'
 import { hasHost, mapParticipant, withNotice } from './shared'
 import type { Slice } from './shared'
 
@@ -69,14 +69,39 @@ function swap(state: RoomState, a: string, b: string): RoomState {
   return { ...state, participants: next }
 }
 
+const MINUTE_MS = 60_000
+
+/** Back from a break: the status clears and any mic or camera the break switched off returns, unless they were turned on since. */
+function back(p: Participant): Participant {
+  if (p.status === 'none') return p
+  const { away, ...rest } = p
+  return { ...rest, status: 'none', micOn: p.micOn || (away?.before?.micOn ?? false), camOn: p.camOn || (away?.before?.camOn ?? false) }
+}
+
+function present(p: Participant, status: PresenceStatus, now: number, minutes: number | null, quiet: boolean): Participant {
+  if (status === 'none') return back(p)
+  const before = p.away?.before ?? (quiet ? { micOn: p.micOn, camOn: p.camOn } : null)
+  const away = { since: p.away?.since ?? now, backAt: status === 'brb' && minutes ? now + minutes * MINUTE_MS : null, before }
+  return { ...p, status, away, ...(quiet ? { micOn: false, camOn: false } : {}) }
+}
+
+/** Turning the mic or camera on is also a way of saying "I'm back". */
+function withReturn(state: RoomState, id: string, change: (p: Participant) => Participant): RoomState {
+  return mapParticipant(state, id, (p) => {
+    const next = change(p)
+    const turnedOn = (next.micOn && !p.micOn) || (next.camOn && !p.camOn)
+    return p.status !== 'none' && turnedOn ? back(next) : next
+  })
+}
+
 export const participantsSlice: Slice = (state, action) => {
   switch (action.type) {
     case 'toggleMic':
-      return mapParticipant(state, action.id, (p) => ({ ...p, micOn: !p.micOn }))
+      return withReturn(state, action.id, (p) => ({ ...p, micOn: !p.micOn }))
     case 'setMic':
-      return mapParticipant(state, action.id, (p) => ({ ...p, micOn: action.on }))
+      return withReturn(state, action.id, (p) => ({ ...p, micOn: action.on }))
     case 'toggleCam':
-      return mapParticipant(state, action.id, (p) => ({ ...p, camOn: !p.camOn }))
+      return withReturn(state, action.id, (p) => ({ ...p, camOn: !p.camOn }))
     case 'moveParticipant':
       return move(state, action.id, action.toIndex)
     case 'swapParticipants':
@@ -84,7 +109,9 @@ export const participantsSlice: Slice = (state, action) => {
     case 'toggleHand':
       return raiseHand(state, action.id)
     case 'toggleStatus':
-      return mapParticipant(state, action.id, (p) => ({ ...p, status: p.status === action.status ? 'none' : action.status }))
+      return mapParticipant(state, action.id, (p) => present(p, p.status === action.status ? 'none' : action.status, action.now, null, false))
+    case 'setPresence':
+      return mapParticipant(state, action.id, (p) => present(p, action.status, action.now, action.minutes ?? null, action.quiet ?? false))
     case 'toggleConnection':
       return mapParticipant(state, action.id, (p) => ({ ...p, connection: p.connection === action.connection ? 'good' : action.connection }))
     case 'setCount':

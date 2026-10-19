@@ -1,6 +1,7 @@
 import type { CameraQuality } from '../room/cameraQuality'
 import { qualityOption } from '../room/cameraQuality'
 import type { Participant } from '../state/types'
+import { AwayChip } from '../presence/AwayChip'
 import { PoorSignalIcon } from './TileOverlays'
 import styles from './TileLabel.module.css'
 
@@ -16,7 +17,8 @@ export function TileLabel({ participant, quality, compact = false }: { participa
       <span className={styles.name}>{participant.name}</span>
       {showRole && <span className={styles.role}>{participant.role}</span>}
       {quality && participant.camOn && <span className={styles.quality}>{qualityOption(quality).resolution}</span>}
-      {participant.status !== 'none' && <span className={styles.away}>{participant.status === 'afk' ? 'AFK' : 'BRB'}</span>}
+      <AwayChip participant={participant} />
+
     </div>
   )
 }

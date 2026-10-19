@@ -2,6 +2,8 @@ import { Ellipsis, Hand, MicOff, Search, UserPlus, VideoOff } from 'lucide-react
 import { useEffect, useRef, useState } from 'react'
 import { SELF_ID } from '../../state/types'
 import type { Guest, Participant, Role } from '../../state/types'
+import { AwayChip } from '../../presence/AwayChip'
+import { isAway } from '../../presence/presence'
 import { WaitingGuests } from '../host/WaitingGuests'
 import styles from './ParticipantsPanel.module.css'
 
@@ -65,7 +67,7 @@ export function ParticipantsPanel({ participants, waiting, selfRole, onDecide, o
               <i className={styles.dot} aria-hidden="true">{p.name.charAt(0)}</i>
               <span className={styles.name}>{p.id === SELF_ID ? `${p.name} (Anda)` : p.name}</span>
               {p.role !== 'Peserta' && <span className={styles.role}>{p.role}</span>}
-              {p.status !== 'none' && <span className={styles.away}>{p.status === 'afk' ? 'AFK' : 'BRB'}</span>}
+              {isAway(p) && <AwayChip participant={p} />}
               <span className={styles.flags}>
                 {!p.micOn && <MicOff size={14} strokeWidth={1.75} aria-label="Mikrofon mati" role="img" />}
                 {!p.camOn && <VideoOff size={14} strokeWidth={1.75} aria-label="Kamera mati" role="img" />}

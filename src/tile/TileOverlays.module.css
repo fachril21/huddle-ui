@@ -37,6 +37,25 @@
   pointer-events: none;
 }
 
+/* stepping away: the veil sits above the media and below the label, so the name stays readable */
+.veil { position: absolute; inset: 0; z-index: 3; border-radius: inherit; pointer-events: none; }
+.veil[data-status='brb'] { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--aurora-amber) 55%, transparent), inset 0 -36px 40px -24px color-mix(in srgb, var(--aurora-amber) 22%, transparent); }
+.veil[data-status='afk'] { background: radial-gradient(75% 75% at 50% 45%, transparent 30%, color-mix(in srgb, var(--ink-950) 70%, transparent)), color-mix(in srgb, var(--aurora-violet) 9%, transparent); animation: breathe 4.4s ease-in-out infinite; }
+@keyframes breathe { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
+
+/* the one flash that marks the moment of going */
+.settle { position: absolute; inset: 0; border-radius: inherit; animation: settle 900ms var(--ease-out) both; }
+.veil[data-status='brb'] .settle { box-shadow: 0 0 0 2px var(--aurora-amber), 0 0 22px color-mix(in srgb, var(--aurora-amber) 60%, transparent); }
+.veil[data-status='afk'] .settle { box-shadow: 0 0 0 2px var(--aurora-violet), 0 0 22px color-mix(in srgb, var(--aurora-violet) 60%, transparent); }
+@keyframes settle { 0% { opacity: 0.95; } 100% { opacity: 0; } }
+
+/* back: one ring of light, and a greeting at the top of the card */
+.wake { position: absolute; inset: 0; z-index: 6; border-radius: inherit; pointer-events: none; display: grid; justify-items: center; align-content: start; padding-top: var(--space-3); }
+.wakeRing { position: absolute; inset: 0; border-radius: inherit; box-shadow: 0 0 0 2px var(--aurora-mint), 0 0 26px color-mix(in srgb, var(--aurora-mint) 55%, transparent); animation: wake 1100ms var(--ease-out) both; }
+@keyframes wake { 0% { opacity: 0; transform: scale(0.985); } 30% { opacity: 1; } 100% { opacity: 0; transform: scale(1); } }
+.welcome { position: relative; display: flex; align-items: center; gap: var(--space-2); max-width: calc(100% - var(--space-6)); height: 26px; padding: 0 var(--space-3); border-radius: var(--radius-pill); font-size: 12px; font-weight: 600; color: var(--text-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.welcome svg { flex: none; color: var(--aurora-mint); }
+
 .poor {
   position: absolute;
   inset: 0;
@@ -97,6 +116,9 @@
 
 .poorIcon { color: var(--aurora-rose); }
 
+:global([data-motion='reduced']) .veil[data-status='afk'] { animation: none; }
+:global([data-motion='reduced']) .settle,
+:global([data-motion='reduced']) .wakeRing { animation: none; opacity: 0; }
 :global([data-motion='reduced']) .poor { animation: none; opacity: 1; }
 :global([data-motion='reduced']) .shimmer::before,
 :global([data-motion='reduced']) .spin { animation: none; }
