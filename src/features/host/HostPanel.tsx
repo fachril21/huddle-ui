@@ -99,6 +99,7 @@ export function HostPanel({ host, soundboardAllowed, annotationAllowed, onDecide
             {host.recording === 'on' ? 'Sedang merekam' : host.recording === 'paused' ? 'Rekaman dijeda' : 'Tidak merekam'}
           </span>
         </div>
+        <p className={styles.recRule}>Berhenti otomatis jika ruangan kosong. Hasilnya tersimpan 24 jam.</p>
       </section>
     </div>
   )

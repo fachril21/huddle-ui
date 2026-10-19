@@ -1,0 +1,45 @@
+.layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-6); align-items: start; }
+.layout[data-docked] { grid-template-columns: minmax(0, 1fr) 380px; }
+.listColumn { display: grid; gap: var(--space-6); min-width: 0; }
+
+.head h1 { margin: 0; font-family: var(--font-display); font-size: 28px; line-height: 36px; font-weight: 700; letter-spacing: -0.015em; }
+.rules { display: grid; gap: 2px; margin-top: var(--space-2); }
+.rules p { margin: 0; max-width: 62ch; color: var(--text-2); font-size: 13px; line-height: 20px; }
+
+.section { display: grid; gap: var(--space-2); }
+.sectionHead { display: flex; align-items: baseline; gap: var(--space-3); padding: 0 var(--space-3); }
+.sectionHead h2 { margin: 0; font-family: var(--font-display); font-size: 18px; line-height: 26px; font-weight: 600; }
+.sectionHead span { color: var(--text-3); font-size: 13px; line-height: 20px; }
+.section[data-tone='live'] .sectionHead h2 { color: var(--aurora-rose); }
+.list { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
+
+.quiet { margin: 0; padding: 0 var(--space-3); max-width: 56ch; color: var(--text-3); font-size: 13px; line-height: 20px; }
+
+.empty { display: grid; justify-items: start; gap: var(--space-2); padding: var(--space-8) var(--space-3); color: var(--text-3); }
+.empty h2 { margin: var(--space-2) 0 0; color: var(--text-1); font-family: var(--font-display); font-size: 20px; line-height: 28px; font-weight: 600; }
+.empty p { margin: 0; max-width: 46ch; color: var(--text-2); font-size: 14px; line-height: 21px; }
+
+.panel {
+  position: sticky;
+  top: var(--space-8);
+  display: grid;
+  gap: var(--space-4);
+  max-height: calc(100vh - var(--space-8) * 2);
+  padding: var(--space-5);
+  overflow-y: auto;
+  border-radius: var(--radius-xl);
+  animation: slide var(--dur-slow) var(--ease-out);
+}
+.panelHead { display: flex; align-items: center; justify-content: space-between; }
+.panelHead h2 { margin: 0; color: var(--text-2); font-size: 13px; line-height: 20px; font-weight: 600; }
+
+@keyframes slide { from { opacity: 0; transform: translateX(16px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .panel { animation: none; }
+}
+
+@media (max-width: 767px) {
+  .head h1 { font-size: 24px; line-height: 32px; }
+  .sectionHead { flex-wrap: wrap; row-gap: 0; padding: 0 var(--space-1); }
+}

@@ -1,0 +1,23 @@
+.root { --tone: var(--text-2); display: grid; gap: 6px; min-width: 0; }
+.root[data-urgency='soon'] { --tone: var(--aurora-amber); }
+.root[data-urgency='urgent'] { --tone: var(--aurora-rose); }
+
+.line { display: flex; align-items: center; gap: 6px; color: var(--tone); font-size: 12px; line-height: 16px; font-weight: 600; white-space: nowrap; }
+.line svg { flex: none; }
+.note { color: var(--text-3); font-weight: 500; }
+.root[data-urgency='urgent'] .note { color: var(--tone); font-weight: 700; }
+.time { color: var(--tone); font-family: var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: 0; font-weight: 600; }
+
+/* the bar drains as the 24 hours run out; it is the same story as the words, never the only one */
+.track { position: relative; display: block; height: 3px; overflow: hidden; border-radius: var(--radius-pill); background: var(--hairline); }
+.track i { position: absolute; inset: 0; border-radius: inherit; background: var(--tone); transform-origin: left center; transition: transform var(--dur-slow) var(--ease-out); }
+
+.root[data-large] { gap: var(--space-2); }
+.root[data-large] .line { gap: var(--space-2); font-size: 13px; line-height: 20px; }
+.root[data-large] .time { font-size: 22px; line-height: 28px; font-family: var(--font-display); font-weight: 700; letter-spacing: -0.01em; }
+.root[data-large] .note { font-size: 13px; }
+.root[data-large] .track { height: 4px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .track i { transition: none; }
+}

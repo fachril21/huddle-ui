@@ -1,0 +1,88 @@
+.head h1 { margin: 0; font-family: var(--font-display); font-size: 28px; line-height: 36px; font-weight: 700; letter-spacing: -0.015em; }
+
+.layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: var(--space-8); align-items: start; }
+
+.nav { position: sticky; top: var(--space-8); }
+.nav ul { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.nav button {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 40px;
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-2);
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 600;
+  text-align: left;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.nav button:hover { background: var(--veil-hover); color: var(--text-1); }
+.nav button:focus-visible { box-shadow: var(--focus-ring); }
+.nav button[aria-current='page'] { background: var(--veil-press); color: var(--text-1); }
+.nav button[aria-current='page'] svg { color: var(--aurora-cyan); }
+
+.content { min-width: 0; max-width: 720px; }
+.content h2 { margin: 0 0 var(--space-2); font-family: var(--font-display); font-size: 22px; line-height: 30px; font-weight: 600; animation: arrive var(--dur-slow) var(--ease-out); }
+
+@keyframes arrive { from { opacity: 0; transform: translateY(6px); } }
+
+/* phone: a list of places, then one place at a time */
+.menu { display: grid; gap: 2px; margin: var(--space-4) 0 0; padding: 0; list-style: none; }
+.menu button {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-4);
+  width: 100%;
+  min-height: 64px;
+  padding: var(--space-3);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-3);
+  text-align: left;
+}
+.menu button:active { background: var(--veil-press); }
+.menu button:focus-visible { box-shadow: var(--focus-ring); }
+.menu li + li { border-top: 1px solid var(--hairline); }
+.menuIcon { display: grid; place-items: center; width: 40px; height: 40px; border-radius: var(--radius-md); background: var(--hairline); color: var(--aurora-cyan); }
+.menuText { display: grid; min-width: 0; }
+.menuText span:first-child { color: var(--text-1); font-size: 15px; line-height: 22px; font-weight: 600; }
+.menuText span:last-child { color: var(--text-2); font-size: 13px; line-height: 20px; }
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: var(--tap);
+  margin: 0 0 var(--space-1) calc(var(--space-2) * -1);
+  padding: 0 var(--space-3) 0 var(--space-2);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 600;
+}
+.back:active { background: var(--veil-press); }
+.back:focus-visible { box-shadow: var(--focus-ring); }
+
+@media (prefers-reduced-motion: reduce) {
+  .nav button { transition: none; }
+  .content h2 { animation: none; }
+}
+
+@media (min-width: 768px) and (max-width: 1099px) {
+  .layout { grid-template-columns: 188px minmax(0, 1fr); gap: var(--space-6); }
+}
+
+@media (max-width: 767px) {
+  .head h1 { font-size: 24px; line-height: 32px; }
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .content h2 { font-size: 20px; line-height: 28px; }
+}

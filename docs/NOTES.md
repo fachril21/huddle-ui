@@ -57,7 +57,7 @@
 - Penurunan tier otomatis berdasarkan frame time (Design.md 19.2) TIDAK dibuat: di lingkungan uji headless ia akan selalu terpicu, dan prototype ini sengaja memberi kontrol manual.
 - Skenario otomatis memakai aksi reducer yang sama dengan tombol Demo Director. PRD 10 menjadwalkan ajakan high five Raka di 1:25 dan sambutan Dewi di 1:32, tetapi jendela ajakan 6 dtk (Design.md 11.3) membuatnya kedaluwarsa; sambutan dipercepat ke 1:30.
 - Simulasi reduced motion tersedia di Demo Director; media query OS tetap dihormati.
-- Belum dikerjakan: webcam asli untuk tile Anda (F20, P2), tombol "Bagikan hasil ke chat" pada polling, daftar perangkat mic/kamera (kualitas kamera sudah ada), "Intensitas efek tepi" (PRD 15 no.2).
+- Belum dikerjakan: webcam asli untuk tile Anda (F20, P2), tombol "Bagikan hasil ke chat" pada polling, "Intensitas efek tepi" (PRD 15 no.2).
 
 ## Keputusan tambahan (M9)
 - Pintasan memakai `KeyboardEvent.code` (tahan layout keyboard) dan tombol tunggal; modifier Ctrl/Meta/Alt dibiarkan untuk browser dan geser kartu (Alt+panah), `Shift+D` untuk Demo Director. Satu registry (`room/shortcuts.ts`) memberi makan handler, tooltip, dan daftar. Tahan Spasi = bicara sementara; diabaikan bila fokus ada di tombol (Spasi tetap menekan tombol itu). Keluar sengaja tanpa pintasan.
@@ -101,3 +101,18 @@
 - Sentuh: target minimal 44 px (`--tap`), input 16 px (hindari zoom otomatis iOS), tanpa hover (tooltip dock disembunyikan, tombol nonaktif menjelaskan diri saat diketuk, pintasan keyboard dan keycap disembunyikan), `dvh` dan safe area. Tier efek default di HP: Hemat.
 - Tombol Demo menjadi tab tipis di tengah atas di layar non-desktop; panel Demo Director jadi lembar bawah.
 - Belum dikerjakan / belum diuji: zoom cubit pada layar yang dibagikan (ditunda atas keputusan), uji di HP fisik (iOS Safari dan Chrome Android), keyboard layar sungguhan di chat dan form (logika `visualViewport` ada tapi hanya diuji lewat emulasi), seret PiP dengan jari sungguhan.
+
+## Pengaturan perangkat di room
+- Mic dan kamera punya panel terpisah (`room/devices/MicPopover.tsx`, `CameraPopover.tsx`), masing-masing dibuka dari panah di samping tombolnya. Di HP/tablet keduanya jadi lembar bawah lewat Lainnya > Atur mikrofon / Atur kamera.
+- Pilihan perangkat disimpan di `settings.devices` (id kosong = bawaan sistem) dan dibawa dari lobby lewat `JoinChoice.devices`. Perangkat yang tercabut kembali ke bawaan (`useDeviceFallback`).
+- Pratinjau kamera dan meter mic memakai `useMediaPreview` yang sama dengan lobby dan hanya berjalan saat panel terbuka dan perangkatnya menyala di meeting; mati berarti stream dihentikan (lampu kamera padam).
+- Speaker memengaruhi bunyi notifikasi, efek, dan soundboard (`audioEngine.setOutputDevice`) di browser yang mendukung `setSinkId` (Chromium). Tile Anda di room tetap simulasi, jadi mengganti kamera tidak mengubah gambar di tile.
+
+## Rekaman dan Pengaturan
+- Rail dan tab bar kini punya empat halaman nyata (Beranda, Rapat, Rekaman, Pengaturan); "Segera hadir" dihapus. Titik rose kecil di Rekaman menandakan rapat sedang direkam.
+- Aturan rekaman: file disimpan 24 jam sejak rekaman berhenti (rapat selesai atau ruangan kosong), lalu dihapus; catatan singkatnya (judul, tanggal, durasi) tersisa 7 hari sebagai jejak "Sudah dihapus". Orang terakhir yang keluar menghentikan rekaman otomatis (alasan "Berhenti otomatis"); rapat yang dimulai lagi menjadi rekaman baru. Logika murni di `src/recordings/retention.ts` (dites). Konstanta: `RETENTION_MS`, `TRACE_MS`, ambang 12 jam (kuning) dan 3 jam (merah).
+- Akses: host melihat dan boleh menghapus; peserta hanya melihat rekaman yang dibagikan host ("Dibagikan Dewi", tanpa tombol hapus). Prototype menurunkannya dari `hostName`.
+- Halaman Rekaman: daftar diurutkan dari yang paling cepat dihapus, countdown berikon + bar yang menyusut (urgensi tidak hanya warna). Di desktop detail menempel di kanan (pemutar tiruan, fakta, Unduh, Salin tautan, Hapus dengan konfirmasi inline); di tablet dan HP detail jadi lembar bawah.
+- Sambungan ke room (`useRecordingSync`): baris muncul saat host mulai merekam, tumbuh selama merekam, dan ditutup saat host berhenti, rapat diakhiri, atau pengguna terakhir keluar. Jika pengguna keluar padahal masih ada peserta lain, baris tetap "Sedang merekam" sampai app dimuat ulang (batasan prototype). Untuk mencoba berhenti otomatis: Demo Director > Peserta jadi 1, lalu Keluar. Menu Keluar menampilkan peringatan, HostPanel memuat aturan, layar penutup menjelaskan nasib rekaman.
+- Pengaturan: enam bagian (Profil, Perangkat, Rekaman, Tampilan dan gerak, Suara, Pintasan), tersimpan langsung dengan toast "Tersimpan". Aturan simpan 24 jam ditampilkan sebagai fakta, bukan toggle. Pilihan perangkat bawaan, tier efek, dan bunyi notifikasi disimpan di `huddle.preferences.v1` (`settings/preferences.ts`, dites); lobby memulai dari perangkat bawaan itu. Pengingat sebelum rekaman dihapus hanya menyimpan pilihan (belum ada notifikasi nyata).
+- Belum diuji: HP landscape dan tablet untuk dua halaman baru, perangkat sentuh sungguhan.

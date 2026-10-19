@@ -1,7 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { Dispatch, ReactNode } from 'react'
 import { copyText } from '../features/invite/clipboard'
-import { buildInviteUrl } from '../features/invite/inviteLink'
+import { INVITE_ORIGIN, buildInviteUrl } from '../features/invite/inviteLink'
+import type { RoomAction } from '../state/actions'
+import type { Settings } from '../state/types'
+import type { RecordingActions } from '../recordings/recordingActions'
+import type { RecordingStore } from '../recordings/recordingStore'
+import { RecordingsPage } from '../recordings/RecordingsPage'
+import { phaseOf } from '../recordings/retention'
+import { SettingsPage } from '../settings/SettingsPage'
 import { Ambient } from '../room/Ambient'
 import { useFx } from '../room/MotionContext'
 import { insideSummary } from '../prejoin/MeetingInfo'
@@ -35,6 +42,10 @@ interface DashboardProps {
   meetings: readonly Meeting[]
   dispatch: Dispatch<MeetingAction>
   onEnter: (target: JoinTarget) => void
+  recordings: RecordingStore
+  /** Device, quality and effects choices shared with the room */
+  settings: Settings
+  roomDispatch: Dispatch<RoomAction>
 }
 
 type DialogState =
@@ -62,7 +73,7 @@ function insideNote(o: Occurrence, now: Date): string {
 }
 
 /** Home and meetings pages. Owns dialogs, shortcuts and every way into the lobby. */
-export function Dashboard({ meetings, dispatch, onEnter }: DashboardProps) {
+export function Dashboard({ meetings, dispatch, onEnter, recordings, settings, roomDispatch }: DashboardProps) {
   const { fx, reduced } = useFx()
   const { sizeClass, coarse } = useViewport()
   const phone = sizeClass === 'phone'
@@ -166,6 +177,19 @@ export function Dashboard({ meetings, dispatch, onEnter }: DashboardProps) {
     cancel: (o) => setDialog({ kind: 'cancel', occurrence: o }),
   }
 
+  /* ---------- recordings ---------- */
+
+  const recordingActions: Omit<RecordingActions, 'open'> = {
+    download: (r) => say(`Mengunduh “${r.title}” (tiruan di prototype)`),
+    copyLink: (r) => copy(`${INVITE_ORIGIN}/rekaman/${r.id}`, 'Tautan rekaman disalin'),
+    remove: (r) => {
+      recordings.remove(r.id)
+      say(phaseOf(r, now) === 'expired' ? 'Catatan dihapus' : `“${r.title}” dihapus`)
+    },
+    rejoin: (r) => onEnter({ code: r.code, title: r.title, hostName: r.hostName, insideNote: 'Rapat ini sedang direkam' }),
+  }
+  const recordingLive = recordings.recordings.some((r) => phaseOf(r, now) === 'live')
+
   /* ---------- shortcuts ---------- */
 
   const latest = useRef({ startInstant, openSchedule, dialogOpen: dialog !== null, coarse })
@@ -204,7 +228,7 @@ export function Dashboard({ meetings, dispatch, onEnter }: DashboardProps) {
   return (
     <div className={styles.screen} data-fx={fx} data-still={reduced || undefined} data-phone={phone || undefined}>
       <Ambient />
-      {phone ? <TabBar view={view} onChange={setView} onSoon={(label) => say(`${label}: segera hadir`)} /> : <Rail view={view} onChange={setView} onSoon={(label) => say(`${label}: segera hadir`)} />}
+      {phone ? <TabBar view={view} onChange={setView} recordingLive={recordingLive} /> : <Rail view={view} onChange={setView} recordingLive={recordingLive} />}
       <main className={styles.main}>
         <div className={styles.column}>
           {view === 'home' ? (
@@ -244,8 +268,12 @@ export function Dashboard({ meetings, dispatch, onEnter }: DashboardProps) {
                 </button>,
               )}
             </>
-          ) : (
+          ) : view === 'meetings' ? (
             <MeetingsPage upcoming={upcoming} past={past} now={now} actions={actions} onSchedule={openSchedule} />
+          ) : view === 'recordings' ? (
+            <RecordingsPage recordings={recordings.recordings} now={now} actions={recordingActions} />
+          ) : (
+            <SettingsPage settings={settings} roomDispatch={roomDispatch} say={say} />
           )}
         </div>
       </main>

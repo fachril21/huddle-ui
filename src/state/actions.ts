@@ -1,4 +1,5 @@
 import type { CameraQuality } from '../room/cameraQuality'
+import type { DeviceKind, DeviceSettings } from '../room/devices/deviceSettings'
 import type {
   ConnectionState,
   DockToggle,
@@ -91,7 +92,9 @@ export type RoomAction =
   | { type: 'reset' }
   | { type: 'setFx'; fx: FxTier }
   | { type: 'setCameraQuality'; quality: CameraQuality }
-| { type: 'joinRoom'; name: string; micOn: boolean; camOn: boolean; quality: CameraQuality }
+  | { type: 'setDevice'; kind: DeviceKind; id: string }
+  | { type: 'flipCamera' }
+  | { type: 'joinRoom'; name: string; micOn: boolean; camOn: boolean; quality: CameraQuality; devices: DeviceSettings }
   | { type: 'setLayoutMode'; mode: LayoutMode }
   | { type: 'pinParticipant'; id: string | null }
   | { type: 'setHideNoVideo'; on: boolean }

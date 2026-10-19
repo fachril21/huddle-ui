@@ -1,4 +1,4 @@
-import { AudioLines, ChartColumn, Hand, Handshake, LayoutGrid, MonitorUp, PenLine, ShieldCheck, SlidersHorizontal, UserPlus, Users } from 'lucide-react'
+import { AudioLines, ChartColumn, Hand, Handshake, LayoutGrid, Mic, MonitorUp, PenLine, ShieldCheck, UserPlus, Users, Video } from 'lucide-react'
 import { AnimatePresence } from 'motion/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { CSSProperties, Dispatch } from 'react'
@@ -16,8 +16,9 @@ import { Sheet } from '../mobile/Sheet'
 import { useViewport } from '../mobile/useViewport'
 import { Ambient } from './Ambient'
 import { AnnouncementBanner } from './AnnouncementBanner'
-import { ClosingScreen } from './ClosingScreen'
-import { CameraPopover } from './CameraPopover'
+import { ClosingScreen, closingRecordingNote } from './ClosingScreen'
+import { CameraPopover } from './devices/CameraPopover'
+import { MicPopover } from './devices/MicPopover'
 import { Dock } from './Dock'
 import { GridPager } from './GridPager'
 import { HighFiveStage } from './HighFiveStage'
@@ -182,18 +183,48 @@ export function Room({ state, dispatch }: RoomProps) {
   const dismissAnnouncement = useCallback(() => dispatch({ type: 'dismissAnnouncement' }), [dispatch])
 
   if (!self || !selfRole) return null
-  if (state.phase !== 'live') return <ClosingScreen phase={state.phase} onRestart={() => dispatch({ type: 'reset' })} />
+  const othersInRoom = state.participants.filter((p) => p.id !== SELF_ID).length
+  const recordingOn = state.host.recording !== 'off'
+  if (state.phase !== 'live') {
+    return <ClosingScreen phase={state.phase} recordingNote={closingRecordingNote(state.phase, recordingOn, othersInRoom)} onRestart={() => dispatch({ type: 'reset' })} />
+  }
 
   const needsConsent = state.host.recording !== 'off' && !canManage && !state.host.consented
   const style = { '--crosstalk': voice.crosstalk ? 1 : 0, '--panel-space': state.panel ? PANEL_SPACE : '0px' } as CSSProperties
 
-  const cameraNode = <CameraPopover key="camera" quality={state.settings.cameraQuality} camOn={self.camOn} weakConnection={self.connection !== 'good'} onQuality={(quality) => dispatch({ type: 'setCameraQuality', quality })} />
+  const devices = state.settings.devices
+  const cameraNode = (
+    <CameraPopover
+      key="camera"
+      quality={state.settings.cameraQuality}
+      camOn={self.camOn}
+      palette={self.palette}
+      devices={devices}
+      weakConnection={self.connection !== 'good'}
+      phone={phone}
+      onQuality={(quality) => dispatch({ type: 'setCameraQuality', quality })}
+      onDevice={(id) => dispatch({ type: 'setDevice', kind: 'camera', id })}
+      onFlip={() => dispatch({ type: 'flipCamera' })}
+      onTurnOn={() => dispatch({ type: 'toggleCam', id: SELF_ID })}
+    />
+  )
+  const micNode = (
+    <MicPopover
+      key="mic"
+      micOn={self.micOn}
+      devices={devices}
+      onMicDevice={(id) => dispatch({ type: 'setDevice', kind: 'mic', id })}
+      onSpeakerDevice={(id) => dispatch({ type: 'setDevice', kind: 'speaker', id })}
+      onTurnOn={() => dispatch({ type: 'setMic', id: SELF_ID, on: true })}
+    />
+  )
   const soundboardNode = <SoundboardPopover key="soundboard" lastPlayAt={soundboard.selfLastPlayAt} onPlay={soundboard.onPlay} />
   const moreNode = <MorePopover key="more" fx={state.settings.fx} onFx={(next) => dispatch({ type: 'setFx', fx: next })} shortcutsOpen={shortcutsOpen} onShortcutsOpen={setShortcutsOpen} />
   const leaveNode = (
     <LeaveMenu
       key="leave"
       canEndForAll={selfRole === 'Host'}
+      stopsRecording={recordingOn && othersInRoom === 0}
       onLeave={() => dispatch({ type: 'leave', phase: 'left' })}
       onEnd={() => dispatch({ type: 'leave', phase: 'ended' })}
     />
@@ -213,7 +244,8 @@ export function Room({ state, dispatch }: RoomProps) {
     { id: 'polling', label: 'Polling', icon: <ChartColumn {...ICON} />, badge: polls.pendingBadge, onSelect: () => dispatch({ type: 'openPanel', panel: 'polling' }) },
     { id: 'invite', label: 'Undang', icon: <UserPlus {...ICON} />, onSelect: () => setInviteOpen(true) },
     ...(canManage ? [{ id: 'host', label: 'Alat host', icon: <ShieldCheck {...ICON} />, badge: state.host.waiting.length, onSelect: () => dispatch({ type: 'openPanel', panel: 'host' }) }] : []),
-    { id: 'camera', label: 'Kualitas kamera', icon: <SlidersHorizontal {...ICON} />, onSelect: () => dispatch({ type: 'toggleDock', key: 'camera' }) },
+    { id: 'mic', label: 'Atur mikrofon', icon: <Mic {...ICON} />, onSelect: () => dispatch({ type: 'toggleDock', key: 'mic' }) },
+    { id: 'camera', label: 'Atur kamera', icon: <Video {...ICON} />, onSelect: () => dispatch({ type: 'toggleDock', key: 'camera' }) },
   ]
 
   return (
@@ -306,6 +338,7 @@ export function Room({ state, dispatch }: RoomProps) {
         highFiveActive={highFive.active}
         highFiveDisabledReason={highFive.disabledReason}
         soundboardDisabledReason={soundboard.disabledReason}
+        mic={micNode}
         camera={cameraNode}
         soundboard={soundboardNode}
         more={moreNode}
@@ -339,6 +372,7 @@ export function Room({ state, dispatch }: RoomProps) {
             actions={moreActions}
             settings={moreNode}
             soundboard={soundboardNode}
+            mic={micNode}
             camera={cameraNode}
             leave={leaveNode}
           />

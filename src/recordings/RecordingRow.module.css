@@ -1,0 +1,118 @@
+.row {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 120px 172px 156px;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  transition: background-color var(--dur-fast) var(--ease-out);
+}
+.row + .row::before { content: ''; position: absolute; top: 0; left: var(--space-3); right: var(--space-3); height: 1px; background: var(--hairline); }
+.row:hover,
+.row:focus-within,
+.row[data-selected] { background: var(--veil-hover); }
+.row:hover::before,
+.row:hover + .row::before,
+.row:focus-within::before,
+.row:focus-within + .row::before,
+.row[data-selected]::before,
+.row[data-selected] + .row::before { opacity: 0; }
+
+/* live: the one row that is happening now, set apart by a quiet rose wash instead of a loud border */
+.row[data-phase='live'] { background: color-mix(in srgb, var(--aurora-rose) 8%, transparent); }
+.row[data-phase='live']:hover { background: color-mix(in srgb, var(--aurora-rose) 13%, transparent); }
+
+.main {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+.main:focus-visible,
+.phoneButton:focus-visible { box-shadow: var(--focus-ring); }
+
+.text { display: grid; gap: 2px; min-width: 0; }
+.title { overflow: hidden; font-family: var(--font-display); font-size: 15px; line-height: 22px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.meta { display: flex; flex-wrap: nowrap; align-items: center; gap: var(--space-3); overflow: hidden; color: var(--text-2); font-size: 12px; line-height: 16px; white-space: nowrap; }
+.meta > span + span::before { content: ''; display: inline-block; width: 3px; height: 3px; margin-right: var(--space-3); vertical-align: middle; border-radius: 50%; background: var(--text-3); }
+
+/* why it stopped is a plain word; the automatic stop is the one worth a glance */
+.reason { color: var(--text-3); }
+.reason[data-reason='room-empty'] { color: var(--aurora-cyan); font-weight: 600; }
+
+.row[data-phase='expired'] .title { color: var(--text-2); }
+.row[data-phase='expired'] .main { opacity: 0.8; }
+
+.people { display: flex; align-items: center; }
+.btnLabel { display: inline; }
+.row[data-phase='expired'] .people { opacity: 0.55; }
+
+.status { min-width: 0; }
+.actions { display: flex; align-items: center; justify-content: flex-end; gap: var(--space-2); }
+
+.liveNote { display: flex; align-items: center; gap: 6px; color: var(--aurora-rose); font-size: 12px; line-height: 16px; font-weight: 700; white-space: nowrap; }
+.liveNote svg { animation: beat 1.8s ease-in-out infinite; }
+.liveNote span:last-child { color: var(--text-1); font-weight: 600; }
+
+.prep { display: flex; align-items: center; gap: 6px; color: var(--text-2); font-size: 12px; line-height: 16px; font-weight: 600; white-space: nowrap; }
+.prep svg { animation: spin 1.1s linear infinite; }
+
+.gone { display: grid; gap: 2px; font-size: 12px; line-height: 16px; white-space: nowrap; }
+.gone span:first-child { color: var(--text-2); font-weight: 600; }
+.gone span:last-child { color: var(--text-3); }
+
+@keyframes beat { 50% { opacity: 0.45; } }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .row { transition: none; }
+  .liveNote svg,
+  .prep svg { animation: none; }
+}
+
+/* tablet: the people column makes way for the title */
+@media (min-width: 768px) and (max-width: 1099px) {
+  .row:not([data-phone]) { grid-template-columns: minmax(0, 1fr) 160px 156px; gap: var(--space-3); }
+  .row:not([data-phone]) .people { display: none; }
+}
+
+/* a docked detail narrows the list, so the people column goes first */
+@media (min-width: 1100px) {
+  :global([data-docked]) .row:not([data-phone]) { grid-template-columns: minmax(0, 1fr) 140px 92px; gap: var(--space-3); }
+  :global([data-docked]) .row:not([data-phone]) .people { display: none; }
+  :global([data-docked]) .row:not([data-phone]) .reason { display: none; }
+  :global([data-docked]) .row:not([data-phone]) .main { gap: var(--space-3); }
+  /* the download button keeps only its icon here; its name stays for screen readers */
+  :global([data-docked]) .row:not([data-phone]) .btnLabel { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
+
+/* phone: one tappable row, the status under the text */
+.row[data-phone] { display: block; padding: 0; }
+.row[data-phone]:hover { background: transparent; }
+.row[data-phone][data-phase='live'] { background: color-mix(in srgb, var(--aurora-rose) 8%, transparent); }
+.phoneButton {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-3) var(--space-3);
+  width: 100%;
+  min-height: 76px;
+  padding: var(--space-3);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+.phoneButton:active { background: var(--veil-press); }
+.phoneStatus { grid-column: 1 / -1; min-width: 0; }
+.row[data-phone] .meta { flex-wrap: wrap; gap: 0 var(--space-3); white-space: normal; }
+/* lines wrap on a phone, so a dot could end up leading a line: plain spacing separates instead */
+.row[data-phone] .meta > span + span::before { display: none; }

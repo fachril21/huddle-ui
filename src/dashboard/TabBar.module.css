@@ -31,8 +31,11 @@
 .tab:focus-visible { box-shadow: var(--focus-ring); }
 .tab[aria-current='page'] { color: var(--text-1); }
 .tab[aria-current='page'] svg { color: var(--aurora-cyan); }
-.tab[data-soon] { color: var(--text-3); }
+.tab { position: relative; }
+.live { position: absolute; top: 8px; left: calc(50% + 6px); width: 8px; height: 8px; border: 2px solid var(--ink-900); border-radius: 50%; background: var(--aurora-rose); box-sizing: content-box; animation: beat 1.8s ease-in-out infinite; }
+@keyframes beat { 50% { opacity: 0.45; } }
 
 @media (prefers-reduced-motion: reduce) {
   .tab { transition: none; }
+  .live { animation: none; }
 }

@@ -39,6 +39,7 @@ interface DockProps {
   highFiveDisabledReason?: string
   /** Popovers for the soundboard, "Lainnya" and "Keluar" buttons */
   soundboard?: ReactNode
+  mic?: ReactNode
   camera?: ReactNode
   more?: ReactNode
   leave?: ReactNode
@@ -47,9 +48,9 @@ interface DockProps {
 const ICON = { size: 22, strokeWidth: 1.75, 'aria-hidden': true } as const
 
 /** Floating glass-3 capsule: [mic cam] | [share reaction hand high-five soundboard more] | [leave]. */
-export function Dock({ self, toggles, onToggleMic, onToggleCam, onToggleHand, onToggle, onClose, onReact, onHighFive, onShare, shareActive, shareDisabledReason, highFiveActive, highFiveDisabledReason, soundboardDisabledReason, soundboard, camera, more, leave }: DockProps) {
+export function Dock({ self, toggles, onToggleMic, onToggleCam, onToggleHand, onToggle, onClose, onReact, onHighFive, onShare, shareActive, shareDisabledReason, highFiveActive, highFiveDisabledReason, soundboardDisabledReason, soundboard, mic, camera, more, leave }: DockProps) {
   const wrapRef = useRef<HTMLDivElement>(null)
-  const openPopover: DockToggle | null = toggles.reaction ? 'reaction' : toggles.soundboard ? 'soundboard' : toggles.more ? 'more' : toggles.camera ? 'camera' : toggles.leave ? 'leave' : null
+  const openPopover: DockToggle | null = toggles.reaction ? 'reaction' : toggles.soundboard ? 'soundboard' : toggles.more ? 'more' : toggles.mic ? 'mic' : toggles.camera ? 'camera' : toggles.leave ? 'leave' : null
   const anchorX = usePopoverAnchor(wrapRef, openPopover)
 
   // Esc or a click outside closes the open popover; focus returns to its trigger on Esc.
@@ -77,13 +78,16 @@ export function Dock({ self, toggles, onToggleMic, onToggleCam, onToggleHand, on
   return (
     <div ref={wrapRef} className={styles.wrap}>
       <nav className={`glass-3 ${styles.dock}`} aria-label="Kontrol meeting">
-        <DockButton
-          icon={self.micOn ? <Mic {...ICON} /> : <MicOff {...ICON} />}
-          label={self.micOn ? 'Matikan mikrofon' : 'Nyalakan mikrofon'}
-          tone={self.micOn ? 'default' : 'off'}
-          shortcut={shortcutKey('mic')}
-          onClick={onToggleMic}
-        />
+        <span className={styles.split}>
+          <DockButton
+            icon={self.micOn ? <Mic {...ICON} /> : <MicOff {...ICON} />}
+            label={self.micOn ? 'Matikan mikrofon' : 'Nyalakan mikrofon'}
+            tone={self.micOn ? 'default' : 'off'}
+            shortcut={shortcutKey('mic')}
+            onClick={onToggleMic}
+          />
+          <SettingsChevron popoverKey="mic" label="Pengaturan mikrofon" open={toggles.mic} onClick={() => onToggle('mic')} />
+        </span>
         <span className={styles.split}>
           <DockButton
             icon={self.camOn ? <Video {...ICON} /> : <VideoOff {...ICON} />}
@@ -92,11 +96,7 @@ export function Dock({ self, toggles, onToggleMic, onToggleCam, onToggleHand, on
             shortcut={shortcutKey('camera')}
             onClick={onToggleCam}
           />
-          <span data-popover-key="camera" style={{ display: 'contents' }}>
-            <button type="button" className={styles.chevron} aria-label="Pengaturan kamera" aria-haspopup="dialog" aria-expanded={toggles.camera} onClick={() => onToggle('camera')}>
-              <ChevronUp size={14} strokeWidth={2} aria-hidden="true" />
-            </button>
-          </span>
+          <SettingsChevron popoverKey="camera" label="Pengaturan kamera" open={toggles.camera} onClick={() => onToggle('camera')} />
         </span>
         <span className={styles.sep} aria-hidden="true" />
         <DockButton icon={<MonitorUp {...ICON} />} label={shareActive ? 'Berhenti berbagi layar' : 'Bagikan layar'} pressed={shareActive} disabledReason={shareDisabledReason} shortcut={shortcutKey('share')} onClick={onShare} />
@@ -120,12 +120,24 @@ export function Dock({ self, toggles, onToggleMic, onToggleCam, onToggleHand, on
         <AnimatePresence>
           {toggles.reaction && <ReactionPicker key="reaction" onReact={onReact} onHighFive={onHighFive} />}
           {toggles.soundboard && soundboard}
+          {toggles.mic && mic}
           {toggles.camera && camera}
           {toggles.more && more}
           {toggles.leave && leave}
         </AnimatePresence>
       </div>
     </div>
+  )
+}
+
+/** The small arrow attached to the mic and camera buttons, like Zoom and Meet: opens that device's settings. */
+function SettingsChevron({ popoverKey, label, open, onClick }: { popoverKey: DockToggle; label: string; open: boolean; onClick: () => void }) {
+  return (
+    <span data-popover-key={popoverKey} style={{ display: 'contents' }}>
+      <button type="button" className={styles.chevron} aria-label={label} aria-haspopup="dialog" aria-expanded={open} onClick={onClick}>
+        <ChevronUp size={14} strokeWidth={2} aria-hidden="true" />
+      </button>
+    </span>
   )
 }
 

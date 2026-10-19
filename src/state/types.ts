@@ -1,4 +1,5 @@
 import type { CameraQuality } from '../room/cameraQuality'
+import type { DeviceSettings } from '../room/devices/deviceSettings'
 
 export type PaletteName = 'borealis' | 'nebula' | 'solstice' | 'abyss' | 'orchid' | 'verdant'
 
@@ -31,7 +32,7 @@ export interface VoiceSource {
   readonly natural: boolean
 }
 
-export type DockToggle = 'reaction' | 'soundboard' | 'more' | 'camera' | 'leave'
+export type DockToggle = 'reaction' | 'soundboard' | 'more' | 'mic' | 'camera' | 'leave'
 
 export type PanelName = 'peserta' | 'chat' | 'polling' | 'host'
 
@@ -203,6 +204,8 @@ export interface LayoutSettings {
 export interface Settings {
   readonly fx: FxTier
   readonly cameraQuality: CameraQuality
+  /** Chosen camera, microphone and speaker; empty ids follow the system default */
+  readonly devices: DeviceSettings
   readonly layout: LayoutSettings
   readonly simulateReduced: boolean
 }

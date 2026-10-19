@@ -1,15 +1,17 @@
-import { LogOut, PhoneOff } from 'lucide-react'
+import { LogOut, PhoneOff, Radio } from 'lucide-react'
 import { motion } from 'motion/react'
 import styles from './LeaveMenu.module.css'
 
 interface LeaveMenuProps {
   canEndForAll: boolean
+  /** Leaving now empties the room while it is being recorded: the recording will stop by itself */
+  stopsRecording?: boolean
   onLeave: () => void
   onEnd: () => void
 }
 
 /** Popover above "Keluar" (PRD 8.8): leave alone, or (host only) end the meeting for everyone. */
-export function LeaveMenu({ canEndForAll, onLeave, onEnd }: LeaveMenuProps) {
+export function LeaveMenu({ canEndForAll, stopsRecording, onLeave, onEnd }: LeaveMenuProps) {
   return (
     <motion.div
       className={`glass-2 ${styles.menu}`}
@@ -20,6 +22,12 @@ export function LeaveMenu({ canEndForAll, onLeave, onEnd }: LeaveMenuProps) {
       exit={{ opacity: 0, y: 6, scale: 0.97, transition: { duration: 0.12 } }}
       transition={{ type: 'spring', stiffness: 380, damping: 30 }}
     >
+      {stopsRecording && (
+        <p className={styles.note} role="status">
+          <Radio size={14} strokeWidth={1.75} aria-hidden="true" />
+          Anda yang terakhir di ruangan. Rekaman akan berhenti dan tersimpan 24 jam.
+        </p>
+      )}
       <button type="button" role="menuitem" onClick={onLeave}>
         <LogOut size={18} strokeWidth={1.75} aria-hidden="true" />
         Keluar dari meeting

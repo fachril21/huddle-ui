@@ -1,3 +1,4 @@
+import { flipFacing, withDevice } from '../../room/devices/deviceSettings'
 import { createInitialState } from '../initialState'
 import { SELF_ID } from '../types'
 import type { ChatMessage, DockToggle, PanelName, RoomState } from '../types'
@@ -5,7 +6,7 @@ import { canManage, mapParticipant, nextId, NOTICE_MS, roleOf, withNotice } from
 import type { Slice } from './shared'
 
 /** Popovers share one slot above the dock, so opening one closes the others. */
-const POPOVERS: readonly DockToggle[] = ['reaction', 'soundboard', 'more', 'camera', 'leave']
+const POPOVERS: readonly DockToggle[] = ['reaction', 'soundboard', 'more', 'mic', 'camera', 'leave']
 
 function openPopover(state: RoomState, key: DockToggle, open: boolean): RoomState {
   const toggles = Object.fromEntries(POPOVERS.map((k) => [k, false])) as Record<DockToggle, boolean>
@@ -100,17 +101,21 @@ export const sessionSlice: Slice = (state, action) => {
       return alive.length === state.notices.length ? state : { ...state, notices: alive }
     }
     case 'leave':
-      return { ...state, phase: action.phase, toggles: { reaction: false, soundboard: false, more: false, camera: false, leave: false } }
+      return { ...state, phase: action.phase, toggles: { reaction: false, soundboard: false, more: false, mic: false, camera: false, leave: false } }
     case 'reset':
       return createInitialState(state.settings)
     case 'joinRoom': {
       const joined = mapParticipant(state, SELF_ID, (p) => ({ ...p, name: action.name, micOn: action.micOn, camOn: action.camOn }))
-      return { ...joined, settings: { ...joined.settings, cameraQuality: action.quality } }
+      return { ...joined, settings: { ...joined.settings, cameraQuality: action.quality, devices: action.devices } }
     }
     case 'setFx':
       return { ...state, settings: { ...state.settings, fx: action.fx } }
     case 'setCameraQuality':
       return { ...state, settings: { ...state.settings, cameraQuality: action.quality } }
+    case 'setDevice':
+      return { ...state, settings: { ...state.settings, devices: withDevice(state.settings.devices, action.kind, action.id) } }
+    case 'flipCamera':
+      return { ...state, settings: { ...state.settings, devices: flipFacing(state.settings.devices) } }
     case 'setLayoutMode':
       return { ...state, settings: { ...state.settings, layout: { ...state.settings.layout, mode: action.mode } } }
     case 'pinParticipant': {

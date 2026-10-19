@@ -3,8 +3,17 @@ import type { Phase } from '../state/types'
 import { Ambient } from './Ambient'
 import styles from './ClosingScreen.module.css'
 
+/** What happens to the recording once this person is gone, or null when nothing was being recorded. */
+export function closingRecordingNote(phase: Exclude<Phase, 'live'>, recording: boolean, othersInRoom: number): string | null {
+  if (!recording) return null
+  if (phase === 'ended') return 'Rekaman rapat ini tersimpan 24 jam di halaman Rekaman.'
+  if (othersInRoom === 0) return 'Karena Anda yang terakhir, rekaman berhenti otomatis dan tersimpan 24 jam di halaman Rekaman.'
+  return 'Rekaman masih berjalan selama masih ada peserta. Hasilnya tersimpan 24 jam di halaman Rekaman.'
+}
+
 interface ClosingScreenProps {
   phase: Exclude<Phase, 'live'>
+  recordingNote?: string | null
   onRestart: () => void
 }
 
@@ -14,7 +23,7 @@ const COPY: Record<ClosingScreenProps['phase'], { title: string; body: string }>
 }
 
 /** Simple closing screen after leaving or ending (PRD 8.8) with a way back into the demo. */
-export function ClosingScreen({ phase, onRestart }: ClosingScreenProps) {
+export function ClosingScreen({ phase, recordingNote, onRestart }: ClosingScreenProps) {
   const { title, body } = COPY[phase]
   return (
     <div className={styles.screen}>
@@ -29,6 +38,7 @@ export function ClosingScreen({ phase, onRestart }: ClosingScreenProps) {
       >
         <h1 id="closing-title">{title}</h1>
         <p>{body}</p>
+        {recordingNote && <p className={styles.note}>{recordingNote}</p>}
         <button type="button" autoFocus onClick={onRestart}>
           Mulai ulang demo
         </button>

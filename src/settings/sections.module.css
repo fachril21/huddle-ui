@@ -1,0 +1,40 @@
+.lead { margin: 0 0 var(--space-2); max-width: 60ch; color: var(--text-2); font-size: 13px; line-height: 20px; }
+
+.identity { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-4) 0; }
+.avatar { display: grid; flex: none; place-items: center; width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, var(--c1), var(--c2)); color: var(--on-aurora); font-family: var(--font-display); font-size: 22px; font-weight: 700; }
+.identityName { margin: 0; font-family: var(--font-display); font-size: 18px; line-height: 26px; font-weight: 600; overflow-wrap: anywhere; }
+.identityNote { margin: 0; color: var(--text-2); font-size: 13px; line-height: 20px; }
+.identity + div { border-top: 1px solid var(--hairline); }
+
+.field { width: 100%; }
+
+.static { color: var(--text-2); font-size: 13px; }
+
+.notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin: var(--space-2) 0;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid color-mix(in srgb, var(--warning) 35%, transparent);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--warning) 12%, transparent);
+}
+.notice p { margin: 0; color: var(--text-1); font-size: 13px; line-height: 20px; }
+.notice button { flex: none; }
+
+/* the two storage rules: stated plainly, side by side, no switch because nothing here can be changed */
+.rules { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-6); margin: var(--space-5) 0 var(--space-2); padding-bottom: var(--space-5); border-bottom: 1px solid var(--hairline); }
+.rules dt { display: flex; align-items: center; gap: var(--space-2); color: var(--text-1); font-family: var(--font-display); font-size: 15px; line-height: 22px; font-weight: 600; }
+.rules dt svg { color: var(--aurora-cyan); }
+.rules dd { margin: var(--space-2) 0 0; max-width: 40ch; color: var(--text-2); font-size: 13px; line-height: 20px; }
+
+.keys { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
+.keys li { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); min-height: 44px; font-size: 13px; line-height: 20px; }
+.keys li + li { border-top: 1px solid var(--hairline); }
+
+@media (max-width: 767px) {
+  .rules { grid-template-columns: minmax(0, 1fr); gap: var(--space-5); }
+  .notice { flex-direction: column; align-items: stretch; }
+}

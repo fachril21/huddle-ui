@@ -23,6 +23,7 @@ interface MobileDockProps {
   actions: readonly MoreAction[]
   settings: ReactNode
   soundboard: ReactNode
+  mic: ReactNode
   camera: ReactNode
   leave: ReactNode
 }
@@ -54,7 +55,7 @@ function BarButton({ icon, label, caption, tone = 'default', pressed, badge, onC
  * The phone's control bar: the six things needed in a meeting, labelled, in thumb reach. Everything else lives in
  * "Lainnya". Each popover of the desktop dock becomes a bottom sheet here.
  */
-export function MobileDock({ self, toggles, unreadChat, onToggleMic, onToggleCam, onToggle, onClose, onReact, onHighFive, onChat, actions, settings, soundboard, camera, leave }: MobileDockProps) {
+export function MobileDock({ self, toggles, unreadChat, onToggleMic, onToggleCam, onToggle, onClose, onReact, onHighFive, onChat, actions, settings, soundboard, mic, camera, leave }: MobileDockProps) {
   return (
     <>
       <nav className={`glass-3 ${styles.dock}`} aria-label="Kontrol meeting">
@@ -100,8 +101,13 @@ export function MobileDock({ self, toggles, unreadChat, onToggleMic, onToggleCam
           <Flat>{soundboard}</Flat>
         </Sheet>
       )}
+      {toggles.mic && (
+        <Sheet title="Mikrofon" quietTitle onClose={() => onClose('mic')}>
+          <Flat>{mic}</Flat>
+        </Sheet>
+      )}
       {toggles.camera && (
-        <Sheet title="Kualitas kamera" onClose={() => onClose('camera')}>
+        <Sheet title="Kamera" quietTitle onClose={() => onClose('camera')}>
           <Flat>{camera}</Flat>
         </Sheet>
       )}

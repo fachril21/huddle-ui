@@ -5,11 +5,13 @@ import type { JoinTarget } from '../dashboard/types'
 import { useKeyboardInset, useViewport } from '../mobile/useViewport'
 import { CAMERA_QUALITIES, loadCameraQuality } from '../room/cameraQuality'
 import type { CameraQuality } from '../room/cameraQuality'
+import type { DeviceSettings } from '../room/devices/deviceSettings'
 import { Ambient } from '../room/Ambient'
 import { useFx } from '../room/MotionContext'
 import { canPickSpeaker } from './audioTests'
 import { CheckRow } from './CheckRow'
 import { MicTest, SpeakerTest } from './DeviceTests'
+import { loadPreferences } from '../settings/preferences'
 import { isValidName, loadName, normalizeName, MAX_NAME_LENGTH, saveName } from './displayName'
 import { MeetingInfo } from './MeetingInfo'
 import { MicMeter } from './MicMeter'
@@ -27,6 +29,8 @@ export interface JoinChoice {
   readonly micOn: boolean
   readonly camOn: boolean
   readonly cameraQuality: CameraQuality
+  /** The devices picked in the lobby, so the room starts on the same ones */
+  readonly devices: DeviceSettings
 }
 
 /** The lobby: a full-screen mirror with a glass panel to check devices, name yourself, and enter. */
@@ -37,9 +41,10 @@ export function PreJoin({ meeting, onJoin, onBack }: { meeting: JoinTarget; onJo
   const [micOn, setMicOn] = useState(true)
   const [camOn, setCamOn] = useState(true)
   const [quality, setQuality] = useState<CameraQuality>(loadCameraQuality)
-  const [cameraId, setCameraId] = useState('')
-  const [micId, setMicId] = useState('')
-  const [speakerId, setSpeakerId] = useState('')
+  // the defaults set in Pengaturan; a device that is no longer there falls back to the system one
+  const [cameraId, setCameraId] = useState(() => loadPreferences().cameraId)
+  const [micId, setMicId] = useState(() => loadPreferences().micId)
+  const [speakerId, setSpeakerId] = useState(() => loadPreferences().speakerId)
   const [speakerHeard, setSpeakerHeard] = useState(false)
   // phone only: front or back camera, and whether the device checklist is unfolded (null = follow whether anything needs attention)
   const [facing, setFacing] = useState<'user' | 'environment'>('user')
@@ -99,6 +104,7 @@ export function PreJoin({ meeting, onJoin, onBack }: { meeting: JoinTarget; onJo
       micOn: micOn && media.micStatus === 'granted',
       camOn: camOn && media.cameraStatus === 'granted',
       cameraQuality: quality,
+      devices: { cameraId, micId, speakerId, facing },
     })
   }
 

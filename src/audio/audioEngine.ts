@@ -10,6 +10,8 @@ interface AudioGraph {
 }
 
 let graph: AudioGraph | null = null
+/** Chosen output; empty follows the system default */
+let outputId = ''
 const readyListeners: Array<(audio: AudioGraph) => void> = []
 
 /** Run once the AudioContext exists (immediately if it already does). Used to preload sound files. */
@@ -20,10 +22,25 @@ export function onAudioReady(listener: (audio: AudioGraph) => void) {
 const volumes: Record<SoundGroup, number> = { notify: 0.8, effects: 0.9, soundboard: 0.6 }
 const muted: Record<SoundGroup, boolean> = { notify: false, effects: false, soundboard: false }
 
+type SinkContext = AudioContext & { setSinkId?: (id: string) => Promise<void> }
+
+/** Send the context's sound to the chosen speaker. Browsers that cannot route output keep the default. */
+function routeOutput(ctx: AudioContext) {
+  const sink = (ctx as SinkContext).setSinkId
+  if (sink) void sink.call(ctx, outputId).catch(() => undefined)
+}
+
+/** Pick the speaker for notification, effect and soundboard sounds. */
+export function setOutputDevice(id: string) {
+  outputId = id
+  if (graph) routeOutput(graph.ctx)
+}
+
 function build(): AudioGraph | null {
   const Ctor = window.AudioContext
   if (!Ctor) return null
   const ctx = new Ctor()
+  routeOutput(ctx)
   const master = ctx.createGain()
   master.gain.value = 0.9
   master.connect(ctx.destination)

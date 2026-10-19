@@ -1,5 +1,5 @@
 import { useEffect, useReducer, useState } from 'react'
-import { installAudioUnlock } from './audio/audioEngine'
+import { installAudioUnlock, setGroupMuted, setOutputDevice } from './audio/audioEngine'
 import { preloadEmoji } from './emoji/AnimatedEmoji'
 import { EMOJI } from './emoji/registry'
 import type { EmojiName } from './emoji/registry'
@@ -13,6 +13,9 @@ import { useMeetings } from './dashboard/useMeetings'
 import { PreJoin } from './prejoin/PreJoin'
 import type { JoinChoice } from './prejoin/PreJoin'
 import { loadCameraQuality, saveCameraQuality } from './room/cameraQuality'
+import { useRecordings } from './recordings/recordingStore'
+import { useRecordingSync } from './recordings/useRecordingSync'
+import { loadPreferences } from './settings/preferences'
 import { useRoomSounds } from './room/hooks/useRoomSounds'
 import { MotionProvider } from './room/MotionContext'
 import { Room } from './room/Room'
@@ -24,9 +27,9 @@ import type { VoiceInput } from './voice/engine'
 import { VoiceProvider } from './voice/VoiceContext'
 import type { RoomAction } from './state/actions'
 
-/** A phone starts on the lighter effects tier (smaller blur, still mesh): it spares the battery and the GPU. */
+/** The tier chosen in Pengaturan wins. Otherwise a phone starts on the lighter one (smaller blur, still mesh): it spares the battery and the GPU. */
 function defaultFx() {
-  return window.matchMedia('(max-width: 767px)').matches ? 'lite' : initialRoomState.settings.fx
+  return loadPreferences().fx ?? (window.matchMedia('(max-width: 767px)').matches ? 'lite' : initialRoomState.settings.fx)
 }
 
 export function App() {
@@ -38,14 +41,18 @@ export function App() {
   const [joined, setJoined] = useState<JoinChoice | null>(null)
   const { meetings, dispatch: meetingDispatch } = useMeetings()
   const player = useScenarioPlayer(dispatch)
+  const recordings = useRecordings()
+  useRecordingSync(state, target, joined !== null, recordings)
 
   useEffect(() => {
+    setGroupMuted('notify', !loadPreferences().notifySounds)
     installAudioUnlock()
     preloadEmoji(Object.keys(EMOJI) as EmojiName[])
   }, [])
 
   useRoomSounds(state)
   useEffect(() => saveCameraQuality(state.settings.cameraQuality), [state.settings.cameraQuality])
+  useEffect(() => setOutputDevice(state.settings.devices.speakerId), [state.settings.devices.speakerId])
 
   useEffect(() => {
     engine.start()
@@ -73,7 +80,7 @@ export function App() {
   }, [])
 
   const join = (choice: JoinChoice) => {
-    dispatch({ type: 'joinRoom', name: choice.name, micOn: choice.micOn, camOn: choice.camOn, quality: choice.cameraQuality })
+    dispatch({ type: 'joinRoom', name: choice.name, micOn: choice.micOn, camOn: choice.camOn, quality: choice.cameraQuality, devices: choice.devices })
     setJoined(choice)
   }
 
@@ -94,7 +101,7 @@ export function App() {
       <motion.div key={stage} className={styles.stage} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35, ease: [0.2, 0.8, 0.2, 1] }}>
         {stage === 'room' && <Room state={state} dispatch={roomDispatch} />}
         {stage === 'lobby' && target && <PreJoin meeting={target} onJoin={join} onBack={() => setTarget(null)} />}
-        {stage === 'dashboard' && <Dashboard meetings={meetings} dispatch={meetingDispatch} onEnter={setTarget} />}
+        {stage === 'dashboard' && <Dashboard meetings={meetings} dispatch={meetingDispatch} onEnter={setTarget} recordings={recordings} settings={state.settings} roomDispatch={dispatch} />}
       </motion.div>
       <DemoToggle open={demoOpen} onClick={() => setDemoOpen((o) => !o)} />
       <DemoDirector state={state} dispatch={dispatch} player={player} open={demoOpen} onClose={() => setDemoOpen(false)} />

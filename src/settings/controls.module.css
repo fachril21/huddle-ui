@@ -1,0 +1,105 @@
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 300px);
+  align-items: center;
+  gap: var(--space-6);
+  padding: var(--space-4) 0;
+}
+.row + .row { border-top: 1px solid var(--hairline); }
+.row[data-wide] { grid-template-columns: minmax(0, 1fr) minmax(260px, 360px); }
+
+.text { min-width: 0; }
+.label { display: block; color: var(--text-1); font-size: 14px; line-height: 21px; font-weight: 600; }
+.desc { margin: 2px 0 0; max-width: 52ch; color: var(--text-2); font-size: 13px; line-height: 20px; }
+.control { display: flex; justify-content: flex-end; min-width: 0; }
+.control > * { max-width: 100%; }
+
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 36px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+}
+.track {
+  position: relative;
+  display: block;
+  width: 44px;
+  height: 26px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-pill);
+  background: var(--veil-press);
+  transition: background-color var(--dur-base) var(--ease-out), border-color var(--dur-base) var(--ease-out);
+}
+.knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--text-1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  transition: transform var(--dur-base) var(--ease-out);
+}
+.switch[aria-checked='true'] { color: var(--text-1); }
+.switch[aria-checked='true'] .track { border-color: transparent; background: var(--primary); }
+.switch[aria-checked='true'] .knob { transform: translateX(18px); }
+.switch:hover .track { border-color: var(--text-3); }
+.switch:focus-visible { outline: none; }
+.switch:focus-visible .track { box-shadow: var(--focus-ring); }
+.state { min-width: 34px; text-align: right; }
+
+.segmented { display: inline-flex; gap: var(--space-1); padding: 3px; border-radius: var(--radius-md); background: var(--hairline); }
+.segmented button {
+  height: 32px;
+  padding: 0 var(--space-4);
+  border: 0;
+  border-radius: calc(var(--radius-md) - 3px);
+  background: transparent;
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.segmented button:hover { color: var(--text-1); }
+.segmented button[aria-checked='true'] { background: var(--primary); color: var(--on-primary); }
+.segmented button:focus-visible { box-shadow: var(--focus-ring); }
+
+.slider { display: grid; grid-template-columns: minmax(0, 1fr) 44px; align-items: center; gap: var(--space-3); width: 100%; }
+.slider output { color: var(--text-2); font-family: var(--font-mono); font-size: 12px; font-variant-numeric: tabular-nums; text-align: right; letter-spacing: 0; }
+.slider input { width: 100%; height: 24px; margin: 0; background: transparent; appearance: none; cursor: pointer; }
+.slider input::-webkit-slider-runnable-track { height: 4px; border-radius: var(--radius-pill); background: linear-gradient(to right, var(--aurora-cyan) var(--filled), var(--hairline) var(--filled)); }
+.slider input::-moz-range-track { height: 4px; border-radius: var(--radius-pill); background: var(--hairline); }
+.slider input::-moz-range-progress { height: 4px; border-radius: var(--radius-pill); background: var(--aurora-cyan); }
+.slider input::-webkit-slider-thumb { width: 16px; height: 16px; margin-top: -6px; border: 2px solid var(--ink-950); border-radius: 50%; background: var(--text-1); appearance: none; }
+.slider input::-moz-range-thumb { width: 14px; height: 14px; border: 2px solid var(--ink-950); border-radius: 50%; background: var(--text-1); }
+.slider input:focus-visible { outline: none; }
+.slider input:focus-visible::-webkit-slider-thumb { box-shadow: var(--focus-ring); }
+.slider input:focus-visible::-moz-range-thumb { box-shadow: var(--focus-ring); }
+
+@media (prefers-reduced-motion: reduce) {
+  .track, .knob, .segmented button { transition: none; }
+}
+
+@media (pointer: coarse) {
+  .switch { min-height: var(--tap); }
+  .segmented button { height: 40px; }
+}
+
+@media (max-width: 767px) {
+  .row,
+  .row[data-wide] { grid-template-columns: minmax(0, 1fr); gap: var(--space-3); padding: var(--space-4) 0; }
+  .control { justify-content: flex-start; }
+  /* a plain on/off sits beside its text instead of under it */
+  .row:not([data-wide]):has(.switch) { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+  .segmented { width: 100%; }
+  .segmented button { flex: 1; height: var(--tap); }
+}
