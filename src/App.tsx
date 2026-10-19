@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useReducer, useState } from 'react'
+import { useCallback, useEffect, useMemo, useReducer, useState } from 'react'
 import { installAudioUnlock, setGroupMuted, setOutputDevice } from './audio/audioEngine'
 import { preloadEmoji } from './emoji/AnimatedEmoji'
 import { EMOJI } from './emoji/registry'
@@ -7,6 +7,7 @@ import { DemoDirector } from './demo/DemoDirector'
 import { DemoToggle } from './demo/DemoToggle'
 import { useScenarioPlayer } from './demo/useScenarioPlayer'
 import { motion } from 'motion/react'
+import { scopedState } from './breakout/rooms'
 import { Dashboard } from './dashboard/Dashboard'
 import type { DashboardView } from './dashboard/Rail'
 import { EndedPage } from './ended/EndedPage'
@@ -61,7 +62,9 @@ export function App() {
     preloadEmoji(Object.keys(EMOJI) as EmojiName[])
   }, [])
 
-  useRoomSounds(state)
+  // while Ruang diskusi are live, the room, the voices and the sounds belong to the room the user is in
+  const view = useMemo(() => scopedState(state), [state])
+  useRoomSounds(view)
   useEffect(() => saveCameraQuality(state.settings.cameraQuality), [state.settings.cameraQuality])
   useEffect(() => setOutputDevice(state.settings.devices.speakerId), [state.settings.devices.speakerId])
 
@@ -73,11 +76,11 @@ export function App() {
   // Feed Demo Director state to the engine. Mic state comes from participants, voice from the director.
   useEffect(() => {
     const inputs: Record<string, VoiceInput> = {}
-    for (const p of state.participants) inputs[p.id] = { ...state.voice[p.id], micOn: p.micOn }
-    // people outside the room stay silent
-    for (const p of state.bench) inputs[p.id] = { ...state.voice[p.id], talking: false, micOn: false }
+    for (const p of view.participants) inputs[p.id] = { ...state.voice[p.id], micOn: p.micOn }
+    // people outside the room (or in another Ruang diskusi) stay silent
+    for (const p of view.bench) inputs[p.id] = { ...state.voice[p.id], talking: false, micOn: false }
     engine.setInputs(inputs)
-  }, [engine, state.participants, state.bench, state.voice])
+  }, [engine, view.participants, view.bench, state.voice])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -132,7 +135,7 @@ export function App() {
     <MotionProvider fx={state.settings.fx} simulateReduced={state.settings.simulateReduced}>
     <VoiceProvider engine={engine}>
       <motion.div key={stage} className={styles.stage} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35, ease: [0.2, 0.8, 0.2, 1] }}>
-        {stage === 'room' && <Room state={state} dispatch={roomDispatch} />}
+        {stage === 'room' && <Room state={view} all={state} dispatch={roomDispatch} />}
         {stage === 'ended' && target && state.phase !== 'live' && (
           <EndedPage
             meeting={target}

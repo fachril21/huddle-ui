@@ -59,3 +59,5 @@
 .phoneTabs { flex: none; margin: var(--space-3) var(--space-4) 0; }
 .phoneTabs button { flex: 1; height: 40px; font-size: 14px; }
 .close { width: var(--tap); height: var(--tap); }
+
+.note { margin: 0; padding: var(--space-4); color: var(--text-2); font-size: 13px; line-height: 20px; text-wrap: pretty; }

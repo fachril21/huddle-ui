@@ -5,6 +5,7 @@ import type { RoomAction } from '../state/roomReducer'
 import type { RoomState } from '../state/types'
 import { Group, Toggle } from './controls'
 import styles from './DemoDirector.module.css'
+import { BreakoutSection } from './sections/BreakoutSection'
 import { EventsSection } from './sections/EventsSection'
 import { ParticipantsSection } from './sections/ParticipantsSection'
 import { ScenarioSection } from './sections/ScenarioSection'
@@ -68,6 +69,10 @@ export function DemoDirector({ state, dispatch, player, admission, onAdmission, 
 
           <Group title="Kejadian cepat">
             <EventsSection state={state} dispatch={dispatch} />
+          </Group>
+
+          <Group title="Ruang diskusi" defaultOpen={state.breakout.phase === 'open' || state.breakout.phase === 'closing'}>
+            <BreakoutSection state={state} dispatch={dispatch} />
           </Group>
 
           <Group title="Ruang tunggu (sisi tamu)" defaultOpen={admission !== null}>

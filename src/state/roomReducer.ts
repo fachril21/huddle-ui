@@ -1,6 +1,7 @@
 import type { RoomAction } from './actions'
 import { createInitialState, initialRoomState, DEFAULT_LEVEL } from './initialState'
 import { annotationSlice } from './slices/annotation'
+import { breakoutSlice, tidyBreakout } from './slices/breakout'
 import { highFiveSlice, pollsSlice, reactionsSlice, soundboardSlice } from './slices/features'
 import { participantsSlice } from './slices/participants'
 import { chatSlice, chromeSlice, hostSlice, sessionSlice } from './slices/session'
@@ -20,6 +21,7 @@ const SLICES: readonly Slice[] = [
   soundboardSlice,
   pollsSlice,
   annotationSlice,
+  breakoutSlice,
   chatSlice,
   hostSlice,
   sessionSlice,
@@ -33,7 +35,7 @@ function withoutOrphanInk(state: RoomState): RoomState {
 export function roomReducer(state: RoomState, action: RoomAction): RoomState {
   for (const slice of SLICES) {
     const next = slice(state, action)
-    if (next) return withoutOrphanInk(next)
+    if (next) return tidyBreakout(withoutOrphanInk(next))
   }
   return state
 }

@@ -1,7 +1,7 @@
 import { ALL_PARTICIPANTS, VISIBLE_COUNT } from '../demo/participants'
 import { DEFAULT_CAMERA_QUALITY } from '../room/cameraQuality'
 import { DEFAULT_DEVICES } from '../room/devices/deviceSettings'
-import type { ChatMessage, RoomState, Settings, VoiceSource } from './types'
+import type { BreakoutOptions, BreakoutState, ChatMessage, RoomState, Settings, VoiceSource } from './types'
 
 export const DEFAULT_LEVEL = 0.6
 /** Demo host key shown in the Demo Director */
@@ -16,6 +16,22 @@ const SEED_CHAT: readonly ChatMessage[] = [
 ]
 
 export const DEFAULT_SETTINGS: Settings = { fx: 'full', cameraQuality: DEFAULT_CAMERA_QUALITY, devices: DEFAULT_DEVICES, layout: { mode: 'gallery', pinnedId: null, hideNoVideo: false }, simulateReduced: false }
+
+export const DEFAULT_BREAKOUT_OPTIONS: BreakoutOptions = { autoMove: false, allowReturn: true, autoCloseMin: null, showTimer: true }
+
+export const NO_BREAKOUT: BreakoutState = {
+  phase: 'off',
+  mode: 'auto',
+  rooms: [],
+  assignment: {},
+  where: {},
+  options: DEFAULT_BREAKOUT_OPTIONS,
+  openedAt: null,
+  closesAt: null,
+  closingEndsAt: null,
+  help: [],
+  broadcast: null,
+}
 
 /** Fresh meeting state. Visual settings survive a "Mulai ulang demo". */
 export function createInitialState(settings: Settings = DEFAULT_SETTINGS): RoomState {
@@ -33,6 +49,7 @@ export function createInitialState(settings: Settings = DEFAULT_SETTINGS): RoomS
     polls: [],
     chat: { messages: SEED_CHAT, typingId: null, readCount: 2 },
     annotation: { allowed: true, strokes: [] },
+    breakout: NO_BREAKOUT,
     host: { locked: false, hostKey: DEMO_HOST_KEY, restrictShare: false, recording: 'off', consented: false, waitingRoom: true, waiting: [], announcement: null },
     notices: [],
     phase: 'live',

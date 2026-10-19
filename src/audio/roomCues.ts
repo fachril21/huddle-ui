@@ -1,3 +1,4 @@
+import { invitationFor, locationOf } from '../breakout/rooms'
 import { SELF_ID } from '../state/types'
 import type { Participant, RoomState } from '../state/types'
 import type { SoundCue } from './fileSounds'
@@ -39,11 +40,20 @@ export function deriveCues(prev: RoomState, next: RoomState): SoundCue[] {
   } else if (prev.phase !== 'live' && next.phase === 'live') {
     cues.push('enterRoom')
   } else {
+    // walking between Ruang diskusi is not arriving or leaving the meeting, so it stays quiet
+    const selfMoved = locationOf(prev.breakout, SELF_ID) !== locationOf(next.breakout, SELF_ID)
+    const moved = (id: string): boolean => locationOf(prev.breakout, id) !== locationOf(next.breakout, id)
     const before = ids(prev.participants)
     const after = ids(next.participants)
-    if ([...after].some((id) => id !== SELF_ID && !before.has(id))) cues.push('enterRoom')
-    if ([...before].some((id) => id !== SELF_ID && !after.has(id))) cues.push('leaveRoom')
+    if (!selfMoved) {
+      if ([...after].some((id) => id !== SELF_ID && !before.has(id) && !moved(id))) cues.push('enterRoom')
+      if ([...before].some((id) => id !== SELF_ID && !after.has(id) && !moved(id))) cues.push('leaveRoom')
+    }
   }
+
+  // a room asking for help is heard by the people who can answer; an invitation by the person invited
+  if (canAnswer && next.breakout.help.length > prev.breakout.help.length) cues.push('raiseHand')
+  if (invitationFor(prev.breakout, SELF_ID) === null && invitationFor(next.breakout, SELF_ID) !== null) cues.push('incomingChat')
 
   if (prevSelf && nextSelf && prevSelf.connection === 'good' && nextSelf.connection !== 'good') cues.push('connectionUnstable')
 

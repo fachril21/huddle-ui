@@ -1,0 +1,33 @@
+.wrap { display: grid; gap: var(--space-4); align-content: start; }
+
+.status { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2) var(--space-3); margin: 0; font-size: 13px; line-height: 20px; color: var(--text-1); }
+.timer { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--text-2); font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+.empty { display: grid; justify-items: start; gap: var(--space-3); padding: var(--space-4) 0; }
+.empty h3 { margin: var(--space-1) 0 0; font-family: var(--font-display); font-size: 18px; line-height: 24px; font-weight: 700; text-wrap: balance; }
+.empty p { margin: 0; max-width: 34ch; color: var(--text-2); font-size: 13px; line-height: 20px; text-wrap: pretty; }
+.bigMark { width: 44px; height: 44px; border-radius: var(--radius-md); }
+
+.rooms { display: grid; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
+.room { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); border: 1px solid var(--glass-border); border-radius: var(--radius-md); }
+.roomBody { flex: 1; min-width: 0; }
+.roomBody h4 { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--space-2); margin: 0; font-size: 14px; line-height: 20px; font-weight: 600; }
+.count { color: var(--text-2); font-size: 12px; font-weight: 500; }
+.people { margin: 2px 0 0; color: var(--text-2); font-size: 12px; line-height: 18px; overflow-wrap: anywhere; }
+
+/* a request from a room is urgent but not alarming: icon, words and the way to answer */
+.help { display: grid; gap: var(--space-2); margin: 0; padding: 0; list-style: none; }
+.help li { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2) var(--space-2) var(--space-2) var(--space-3); border-radius: var(--radius-md); background: color-mix(in srgb, var(--aurora-amber) 14%, transparent); font-size: 13px; }
+.help li svg { flex: none; color: var(--aurora-amber); }
+.help li span { flex: 1; min-width: 0; }
+
+.note { display: flex; align-items: center; gap: var(--space-2); margin: 0; padding: var(--space-2) var(--space-2) var(--space-2) var(--space-3); border-radius: var(--radius-md); background: var(--veil-hover); font-size: 13px; line-height: 19px; }
+.note svg { flex: none; color: var(--text-2); }
+.note span { flex: 1; min-width: 0; }
+
+.broadcast { display: flex; gap: var(--space-2); }
+.broadcast input { flex: 1; min-width: 0; height: 36px; padding: 0 var(--space-3); border: 1px solid var(--glass-border); border-radius: var(--radius-md); background: var(--hairline); color: var(--text-1); font: inherit; font-size: 13px; }
+.broadcast input::placeholder { color: var(--text-3); }
+.broadcast input:focus-visible { box-shadow: var(--focus-ring); }
+
+.actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }

@@ -2,6 +2,7 @@ import { X } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useEffect } from 'react'
 import type { Dispatch } from 'react'
+import { BreakoutPanel } from '../breakout/BreakoutPanel'
 import { ChatPanel } from '../features/chat/ChatPanel'
 import { HostPanel } from '../features/host/HostPanel'
 import { ParticipantsPanel } from '../features/participants/ParticipantsPanel'
@@ -15,7 +16,17 @@ import styles from './SidePanel.module.css'
 
 interface SidePanelProps {
   panel: PanelName
+  /** What the user can see from their room */
   state: RoomState
+  /** The whole meeting, for the Ruang diskusi panel */
+  all: RoomState
+  /** performance.now(), kept fresh by the breakout clock */
+  now: number
+  /** Ruang diskusi are on offer: the user can run them, or they are open */
+  showRuang: boolean
+  /** The user is inside a Ruang diskusi, where polls are off */
+  inRoom: boolean
+  onSetup: () => void
   selfRole: Role
   dispatch: Dispatch<RoomAction>
   onInvite: () => void
@@ -28,10 +39,12 @@ const TABS: readonly { name: PanelName; label: string }[] = [
   { name: 'polling', label: 'Polling' },
 ]
 
-const PANEL_TITLES: Record<PanelName, string> = { peserta: 'Peserta', chat: 'Chat', polling: 'Polling', host: 'Alat host' }
+const RUANG_TAB = { name: 'ruang' as PanelName, label: 'Ruang' }
+
+const PANEL_TITLES: Record<PanelName, string> = { peserta: 'Peserta', chat: 'Chat', polling: 'Polling', ruang: 'Ruang diskusi', host: 'Alat host' }
 
 /** Floating glass-2 card on the right (Design.md 15.2). Esc closes it and returns focus to its trigger. */
-export function SidePanel({ panel, state, selfRole, dispatch, onInvite, onClose }: SidePanelProps) {
+export function SidePanel({ panel, state, all, now: clock, showRuang, inRoom, onSetup, selfRole, dispatch, onInvite, onClose }: SidePanelProps) {
   const canManage = selfRole === 'Host' || selfRole === 'Co-host'
   const phone = useViewport().sizeClass !== 'desktop'
 
@@ -48,6 +61,7 @@ export function SidePanel({ panel, state, selfRole, dispatch, onInvite, onClose 
   }, [panel, onClose, phone])
 
   const now = () => performance.now()
+  const tabs = showRuang || panel === 'ruang' ? [...TABS, RUANG_TAB] : TABS
 
   const content = (
     <div className={styles.body} data-panel={panel}>
@@ -68,7 +82,9 @@ export function SidePanel({ panel, state, selfRole, dispatch, onInvite, onClose 
       {panel === 'chat' && (
         <ChatPanel chat={state.chat} participants={state.participants} onSend={(text, toId) => dispatch({ type: 'chatSend', fromId: SELF_ID, toId, text, now: now() })} />
       )}
-      {panel === 'polling' && (
+      {panel === 'ruang' && <BreakoutPanel state={all} now={clock} dispatch={dispatch} onSetup={onSetup} />}
+      {panel === 'polling' && inRoom && <p className={styles.note}>Polling hanya berjalan di ruang utama. Kembali ke ruang utama untuk membuat atau menjawab polling.</p>}
+      {panel === 'polling' && !inRoom && (
         <PollingPanel
           polls={state.polls}
           participantCount={state.participants.length}
@@ -118,7 +134,7 @@ export function SidePanel({ panel, state, selfRole, dispatch, onInvite, onClose 
       <Sheet title={PANEL_TITLES[panel]} size="tall" flush onClose={onClose}>
         {panel !== 'host' && (
           <div className={`${styles.tabs} ${styles.phoneTabs}`} role="tablist" aria-label="Panel samping">
-            {TABS.map((t) => (
+            {tabs.map((t) => (
               <button key={t.name} type="button" role="tab" aria-selected={panel === t.name} onClick={() => dispatch({ type: 'openPanel', panel: t.name })}>
                 {t.label}
               </button>
@@ -142,7 +158,7 @@ export function SidePanel({ panel, state, selfRole, dispatch, onInvite, onClose 
       <header className={styles.head}>
         {panel !== 'host' ? (
           <div className={styles.tabs} role="tablist" aria-label="Panel samping">
-            {TABS.map((t) => (
+            {tabs.map((t) => (
               <button key={t.name} type="button" role="tab" aria-selected={panel === t.name} onClick={() => dispatch({ type: 'openPanel', panel: t.name })}>
                 {t.label}
               </button>

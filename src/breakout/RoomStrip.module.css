@@ -1,0 +1,27 @@
+.strip {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  max-width: min(640px, 100%);
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-3);
+  border-radius: var(--radius-pill);
+  color: var(--text-1);
+  font-size: 13px;
+  pointer-events: auto;
+}
+.name { font-family: var(--font-display); font-size: 14px; font-weight: 700; white-space: nowrap; }
+.time { display: inline-flex; align-items: center; gap: var(--space-1); color: var(--text-2); font-family: var(--font-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.strip button { white-space: nowrap; }
+.actions { display: inline-flex; align-items: center; gap: var(--space-1); margin-left: auto; }
+
+/* running out of time: amber, with the word "Sisa" so the cue is never only a colour */
+.strip[data-state='warning'] .time { color: var(--aurora-amber); font-weight: 600; }
+.strip[data-state='closing'] .time { color: var(--aurora-amber); font-weight: 600; }
+
+/* phone: one compact row; the room name gives way, the actions never wrap */
+@media (max-width: 767px) {
+  .strip { width: 100%; gap: var(--space-2); border-radius: var(--radius-xl); }
+  .name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .actions { margin-left: 0; }
+  .time { font-size: 12px; }
+}

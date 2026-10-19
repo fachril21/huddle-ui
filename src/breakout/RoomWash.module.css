@@ -1,0 +1,20 @@
+/* the one authored moment of the feature: the destination room's hue washes over the screen and is gone */
+.wash {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-stage);
+  pointer-events: none;
+  --tone: var(--aurora-cyan);
+  background: radial-gradient(120% 90% at 50% 100%, color-mix(in srgb, var(--tone) 38%, transparent), transparent 70%);
+  animation: wash 900ms var(--ease-out) both;
+}
+.wash[data-tone='mint'] { --tone: var(--aurora-mint); }
+.wash[data-tone='violet'] { --tone: var(--aurora-violet); }
+.wash[data-tone='amber'] { --tone: var(--aurora-amber); }
+.wash[data-tone='rose'] { --tone: var(--aurora-rose); }
+@keyframes wash { 0% { opacity: 0; } 25% { opacity: 1; } 100% { opacity: 0; } }
+
+
+@media (prefers-reduced-motion: reduce) {
+  .wash { display: none; }
+}

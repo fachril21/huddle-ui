@@ -1,4 +1,4 @@
-import { ChartColumn, MessageCircle, ShieldCheck, Users } from 'lucide-react'
+import { ChartColumn, DoorOpen, MessageCircle, ShieldCheck, Users } from 'lucide-react'
 import type { ReactNode } from 'react'
 import type { PanelName } from '../state/types'
 import { shortcutKey } from './shortcuts'
@@ -14,6 +14,9 @@ interface PanelPillProps {
   /** Alat host is only offered to Host and Co-host */
   showHost: boolean
   hostBadge: number
+  /** Ruang diskusi are on offer: the user can run them, or they are open */
+  showRuang: boolean
+  ruangBadge: number
   onSelect: (panel: PanelName) => void
 }
 
@@ -23,11 +26,12 @@ const PANEL_SHORTCUTS: Partial<Record<PanelName, ShortcutId>> = { peserta: 'part
 const ICON = { size: 20, strokeWidth: 1.75, 'aria-hidden': true } as const
 
 /** Bottom-right glass-1 pill that opens the side panels . */
-export function PanelPill({ active, participantCount, unreadChat, pendingPoll, showHost, hostBadge, onSelect }: PanelPillProps) {
+export function PanelPill({ active, participantCount, unreadChat, pendingPoll, showHost, hostBadge, showRuang, ruangBadge, onSelect }: PanelPillProps) {
   const items: { name: PanelName; label: string; icon: ReactNode; badge?: number }[] = [
     { name: 'peserta', label: 'Peserta', icon: <Users {...ICON} />, badge: participantCount },
     { name: 'chat', label: 'Chat', icon: <MessageCircle {...ICON} />, badge: unreadChat },
     { name: 'polling', label: 'Polling', icon: <ChartColumn {...ICON} />, badge: pendingPoll },
+    ...(showRuang ? [{ name: 'ruang' as const, label: 'Ruang diskusi', icon: <DoorOpen {...ICON} />, badge: ruangBadge }] : []),
     ...(showHost ? [{ name: 'host' as const, label: 'Alat host', icon: <ShieldCheck {...ICON} />, badge: hostBadge }] : []),
   ]
 

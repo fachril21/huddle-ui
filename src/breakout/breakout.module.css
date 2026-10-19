@@ -1,0 +1,60 @@
+/* Shared pieces of the Ruang diskusi surfaces: the panel, the setup sheet and the in-room strip. */
+
+.tone { --tone: var(--aurora-cyan); }
+.tone[data-tone='mint'] { --tone: var(--aurora-mint); }
+.tone[data-tone='violet'] { --tone: var(--aurora-violet); }
+.tone[data-tone='amber'] { --tone: var(--aurora-amber); }
+.tone[data-tone='rose'] { --tone: var(--aurora-rose); }
+
+/* the room's mark: a door in its own hue. The name always sits beside it, so the hue never carries meaning alone */
+.mark { flex: none; display: grid; place-items: center; width: 28px; height: 28px; border-radius: var(--radius-sm); background: color-mix(in srgb, var(--tone, var(--aurora-cyan)) 18%, transparent); color: var(--tone, var(--aurora-cyan)); }
+
+.primary,
+.outline,
+.danger,
+.quiet {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 36px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  font-weight: 600;
+  transition: background-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out), opacity var(--dur-fast) var(--ease-out);
+}
+.primary { border: 0; background: var(--primary); color: var(--on-primary); }
+.primary:hover:not(:disabled) { background: color-mix(in srgb, var(--primary) 82%, var(--primary-glow)); }
+.outline { border: 1px solid var(--glass-border); background: transparent; color: var(--text-1); }
+.outline:hover:not(:disabled) { background: var(--veil-hover); }
+.danger { border: 0; background: var(--danger); color: var(--on-danger); }
+.danger:hover:not(:disabled) { background: color-mix(in srgb, var(--danger) 86%, var(--text-1)); }
+.quiet { border: 0; background: transparent; color: var(--text-1); }
+.quiet:hover:not(:disabled) { background: var(--veil-hover); }
+.primary:disabled,
+.outline:disabled,
+.danger:disabled,
+.quiet:disabled { opacity: 0.45; cursor: not-allowed; }
+.primary:active:not(:disabled),
+.outline:active:not(:disabled),
+.danger:active:not(:disabled),
+.quiet:active:not(:disabled) { transform: scale(0.97); }
+.primary:focus-visible,
+.outline:focus-visible,
+.danger:focus-visible,
+.quiet:focus-visible { box-shadow: var(--focus-ring); }
+
+@media (pointer: coarse) {
+  .primary,
+  .outline,
+  .danger,
+  .quiet { min-height: var(--tap); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .primary,
+  .outline,
+  .danger,
+  .quiet { transition: none; }
+}

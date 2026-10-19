@@ -1,9 +1,15 @@
-import { AudioLines, ChartColumn, Hand, Handshake, LayoutGrid, Mic, MonitorUp, PenLine, ShieldCheck, UserPlus, Users, Video } from 'lucide-react'
+import { AudioLines, ChartColumn, DoorOpen, Hand, Handshake, LayoutGrid, Mic, MonitorUp, PenLine, ShieldCheck, UserPlus, Users, Video } from 'lucide-react'
 import { AnimatePresence } from 'motion/react'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { CSSProperties, Dispatch } from 'react'
 import type { RoomAction } from '../state/roomReducer'
-import { SELF_ID } from '../state/types'
+import { BreakoutPrompts } from '../breakout/BreakoutPrompts'
+import { BreakoutSetup } from '../breakout/BreakoutSetup'
+import { RoomStrip } from '../breakout/RoomStrip'
+import { RoomWash } from '../breakout/RoomWash'
+import { invitationFor, isLive, locationOf } from '../breakout/rooms'
+import { useBreakoutClock } from '../breakout/useBreakoutClock'
+import { MAIN_ROOM, SELF_ID } from '../state/types'
 import type { DockToggle, ReactionName, RoomState } from '../state/types'
 import { useVoiceEngine, useVoiceSnapshot } from '../voice/VoiceContext'
 import { AnnotationProvider, useAnnotationController } from '../features/annotation/AnnotationContext'
@@ -59,7 +65,10 @@ const REACTION_X_MAX = 200
 const PANEL_SPACE = '376px'
 
 interface RoomProps {
+  /** The meeting as seen from the user's room */
   state: RoomState
+  /** The whole meeting, for the Ruang diskusi surfaces */
+  all: RoomState
   dispatch: Dispatch<RoomAction>
 }
 
@@ -70,7 +79,7 @@ function unreadChatCount(state: RoomState): number {
     .filter((m) => m.fromId !== SELF_ID && (m.toId === null || m.toId === SELF_ID)).length
 }
 
-export function Room({ state, dispatch }: RoomProps) {
+export function Room({ state, all, dispatch }: RoomProps) {
   const { fx, reduced } = useFx()
   const { sizeClass } = useViewport()
   // phone: tall layouts, paging by swipe, the floating self-view. compact: any non-desktop size gets the bottom control bar and sheets.
@@ -84,6 +93,8 @@ export function Room({ state, dispatch }: RoomProps) {
   const highFive = useHighFive(state, dispatch, announce)
   const soundboard = useSoundboard(state, dispatch)
   const polls = usePolls(state, dispatch, announce)
+  const breakoutNow = useBreakoutClock(all, dispatch)
+  const [setupOpen, setSetupOpen] = useState(false)
   const layoutSettings = state.settings.layout
   const galleryPeople = layoutSettings.hideNoVideo ? state.participants.filter((p) => p.camOn || p.id === SELF_ID) : state.participants
   // Paging only drives the gallery grid; speaker and spotlight page their own strip
@@ -188,6 +199,10 @@ export function Room({ state, dispatch }: RoomProps) {
   // once the meeting is over, App swaps this room for the end page
   if (state.phase !== 'live') return null
 
+  const inRoom = isLive(all.breakout) && locationOf(all.breakout, SELF_ID) !== MAIN_ROOM
+  const showRuang = canManage || isLive(all.breakout)
+  const ruangBadge = canManage ? all.breakout.help.length : invitationFor(all.breakout, SELF_ID) ? 1 : 0
+  const canReturnMain = inRoom && (canManage || all.breakout.options.allowReturn || all.breakout.phase === 'closing')
   const needsConsent = state.host.recording !== 'off' && !canManage && !state.host.consented
   const style = { '--crosstalk': voice.crosstalk ? 1 : 0, '--panel-space': state.panel ? PANEL_SPACE : '0px' } as CSSProperties
 
@@ -223,7 +238,8 @@ export function Room({ state, dispatch }: RoomProps) {
     <LeaveMenu
       key="leave"
       canEndForAll={selfRole === 'Host'}
-      stopsRecording={recordingOn && othersInRoom === 0}
+      stopsRecording={recordingOn && othersInRoom === 0 && !inRoom}
+      onReturnMain={canReturnMain ? () => dispatch({ type: 'breakoutLeave', id: SELF_ID, now: performance.now() }) : undefined}
       onLeave={() => dispatch({ type: 'leave', phase: 'left' })}
       onEnd={() => dispatch({ type: 'leave', phase: 'ended' })}
     />
@@ -239,6 +255,7 @@ export function Room({ state, dispatch }: RoomProps) {
     { id: 'share', label: state.sharerId === SELF_ID ? 'Berhenti berbagi' : 'Bagikan layar', icon: <MonitorUp {...ICON} />, pressed: state.sharerId === SELF_ID, unavailable: shareDisabledReason, onSelect: onShare },
     ...(annotation.enabled ? [{ id: 'annotate', label: annotation.annotating ? 'Selesai coret' : 'Coret layar', icon: <PenLine {...ICON} />, pressed: annotation.annotating, onSelect: annotation.toggleAnnotating }] : []),
     { id: 'layout', label: 'Tampilan', icon: <LayoutGrid {...ICON} />, onSelect: () => setLayoutOpen(true) },
+    ...(showRuang ? [{ id: 'ruang', label: 'Ruang diskusi', icon: <DoorOpen {...ICON} />, badge: ruangBadge, onSelect: () => dispatch({ type: 'openPanel', panel: 'ruang' }) }] : []),
     { id: 'peserta', label: 'Peserta', icon: <Users {...ICON} />, badge: state.participants.length, onSelect: () => dispatch({ type: 'openPanel', panel: 'peserta' }) },
     { id: 'polling', label: 'Polling', icon: <ChartColumn {...ICON} />, badge: polls.pendingBadge, onSelect: () => dispatch({ type: 'openPanel', panel: 'polling' }) },
     { id: 'invite', label: 'Undang', icon: <UserPlus {...ICON} />, onSelect: () => setInviteOpen(true) },
@@ -251,6 +268,7 @@ export function Room({ state, dispatch }: RoomProps) {
     <AnnotationProvider value={annotation}>
     <div className={styles.room} data-motion={reduced ? 'reduced' : 'full'} data-fx={fx} data-sharing={sharing} style={style}>
       <Ambient />
+      <RoomWash state={all} dispatch={dispatch} />
       <TileGrid
         participants={state.participants}
         offers={state.highFive.offers}
@@ -314,6 +332,8 @@ export function Room({ state, dispatch }: RoomProps) {
         <QualitySuggestion weakConnection={self.connection !== 'good'} camOn={self.camOn} quality={state.settings.cameraQuality} onLower={() => dispatch({ type: 'setCameraQuality', quality: 'low' })} />
         <NoticeStack notices={state.notices} />
         <SoundChips plays={soundboard.plays} participants={state.participants} />
+        <BreakoutPrompts state={all} now={breakoutNow} dispatch={dispatch} />
+        <RoomStrip state={all} now={breakoutNow} dispatch={dispatch} />
         <GuestRequestToast
           guests={state.host.waiting}
           visible={canManage && state.panel !== 'host' && state.panel !== 'peserta'}
@@ -325,7 +345,7 @@ export function Room({ state, dispatch }: RoomProps) {
       <ChatBubbles messages={state.chat.messages} people={[...state.participants, ...state.bench]} chatOpen={state.panel === 'chat'} onOpenChat={() => dispatch({ type: 'openPanel', panel: 'chat' })} />
       <InfoPill inviteOpen={inviteOpen} locked={state.host.locked} onInviteToggle={toggleInvite} onInviteClose={closeInvite} phone={compact} />
       <AnimatePresence>
-        {state.panel && <SidePanel key="panel" panel={state.panel} state={state} selfRole={selfRole} dispatch={dispatch} onInvite={() => setInviteOpen(true)} onClose={() => dispatch({ type: 'openPanel', panel: null })} />}
+        {state.panel && <SidePanel key="panel" panel={state.panel} state={state} all={all} now={breakoutNow} showRuang={showRuang} inRoom={inRoom} onSetup={() => setSetupOpen(true)} selfRole={selfRole} dispatch={dispatch} onInvite={() => setInviteOpen(true)} onClose={() => dispatch({ type: 'openPanel', panel: null })} />}
       </AnimatePresence>
       {!compact && (
       <Dock
@@ -358,6 +378,8 @@ export function Room({ state, dispatch }: RoomProps) {
         unreadChat={unreadChatCount(state)}
         pendingPoll={polls.pendingBadge}
         showHost={canManage}
+        showRuang={showRuang}
+        ruangBadge={ruangBadge}
         hostBadge={state.host.waiting.length}
         onSelect={(panel) => dispatch({ type: 'togglePanel', panel })}
       />
@@ -404,6 +426,7 @@ export function Room({ state, dispatch }: RoomProps) {
           )}
         </>
       )}
+      {setupOpen && canManage && <BreakoutSetup state={all} now={breakoutNow} dispatch={dispatch} onClose={() => setSetupOpen(false)} />}
       {needsConsent && <RecordingConsent onAgree={() => dispatch({ type: 'recordingConsent' })} onLeave={() => dispatch({ type: 'leave', phase: 'left' })} />}
     </div>
     </AnnotationProvider>

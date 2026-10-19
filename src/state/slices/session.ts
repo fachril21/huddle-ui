@@ -1,5 +1,6 @@
 import { flipFacing, withDevice } from '../../room/devices/deviceSettings'
 import { createInitialState } from '../initialState'
+import { isLive, locationOf } from '../../breakout/rooms'
 import { SELF_ID } from '../types'
 import type { ChatMessage, DockToggle, PanelName, RoomState } from '../types'
 import { canManage, mapParticipant, nextId, NOTICE_MS, roleOf, withNotice } from './shared'
@@ -40,7 +41,8 @@ export const chatSlice: Slice = (state, action) => {
     case 'chatSend': {
       const text = action.text.trim()
       if (!text) return state
-      const message: ChatMessage = { id: nextId(state.chat.messages), fromId: action.fromId, toId: action.toId, text, at: Math.round(action.now / 1000) }
+      const roomId = isLive(state.breakout) ? locationOf(state.breakout, action.fromId) : undefined
+      const message: ChatMessage = { id: nextId(state.chat.messages), fromId: action.fromId, toId: action.toId, text, at: Math.round(action.now / 1000), ...(roomId ? { roomId } : {}) }
       const typingId = state.chat.typingId === action.fromId ? null : state.chat.typingId
       // Messages the user sends, or reads while the Chat panel is open, never count as unread
       const reading = state.panel === 'chat' || action.fromId === 'anda'

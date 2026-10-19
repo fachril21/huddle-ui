@@ -139,3 +139,16 @@
 - Penilaian kualitas (Kurang baik / Biasa / Bagus) ada di bawah aksi, tidak menghalangi apa pun. "Kurang baik" meminta alasan (chip). Tidak ada data yang disimpan atau dikirim: ini prototype.
 - Demo Director: "Host mengeluarkan Anda" di Kejadian cepat memicu varian dikeluarkan. Di Room saya hostnya adalah Anda sendiri, jadi teks menyebut nama Anda; itu artefak demo.
 - Dikeluarkan diperlakukan seperti keluar untuk rekaman (berhenti otomatis bila ruangan kosong).
+
+## Ruang diskusi (breakout)
+
+Host dan co-host membagi peserta ke 2–8 ruang kecil dari panel **Ruang** (di PanelPill, atau Lainnya di ponsel). Kode ada di `src/breakout/`, state di `src/state/slices/breakout.ts`.
+
+- Fase: `off` → `prepared` (ruang dibuat, belum dibuka) → `open` → `closing` (hitung mundur 60 dtk) → kembali ke `prepared` dengan penempatan yang sama. "Buang rencana" hanya dari `prepared`.
+- Mode: Otomatis (dibagi merata), Manual, Pilih sendiri. Opsi: pindahkan otomatis, boleh kembali kapan saja, tutup otomatis N menit, tampilkan sisa waktu.
+- Bahasa produk: "Ruang diskusi" dan "Ruang utama", bukan "Breakout room". Co-host ikut menerima permintaan bantuan (beda dari Zoom).
+- **Satu state utuh, tampilan disaring.** Reducer bekerja pada seluruh rapat; `scopedState()` (`rooms.ts`) menyaring peserta, chat, reaksi, high five, soundboard, polling, dan pengumuman ke ruang SELF. `App.tsx` memberi `Room` tampilan tersaring (`state`) dan state penuh (`all`) untuk UI ruang diskusi. Suara orang di ruang lain dibisukan lewat `view.bench`.
+- Integrasi: chat per ruang (pesan privat lintas ruang), broadcast host masuk ke chat tiap ruang dan `AnnouncementBanner`, polling hanya di ruang utama (panel Polling menjelaskannya), rekaman hanya di ruang utama (keluar dari ruang tidak menghentikan rekaman), tamu ruang tunggu masuk ke ruang utama dan dihitung "belum ditempatkan", rapat berakhir atau host pergi menutup semua ruang, cue suara dibisukan saat berpindah ruang.
+- Momen bergerak tunggal: `RoomWash`, warna ruang tujuan menyapu layar sekali (mati saat reduced motion).
+- Demo Director punya grup "Ruang diskusi": minta bantuan dari ruang, masuk/keluar ruang, habiskan timer, selesaikan hitungan.
+- **Batasan yang diketahui:** `sharerId` hanya satu untuk seluruh rapat, jadi hanya satu orang bisa berbagi layar di semua ruang sekaligus. Belum ada: broadcast audio, host berbagi ke semua ruang, penempatan tersimpan untuk rapat berulang, rekaman per ruang, seret-dan-lepas (penempatan lewat menu pilih per orang).

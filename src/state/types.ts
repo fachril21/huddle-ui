@@ -34,7 +34,7 @@ export interface VoiceSource {
 
 export type DockToggle = 'reaction' | 'soundboard' | 'more' | 'mic' | 'camera' | 'leave'
 
-export type PanelName = 'peserta' | 'chat' | 'polling' | 'host'
+export type PanelName = 'peserta' | 'chat' | 'polling' | 'ruang' | 'host'
 
 export type ReactionName = 'thumbs-up' | 'clap' | 'heart' | 'party' | 'laugh' | 'surprised' | 'thanks' | 'fire'
 
@@ -126,6 +126,8 @@ export interface ChatMessage {
   readonly text: string
   /** seconds on the mock meeting clock (see formatChatTime) */
   readonly at: number
+  /** The Ruang diskusi it was said in; missing means the main room */
+  readonly roomId?: string
 }
 
 export interface ChatState {
@@ -186,6 +188,57 @@ export interface AnnotationState {
   readonly strokes: readonly Stroke[]
 }
 
+/** The main room is not a breakout room, so it has no entry in `rooms` */
+export const MAIN_ROOM = 'main'
+
+export interface BreakoutRoom {
+  readonly id: string
+  readonly name: string
+}
+
+/** off: nothing set up. prepared: rooms exist but are closed. open: people are in them. closing: the wrap-up countdown. */
+export type BreakoutPhase = 'off' | 'prepared' | 'open' | 'closing'
+
+/** How people get to a room: spread evenly, placed by hand, or they pick */
+export type BreakoutMode = 'auto' | 'manual' | 'choice'
+
+export interface BreakoutOptions {
+  /** Move assigned people in without asking them to press Masuk */
+  readonly autoMove: boolean
+  /** People may go back to the main room whenever they like */
+  readonly allowReturn: boolean
+  /** Close the rooms by themselves after this many minutes, null = only by hand */
+  readonly autoCloseMin: number | null
+  /** Show everyone the time left */
+  readonly showTimer: boolean
+}
+
+export interface HelpRequest {
+  readonly roomId: string
+  readonly byId: string
+  readonly at: number
+}
+
+export interface BreakoutState {
+  readonly phase: BreakoutPhase
+  readonly mode: BreakoutMode
+  readonly rooms: readonly BreakoutRoom[]
+  /** Where each person is placed. Missing or null = not placed (stays in the main room). */
+  readonly assignment: Readonly<Record<string, string | null>>
+  /** Where each person actually is right now. Missing = the main room. */
+  readonly where: Readonly<Record<string, string>>
+  readonly options: BreakoutOptions
+  /** performance.now() when the rooms opened */
+  readonly openedAt: number | null
+  /** When the auto-close timer runs out */
+  readonly closesAt: number | null
+  /** When the 60 s wrap-up ends and everyone is back in the main room */
+  readonly closingEndsAt: number | null
+  readonly help: readonly HelpRequest[]
+  /** The host's last message to every room */
+  readonly broadcast: { readonly id: number; readonly text: string; readonly at: number } | null
+}
+
 export interface Notice {
   readonly id: number
   readonly text: string
@@ -231,6 +284,7 @@ export interface RoomState {
   readonly polls: readonly Poll[]
   readonly chat: ChatState
   readonly annotation: AnnotationState
+  readonly breakout: BreakoutState
   readonly host: HostState
   readonly notices: readonly Notice[]
   readonly phase: Phase

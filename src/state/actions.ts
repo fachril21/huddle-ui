@@ -5,6 +5,8 @@ import type {
   DockToggle,
   FxTier,
   LayoutMode,
+  BreakoutMode,
+  BreakoutOptions,
   Guest,
   PanelName,
   Phase,
@@ -86,6 +88,23 @@ export type RoomAction =
   | { type: 'hostWaitingRoom'; on: boolean; now: number }
   | { type: 'announce'; text: string }
   | { type: 'dismissAnnouncement' }
+  // breakout rooms (Ruang diskusi)
+  | { type: 'breakoutCreate'; count: number; mode: BreakoutMode; options: BreakoutOptions }
+  | { type: 'breakoutShuffle'; order: readonly string[] }
+  | { type: 'breakoutAssign'; id: string; roomId: string | null; now: number }
+  | { type: 'breakoutAddRoom' }
+  | { type: 'breakoutRemoveRoom'; roomId: string }
+  | { type: 'breakoutRenameRoom'; roomId: string; name: string }
+  | { type: 'breakoutOptions'; options: Partial<BreakoutOptions> }
+  | { type: 'breakoutOpen'; now: number }
+  | { type: 'breakoutJoin'; id: string; roomId: string; now: number }
+  | { type: 'breakoutLeave'; id: string; now: number }
+  | { type: 'breakoutHelp'; id: string; now: number }
+  | { type: 'breakoutHelpDone'; roomId: string }
+  | { type: 'breakoutBroadcast'; fromId: string; text: string; now: number }
+  | { type: 'breakoutClose'; now: number; immediate?: boolean }
+  | { type: 'breakoutTick'; now: number }
+  | { type: 'breakoutDiscard' }
   // notices
   | { type: 'notice'; text: string; now: number }
   | { type: 'expireNotices'; now: number }
