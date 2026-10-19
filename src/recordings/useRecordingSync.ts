@@ -10,7 +10,7 @@ const TICK_MS = 1000
 const MB_PER_SEC = 0.19
 
 /** The reason a recording stops when the user leaves: with nobody else in the room it stops by itself. */
-export function stopReasonOnLeave(phase: 'left' | 'ended', othersInRoom: number): StopReason | null {
+export function stopReasonOnLeave(phase: 'left' | 'ended' | 'removed', othersInRoom: number): StopReason | null {
   if (phase === 'ended') return 'meeting-ended'
   return othersInRoom === 0 ? 'room-empty' : null
 }

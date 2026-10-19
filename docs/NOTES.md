@@ -130,3 +130,12 @@
 - Pemuatan sama dengan efek ruangan: data URI di chunk malas `soundboardData`, di-decode setelah gestur pertama (`preloadSoundboard`). Id suara tidak berubah, jadi favorit dan skenario tetap valid; `durationMs` cocok dengan panjang file (dites di `soundboardSounds.test.ts`).
 - Mengganti suara: taruh file asli baru di `assets/source-audio/Soundboard`, sesuaikan tabel potongan di skrip, jalankan ulang, lalu perbarui `durationMs`. Tepuk tangan tertahan limiter (sekitar -19,7 LUFS) karena puncaknya tajam.
 - Lisensi file ditanggung pemilik proyek; komentar "tanpa lisensi" untuk suara sintesis tidak berlaku lagi.
+
+## Halaman setelah rapat
+- Layar penutup lama (`room/ClosingScreen`) diganti `src/ended/EndedPage`, tahap `ended` di `App.tsx` setelah `room`. `Room` hanya mengembalikan `null` begitu `phase` bukan `live`; `App` yang menampilkan halaman ini dan mengurus reset.
+- Tiga penyebab (`Phase`: `left`, `ended`, `removed`), masing-masing dengan ikon, kata, dan nada sendiri (bukan warna saja). Teksnya di `ended/endedCopy.ts` (dites): keluar sendiri menyebut apakah rapat masih berjalan, diakhiri host membedakan "Anda mengakhiri" dari "Host mengakhiri", dikeluarkan tidak menjanjikan jalan masuk.
+- Aksi: **Gabung lagi** (utama, ke lobi rapat yang sama dengan perangkat terakhir; tetap ada setelah host mengakhiri karena tautan bisa dipakai kapan saja) dan **Kembali ke beranda**. Untuk "dikeluarkan", urutannya dibalik dan gabung lagi menjadi "Minta bergabung lagi". Tidak ada hitung mundur otomatis ke beranda, sengaja.
+- Ringkasan: nama dan kode rapat, lama Anda ikut (dihitung dari `joinedAt` di App), dan jumlah peserta yang masih di ruangan. Catatan rekaman memakai logika lama dan kini punya tautan **Buka Rekaman** yang membuka dashboard langsung di halaman Rekaman (`Dashboard initialView`).
+- Penilaian kualitas (Kurang baik / Biasa / Bagus) ada di bawah aksi, tidak menghalangi apa pun. "Kurang baik" meminta alasan (chip). Tidak ada data yang disimpan atau dikirim: ini prototype.
+- Demo Director: "Host mengeluarkan Anda" di Kejadian cepat memicu varian dikeluarkan. Di Room saya hostnya adalah Anda sendiri, jadi teks menyebut nama Anda; itu artefak demo.
+- Dikeluarkan diperlakukan seperti keluar untuk rekaman (berhenti otomatis bila ruangan kosong).

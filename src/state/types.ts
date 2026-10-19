@@ -193,7 +193,7 @@ export interface Notice {
 }
 
 /** live = in the room; left = the user left; ended = the host ended it for everyone */
-export type Phase = 'live' | 'left' | 'ended'
+export type Phase = 'live' | 'left' | 'ended' | 'removed'
 
 /** Galeri = tile grid, Pembicara = active speaker big with a filmstrip, Sorotan = pinned (or speaking) person with a side strip */
 export type LayoutMode = 'gallery' | 'speaker' | 'spotlight'

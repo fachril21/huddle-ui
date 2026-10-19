@@ -16,7 +16,6 @@ import { Sheet } from '../mobile/Sheet'
 import { useViewport } from '../mobile/useViewport'
 import { Ambient } from './Ambient'
 import { AnnouncementBanner } from './AnnouncementBanner'
-import { ClosingScreen, closingRecordingNote } from './ClosingScreen'
 import { CameraPopover } from './devices/CameraPopover'
 import { MicPopover } from './devices/MicPopover'
 import { Dock } from './Dock'
@@ -186,9 +185,8 @@ export function Room({ state, dispatch }: RoomProps) {
   if (!self || !selfRole) return null
   const othersInRoom = state.participants.filter((p) => p.id !== SELF_ID).length
   const recordingOn = state.host.recording !== 'off'
-  if (state.phase !== 'live') {
-    return <ClosingScreen phase={state.phase} recordingNote={closingRecordingNote(state.phase, recordingOn, othersInRoom)} onRestart={() => dispatch({ type: 'reset' })} />
-  }
+  // once the meeting is over, App swaps this room for the end page
+  if (state.phase !== 'live') return null
 
   const needsConsent = state.host.recording !== 'off' && !canManage && !state.host.consented
   const style = { '--crosstalk': voice.crosstalk ? 1 : 0, '--panel-space': state.panel ? PANEL_SPACE : '0px' } as CSSProperties

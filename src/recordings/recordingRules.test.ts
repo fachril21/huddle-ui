@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { closingRecordingNote } from '../room/ClosingScreen'
+import { closingRecordingNote } from '../ended/endedCopy'
 import { recordingReducer } from './recordingStore'
 import { stopReasonOnLeave } from './useRecordingSync'
 import type { Recording } from './types'

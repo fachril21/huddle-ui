@@ -8,6 +8,9 @@ import { DemoToggle } from './demo/DemoToggle'
 import { useScenarioPlayer } from './demo/useScenarioPlayer'
 import { motion } from 'motion/react'
 import { Dashboard } from './dashboard/Dashboard'
+import type { DashboardView } from './dashboard/Rail'
+import { EndedPage } from './ended/EndedPage'
+import { closingRecordingNote } from './ended/endedCopy'
 import type { JoinTarget } from './dashboard/types'
 import { useMeetings } from './dashboard/useMeetings'
 import { PreJoin } from './prejoin/PreJoin'
@@ -41,6 +44,9 @@ export function App() {
   // the dashboard shows while no room is chosen; the lobby shows once one is; the room once Masuk is pressed
   const [target, setTarget] = useState<JoinTarget | null>(null)
   const [joined, setJoined] = useState<JoinChoice | null>(null)
+  const [joinedAt, setJoinedAt] = useState(0)
+  // which dashboard page opens next: the end page can point straight at Rekaman
+  const [homeView, setHomeView] = useState<DashboardView>('home')
   // a guest of a meeting with a waiting room sits here, between the lobby and the room, until the host answers
   const [asking, setAsking] = useState<JoinChoice | null>(null)
   const [admission, admissionDispatch] = useReducer(admissionReducer, null)
@@ -88,6 +94,7 @@ export function App() {
     dispatch({ type: 'joinRoom', name: choice.name, micOn: choice.micOn, camOn: choice.camOn, quality: choice.cameraQuality, devices: choice.devices })
     setAsking(null)
     admissionDispatch({ type: 'cancel' })
+    setJoinedAt(performance.now())
     setJoined(choice)
   }
 
@@ -110,13 +117,35 @@ export function App() {
     dispatch(action)
   }
 
-  const stage = joined ? 'room' : asking && admission ? 'waiting' : target ? 'lobby' : 'dashboard'
+  // after the room: back to a fresh state, then either the lobby of the same meeting or the dashboard
+  const leaveEndPage = (next: 'lobby' | DashboardView) => {
+    dispatch({ type: 'reset' })
+    setJoined(null)
+    if (next === 'lobby') return
+    setTarget(null)
+    setHomeView(next)
+  }
+
+  const stage = joined ? (state.phase === 'live' ? 'room' : 'ended') : asking && admission ? 'waiting' : target ? 'lobby' : 'dashboard'
 
   return (
     <MotionProvider fx={state.settings.fx} simulateReduced={state.settings.simulateReduced}>
     <VoiceProvider engine={engine}>
       <motion.div key={stage} className={styles.stage} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35, ease: [0.2, 0.8, 0.2, 1] }}>
         {stage === 'room' && <Room state={state} dispatch={roomDispatch} />}
+        {stage === 'ended' && target && state.phase !== 'live' && (
+          <EndedPage
+            meeting={target}
+            phase={state.phase}
+            joinedAt={joinedAt}
+            othersInRoom={state.participants.filter((p) => p.id !== SELF_ID).length}
+            selfIsHost={state.participants.find((p) => p.id === SELF_ID)?.role === 'Host'}
+            recordingNote={closingRecordingNote(state.phase, state.host.recording !== 'off', state.participants.filter((p) => p.id !== SELF_ID).length)}
+            onRejoin={() => leaveEndPage('lobby')}
+            onHome={() => leaveEndPage('home')}
+            onRecordings={() => leaveEndPage('recordings')}
+          />
+        )}
         {stage === 'lobby' && target && <PreJoin meeting={target} onJoin={target.needsApproval ? (choice) => ask(choice, target.hostPresent ?? true) : join} onBack={() => setTarget(null)} />}
         {stage === 'waiting' && target && asking && admission && (
           <WaitingRoom
@@ -133,7 +162,7 @@ export function App() {
             }}
           />
         )}
-        {stage === 'dashboard' && <Dashboard meetings={meetings} dispatch={meetingDispatch} onEnter={setTarget} recordings={recordings} settings={state.settings} roomDispatch={dispatch} />}
+        {stage === 'dashboard' && <Dashboard meetings={meetings} dispatch={meetingDispatch} initialView={homeView} onEnter={(t) => { setHomeView('home'); setTarget(t) }} recordings={recordings} settings={state.settings} roomDispatch={dispatch} />}
       </motion.div>
       <DemoToggle open={demoOpen} onClick={() => setDemoOpen((o) => !o)} />
       <DemoDirector state={state} dispatch={dispatch} player={player} admission={admission} onAdmission={admissionDispatch} open={demoOpen} onClose={() => setDemoOpen(false)} />

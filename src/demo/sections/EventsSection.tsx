@@ -127,6 +127,7 @@ export function EventsSection({ state, dispatch }: { state: RoomState; dispatch:
       <div className={styles.presets} role="group" aria-label="Klaim host">
         <Toggle label="Host meninggalkan meeting" onClick={() => dispatch({ type: 'vacateHost', now: now() })} />
         <Toggle label="Peserta lain klaim host" onClick={() => dispatch({ type: 'claimHost', id: actor, key: state.host.hostKey, now: now() })} />
+        <Toggle label="Host mengeluarkan Anda" onClick={() => dispatch({ type: 'leave', phase: 'removed' })} />
         <p className={styles.hint}>Kunci host: {state.host.hostKey}</p>
       </div>
 

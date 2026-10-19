@@ -42,6 +42,8 @@ interface DashboardProps {
   meetings: readonly Meeting[]
   dispatch: Dispatch<MeetingAction>
   onEnter: (target: JoinTarget) => void
+  /** The page to open on, for people arriving from the end page */
+  initialView?: DashboardView
   recordings: RecordingStore
   /** Device, quality and effects choices shared with the room */
   settings: Settings
@@ -81,12 +83,12 @@ function sessionTarget(o: Occurrence, now: Date): JoinTarget {
 }
 
 /** Home and meetings pages. Owns dialogs, shortcuts and every way into the lobby. */
-export function Dashboard({ meetings, dispatch, onEnter, recordings, settings, roomDispatch }: DashboardProps) {
+export function Dashboard({ meetings, dispatch, onEnter, initialView = 'home', recordings, settings, roomDispatch }: DashboardProps) {
   const { fx, reduced } = useFx()
   const { sizeClass, coarse } = useViewport()
   const phone = sizeClass === 'phone'
   const now = useNow()
-  const [view, setView] = useState<DashboardView>('home')
+  const [view, setView] = useState<DashboardView>(initialView)
   const [dialog, setDialog] = useState<DialogState | null>(null)
   const [toast, setToast] = useState<string | null>(null)
   const [joinError, setJoinError] = useState<string | null>(null)
