@@ -15,7 +15,8 @@ import { insideSummary } from '../prejoin/MeetingInfo'
 import { AgendaGroups } from './AgendaGroups'
 import { CancelDialog } from './CancelDialog'
 import { CommandBar } from './CommandBar'
-import { MY_ROOM_CODE, MY_ROOM_TITLE, USER_NAME } from './constants'
+import { useCurrentUser } from '../auth/CurrentUser'
+import { MY_ROOM_CODE, MY_ROOM_TITLE } from './constants'
 import { matchDashboardShortcut } from './dashboardShortcuts'
 import { useViewport } from '../mobile/useViewport'
 import { Header } from './Header'
@@ -85,6 +86,7 @@ function sessionTarget(o: Occurrence, now: Date): JoinTarget {
 /** Home and meetings pages. Owns dialogs, shortcuts and every way into the lobby. */
 export function Dashboard({ meetings, dispatch, onEnter, initialView = 'home', recordings, settings, roomDispatch }: DashboardProps) {
   const { fx, reduced } = useFx()
+  const { name: userName } = useCurrentUser()
   const { sizeClass, coarse } = useViewport()
   const phone = sizeClass === 'phone'
   const now = useNow()
@@ -118,8 +120,8 @@ export function Dashboard({ meetings, dispatch, onEnter, initialView = 'home', r
 
   const enterSession = (o: Occurrence) => onEnter(sessionTarget(o, now))
 
-  const startInstant = () => onEnter({ code: generateMeetingCode(), title: 'Rapat dadakan', hostName: USER_NAME, insideNote: 'Anda yang pertama masuk' })
-  const startMyRoom = () => onEnter({ code: MY_ROOM_CODE, title: MY_ROOM_TITLE, hostName: USER_NAME, insideNote: 'Anda yang pertama masuk' })
+  const startInstant = () => onEnter({ code: generateMeetingCode(), title: 'Rapat dadakan', hostName: userName, insideNote: 'Anda yang pertama masuk' })
+  const startMyRoom = () => onEnter({ code: MY_ROOM_CODE, title: MY_ROOM_TITLE, hostName: userName, insideNote: 'Anda yang pertama masuk' })
 
   const makeForLater = () => {
     const code = generateMeetingCode()
@@ -130,7 +132,7 @@ export function Dashboard({ meetings, dispatch, onEnter, initialView = 'home', r
       title: 'Rapat baru',
       summary: 'Tautan ini bisa dipakai kapan saja. Rapat dimulai saat Anda masuk.',
       link: buildInviteUrl(code),
-      enter: { code, title: 'Rapat baru', hostName: USER_NAME, insideNote: 'Anda yang pertama masuk' },
+      enter: { code, title: 'Rapat baru', hostName: userName, insideNote: 'Anda yang pertama masuk' },
     })
   }
 
@@ -145,7 +147,7 @@ export function Dashboard({ meetings, dispatch, onEnter, initialView = 'home', r
       if (session) return onEnter(sessionTarget(session, now))
       return onEnter({ code, title: meeting.title, hostName: meeting.hostName, insideNote: 'Belum ada yang masuk', needsApproval: needsApproval(meeting), hostPresent: false })
     }
-    if (laterCodes.includes(code)) return onEnter({ code, title: 'Rapat baru', hostName: USER_NAME, insideNote: 'Anda yang pertama masuk' })
+    if (laterCodes.includes(code)) return onEnter({ code, title: 'Rapat baru', hostName: userName, insideNote: 'Anda yang pertama masuk' })
     setJoinError(`Rapat dengan kode ${code} tidak ditemukan. Periksa lagi kodenya.`)
   }
 

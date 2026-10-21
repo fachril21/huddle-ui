@@ -9,6 +9,8 @@ web
 ## Users
 Campuran / publik: siapa saja yang punya tautan rapat (domain `huddle.dibimbing.id/abc-defg-hij`). Banyak yang pakai laptop biasa, koneksi dan perangkat bervariasi, sebagian baru pertama kali memakai video meeting. Pekerjaan mereka di lobby: memastikan kamera, mic, dan speaker berfungsi, lalu masuk.
 
+Dashboard (buat dan jadwalkan rapat, rekaman, pengaturan) hanya untuk internal: masuk lewat Google atau kode email, dan hanya akun @dibimbing.id dan @cakrawala.ac.id yang diterima. Tamu yang membuka tautan rapat tidak perlu masuk.
+
 ## Product Purpose
 Huddle adalah aplikasi video meeting. Repo ini adalah prototype UI/UX untuk layar room ("Huddle Aurora") dan sekarang lobby sebelum masuk. Sukses lobby: pengguna yakin perangkatnya siap dan masuk tanpa kejutan di dalam room.
 

@@ -118,7 +118,7 @@ export const defaultIds: IdSource = {
 }
 
 /** Turns a validated form into the change to apply. Call only when validateForm found nothing. */
-export function buildResult(mode: FormMode, form: FormState, source: FormSource | undefined, ids: IdSource = defaultIds): ScheduleResult {
+export function buildResult(mode: FormMode, form: FormState, source: FormSource | undefined, ids: IdSource = defaultIds, hostName: string = USER_NAME): ScheduleResult {
   const start = zonedToUtc(form.date, form.time, form.timezone)
   const fields = {
     title: clean(form.title),
@@ -150,7 +150,7 @@ export function buildResult(mode: FormMode, form: FormState, source: FormSource 
     code,
     startsAt: start.toISOString(),
     recurrence: form.recurrence,
-    hostName: USER_NAME,
+    hostName,
     isHost: true,
     cancelled: false,
     skipped: [],

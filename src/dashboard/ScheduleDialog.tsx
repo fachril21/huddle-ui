@@ -1,6 +1,7 @@
 import { Shuffle } from 'lucide-react'
 import { useId, useState } from 'react'
 import type { ReactNode } from 'react'
+import { useCurrentUser } from '../auth/CurrentUser'
 import { DURATIONS_MIN, MY_ROOM_CODE, TIMEZONES } from './constants'
 import { InviteeInput } from './InviteeInput'
 import { generatePasscode } from './meetingCode'
@@ -33,6 +34,7 @@ function minutesLabel(min: number): string {
 
 /** Create, edit or duplicate a meeting. Mirrors Zoom's schedule form; the security switches are display only. */
 export function ScheduleDialog({ mode, now, source, onClose, onSave }: ScheduleDialogProps) {
+  const user = useCurrentUser()
   const [form, setForm] = useState<FormState>(() => initialForm(mode, now, source))
   const [submitted, setSubmitted] = useState(false)
   const uid = useId()
@@ -50,7 +52,7 @@ export function ScheduleDialog({ mode, now, source, onClose, onSave }: ScheduleD
       document.getElementById(FIELD_IDS[firstBad])?.focus()
       return
     }
-    onSave(buildResult(mode, form, source))
+    onSave(buildResult(mode, form, source, undefined, user.name))
   }
 
   const durations = DURATIONS_MIN.includes(form.durationMin as (typeof DURATIONS_MIN)[number]) ? DURATIONS_MIN : [...DURATIONS_MIN, form.durationMin].sort((a, b) => a - b)

@@ -26,7 +26,7 @@ function make(slug: string, seed: Seed): Meeting {
 }
 
 /** Sample agenda anchored to `now`, in Indonesian, with the same people as the room demo. */
-export function buildSeed(now: Date): Meeting[] {
+export function buildSeed(now: Date, hostName: string = USER_NAME): Meeting[] {
   const day = (offset: number, time: string) => zonedToUtc(dayKey(new Date(now.getTime() + offset * DAY)), time, DISPLAY_TZ)
   const soon = new Date(Math.ceil((now.getTime() + SOON_MIN * MIN) / (ROUND_MIN * MIN)) * ROUND_MIN * MIN)
 
@@ -39,7 +39,7 @@ export function buildSeed(now: Date): Meeting[] {
       durationMin: 60,
       recurrence: 'none',
       invitees: ['dewi@huddle.id', 'raka@huddle.id', 'bima@huddle.id', 'sari@huddle.id'],
-      hostName: USER_NAME,
+      hostName,
       isHost: true,
       passcode: '482913',
     }),
@@ -51,7 +51,7 @@ export function buildSeed(now: Date): Meeting[] {
       durationMin: 15,
       recurrence: 'daily',
       invitees: ['dewi@huddle.id', 'raka@huddle.id', 'maya@huddle.id'],
-      hostName: USER_NAME,
+      hostName,
       isHost: true,
     }),
     make('review-desain', {
@@ -74,7 +74,7 @@ export function buildSeed(now: Date): Meeting[] {
       durationMin: 30,
       recurrence: 'none',
       invitees: ['dewi@huddle.id'],
-      hostName: USER_NAME,
+      hostName,
       isHost: true,
     }),
     make('retro', {
@@ -85,7 +85,7 @@ export function buildSeed(now: Date): Meeting[] {
       durationMin: 90,
       recurrence: 'none',
       invitees: ['dewi@huddle.id', 'raka@huddle.id', 'bima@huddle.id', 'sari@huddle.id', 'andi@huddle.id'],
-      hostName: USER_NAME,
+      hostName,
       isHost: true,
     }),
     make('demo-klien', {
@@ -107,7 +107,7 @@ export function buildSeed(now: Date): Meeting[] {
       durationMin: 60,
       recurrence: 'none',
       invitees: ['dewi@huddle.id', 'raka@huddle.id'],
-      hostName: USER_NAME,
+      hostName,
       isHost: true,
     }),
     make('workshop', {

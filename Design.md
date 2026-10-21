@@ -919,3 +919,16 @@ Dashboard, lobby, dan room berjalan di HP (320-430 px, portrait dan landscape) d
 - **Lobby**: preview 44% tinggi, form di bawah, Masuk menempel di tepi bawah.
 - **Room**: bilah bawah berlabel (Mic, Kamera, Reaksi, Chat, Lainnya, Keluar terpisah jarak), bilah atas ringkas (judul + timer, sinyal, jumlah peserta), grid tinggi 6 per halaman dengan swipe dan titik halaman, PiP untuk rapat berdua, share screen di atas baris peserta. Tidak ada auto-hide kontrol di portrait.
 - **Gerak**: lembar masuk dari bawah 420 ms, geser tutup mengikuti jari; reduced motion mematikan animasi masuk. Tier efek default Hemat di HP.
+
+---
+
+## 25. Login [Baru]
+
+Halaman sebelum dashboard (`src/auth/`), mode Operate, standar dan tenang. Dunia visual sama dengan dashboard: mesh ambient pada 50% kekuatan, satu kartu `glass-3` selebar 420 px di tengah, wordmark Huddle di atasnya.
+
+- **Dua jalan, tanpa kata sandi.** "Masuk dengan Google", lalu email dengan dua chip domain (`@dibimbing.id`, `@cakrawala.ac.id`) yang melengkapi nama yang diketik. Email dikirimi kode 6 digit.
+- **Langkah kode.** Satu input asli di atas enam sel gambar (paste dan isi otomatis tetap jalan), kirim otomatis di digit ke-6, berlaku 5 menit, kirim ulang tiap 30 detik, 5 kali salah mengunci 1 menit. Status memakai ikon dan kata, tidak hanya warna.
+- **Aturan domain.** Hanya dua domain itu, dicocokkan persis (subdomain dan nama mirip ditolak). Filter di klien hanya membentuk pesan di form; server wajib memeriksa lagi identitas yang terverifikasi.
+- **Tamu tidak masuk lewat sini.** Tautan rapat (`/abc-defg-hij`) langsung ke lobby; setelah rapat, tamu yang minta Beranda diarahkan ke halaman ini.
+- **Prototype.** Pemilih akun Google dan "kotak surat demo" (kode OTP, tombol Kedaluwarsakan) adalah tiruan bergaya mono putus-putus, seperti Demo Director. Lama sesi (`SESSION_TTL_DAYS`) adalah placeholder untuk diputuskan engineer.
+- **Token baru: tidak ada.** Memakai kontrol bersama `dashboard/ui.module.css` dan menu akun (`Keluar`) di profil Header.

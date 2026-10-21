@@ -7,6 +7,11 @@ import { DemoDirector } from './demo/DemoDirector'
 import { DemoToggle } from './demo/DemoToggle'
 import { useScenarioPlayer } from './demo/useScenarioPlayer'
 import { motion } from 'motion/react'
+import { CurrentUserProvider } from './auth/CurrentUser'
+import { inviteCodeFromPath, inviteTarget } from './auth/inviteEntry'
+import { LoginPage } from './auth/LoginPage'
+import { clearSession, loadSession, saveSession } from './auth/session'
+import type { Session } from './auth/session'
 import { scopedState } from './breakout/rooms'
 import { Dashboard } from './dashboard/Dashboard'
 import type { DashboardView } from './dashboard/Rail'
@@ -38,12 +43,23 @@ function defaultFx() {
   return loadPreferences().fx ?? (window.matchMedia('(max-width: 767px)').matches ? 'lite' : initialRoomState.settings.fx)
 }
 
-export function App() {
+interface AuthedAppProps {
+  /** Null for a guest who arrived by a meeting link */
+  session: Session | null
+  /** The meeting code from the link, opened straight into its lobby */
+  invite: string | null
+  onSignOut: () => void
+  /** A guest finished and asked for the dashboard, which needs a sign-in */
+  onGuestDone: () => void
+}
+
+function AuthedApp({ session, invite, onSignOut, onGuestDone }: AuthedAppProps) {
   const [state, dispatch] = useReducer(roomReducer, initialRoomState, (initial) => ({ ...initial, settings: { ...initial.settings, cameraQuality: loadCameraQuality(), fx: defaultFx() } }))
   const [engine] = useState(() => new VoiceEngine(SELF_ID))
   const [demoOpen, setDemoOpen] = useState(false)
   // the dashboard shows while no room is chosen; the lobby shows once one is; the room once Masuk is pressed
-  const [target, setTarget] = useState<JoinTarget | null>(null)
+  const { meetings, dispatch: meetingDispatch } = useMeetings(session?.name)
+  const [target, setTarget] = useState<JoinTarget | null>(() => (invite ? inviteTarget(invite, meetings, session !== null) : null))
   const [joined, setJoined] = useState<JoinChoice | null>(null)
   const [joinedAt, setJoinedAt] = useState(0)
   // which dashboard page opens next: the end page can point straight at Rekaman
@@ -51,7 +67,6 @@ export function App() {
   // a guest of a meeting with a waiting room sits here, between the lobby and the room, until the host answers
   const [asking, setAsking] = useState<JoinChoice | null>(null)
   const [admission, admissionDispatch] = useReducer(admissionReducer, null)
-  const { meetings, dispatch: meetingDispatch } = useMeetings()
   const player = useScenarioPlayer(dispatch)
   const recordings = useRecordings()
   useRecordingSync(state, target, joined !== null, recordings)
@@ -131,8 +146,15 @@ export function App() {
 
   const stage = joined ? (state.phase === 'live' ? 'room' : 'ended') : asking && admission ? 'waiting' : target ? 'lobby' : 'dashboard'
 
+  // a guest has no dashboard: leaving the meeting flow hands them to the sign-in page
+  const isGuest = session === null
+  useEffect(() => {
+    if (isGuest && stage === 'dashboard') onGuestDone()
+  }, [isGuest, stage, onGuestDone])
+
   return (
     <MotionProvider fx={state.settings.fx} simulateReduced={state.settings.simulateReduced}>
+    <CurrentUserProvider user={session && { name: session.name, email: session.email, signOut: onSignOut }}>
     <VoiceProvider engine={engine}>
       <motion.div key={stage} className={styles.stage} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35, ease: [0.2, 0.8, 0.2, 1] }}>
         {stage === 'room' && <Room state={view} all={state} dispatch={roomDispatch} />}
@@ -165,11 +187,44 @@ export function App() {
             }}
           />
         )}
-        {stage === 'dashboard' && <Dashboard meetings={meetings} dispatch={meetingDispatch} initialView={homeView} onEnter={(t) => { setHomeView('home'); setTarget(t) }} recordings={recordings} settings={state.settings} roomDispatch={dispatch} />}
+        {stage === 'dashboard' && session && <Dashboard meetings={meetings} dispatch={meetingDispatch} initialView={homeView} onEnter={(t) => { setHomeView('home'); setTarget(t) }} recordings={recordings} settings={state.settings} roomDispatch={dispatch} />}
       </motion.div>
       <DemoToggle open={demoOpen} onClick={() => setDemoOpen((o) => !o)} />
       <DemoDirector state={state} dispatch={dispatch} player={player} admission={admission} onAdmission={admissionDispatch} open={demoOpen} onClose={() => setDemoOpen(false)} />
     </VoiceProvider>
+    </CurrentUserProvider>
     </MotionProvider>
   )
+}
+
+/** The front door. A meeting link goes straight to its lobby for anyone; the dashboard needs a company sign-in. */
+export function App() {
+  const [session, setSession] = useState<Session | null>(() => loadSession())
+  const [invite, setInvite] = useState<string | null>(() => inviteCodeFromPath(window.location.pathname))
+
+  const leaveInvite = useCallback(() => {
+    window.history.replaceState(null, '', '/')
+    setInvite(null)
+  }, [])
+
+  const signIn = (next: Session) => {
+    saveSession(next)
+    setSession(next)
+  }
+
+  const signOut = () => {
+    clearSession()
+    setSession(null)
+    leaveInvite()
+  }
+
+  if (!session && !invite) {
+    return (
+      <MotionProvider fx={defaultFx()} simulateReduced={false}>
+        <LoginPage onSignedIn={signIn} />
+      </MotionProvider>
+    )
+  }
+
+  return <AuthedApp key={session?.email ?? 'guest'} session={session} invite={invite} onSignOut={signOut} onGuestDone={leaveInvite} />
 }

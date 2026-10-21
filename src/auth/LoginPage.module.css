@@ -1,0 +1,77 @@
+.screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--ink-950);
+  /* the mesh breathes at a fraction of the room's strength: people spend seconds here, not hours */
+  --fx-scale: 0.5;
+}
+
+.stage {
+  position: relative;
+  z-index: var(--z-stage);
+  display: grid;
+  place-items: center;
+  min-height: 100%;
+  padding: calc(var(--space-8) + var(--safe-top)) max(var(--space-4), var(--safe-left)) calc(var(--space-8) + var(--safe-bottom)) max(var(--space-4), var(--safe-right));
+}
+
+.column { display: grid; justify-items: center; width: min(100%, 420px); }
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-6);
+  font-family: var(--font-display);
+  font-size: 22px;
+  line-height: 28px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+.mark {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--brand-gradient);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--aurora-violet) 70%, transparent);
+}
+
+/* shared by the email step and the code step */
+.card {
+  position: relative;
+  width: 100%;
+  padding: var(--space-8);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  background: var(--glass-tint), var(--glass-3-bg);
+  backdrop-filter: blur(var(--glass-3-blur)) saturate(var(--glass-sat));
+  box-shadow: var(--glass-edge), var(--glass-shadow);
+  animation: rise var(--dur-slow) var(--ease-out);
+}
+.screen[data-fx='off'] .card { background: var(--ink-800); backdrop-filter: none; }
+
+.title { margin: 0; font-family: var(--font-display); font-size: 26px; line-height: 34px; font-weight: 700; letter-spacing: -0.015em; text-wrap: balance; }
+.lead { margin: var(--space-2) 0 var(--space-6); color: var(--text-2); font-size: 14px; line-height: 21px; }
+
+.block { width: 100%; }
+
+.guest { max-width: 34ch; margin: var(--space-6) 0 0; color: var(--text-3); font-size: 12px; line-height: 18px; text-align: center; text-wrap: balance; }
+
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } }
+
+@media (prefers-reduced-transparency: reduce) {
+  .card { background: var(--ink-800); backdrop-filter: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card { animation: none; }
+}
+
+@media (max-width: 767px) {
+  .stage { align-items: start; padding-top: calc(var(--space-6) + var(--safe-top)); }
+  .card { padding: var(--space-6); border-radius: var(--radius-lg); }
+  .title { font-size: 22px; line-height: 30px; }
+  .brand { margin-bottom: var(--space-5); }
+}
