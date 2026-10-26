@@ -217,8 +217,10 @@ export function Room({ state, all, dispatch }: RoomProps) {
       camOn={self.camOn}
       palette={self.palette}
       devices={devices}
+      background={state.settings.background}
       weakConnection={self.connection !== 'good'}
       phone={phone}
+      onBackground={(background) => dispatch({ type: 'setBackground', background })}
       onQuality={(quality) => dispatch({ type: 'setCameraQuality', quality })}
       onDevice={(id) => dispatch({ type: 'setDevice', kind: 'camera', id })}
       onFlip={() => dispatch({ type: 'flipCamera' })}
@@ -289,6 +291,7 @@ export function Room({ state, all, dispatch }: RoomProps) {
         gridPage={paging.page}
         soundPlayers={soundboard.players}
         cameraQuality={state.settings.cameraQuality}
+        background={state.settings.background}
         layoutSettings={layoutSettings}
         dispatch={dispatch}
         phone={phone}

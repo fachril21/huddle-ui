@@ -8,15 +8,26 @@
   background: var(--ink-950);
 }
 
+/* mirror on the left, panel beside it: nothing sits on top of the picture */
 .frame {
   position: absolute;
   inset: 0;
   z-index: var(--z-stage);
   padding: var(--frame-gap);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--panel-w);
+  gap: var(--space-6);
+  container-type: size;
 }
 
-/* the stage is the screen; the panel floats on top of its right edge */
-.stageWrap { position: relative; width: 100%; height: 100%; }
+/* the whole picture, never cropped: a 16:9 box as large as the column allows, centred */
+.stageWrap {
+  position: relative;
+  justify-self: center;
+  align-self: center;
+  width: min(100%, calc(100cqh * 16 / 9));
+  aspect-ratio: 16 / 9;
+}
 
 .brand {
   position: absolute;
@@ -57,12 +68,11 @@
 }
 
 .panel {
-  position: absolute;
-  top: calc(var(--frame-gap) + var(--space-4));
-  right: calc(var(--frame-gap) + var(--space-4));
-  bottom: calc(var(--frame-gap) + var(--space-4));
+  position: relative;
   z-index: var(--z-chrome);
-  width: var(--panel-w);
+  align-self: stretch;
+  min-width: 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
@@ -168,13 +178,11 @@
 .checksToggle:focus-visible { box-shadow: var(--focus-ring); border-radius: var(--radius-sm); }
 .checks ul[hidden] { display: none; }
 
-.screen { --panel-offset: calc(var(--panel-w) + var(--space-8)); }
-
-/* phone portrait: the mirror on top, the form below it, Masuk always reachable */
-@media (max-width: 767px) {
-  .screen { --panel-offset: 0px; display: flex; flex-direction: column; }
-  .frame { position: relative; inset: auto; display: flex; flex: 1; flex-direction: column; min-height: 0; padding: 0; }
-  .stageWrap { flex: none; height: min(44dvh, 420px); padding-top: var(--demo-strip); }
+/* phone portrait and tablet portrait: the mirror on top, the form below it, Masuk always reachable */
+@media (max-width: 767px), (max-width: 1099px) and (orientation: portrait) {
+  .screen { display: flex; flex-direction: column; }
+  .frame { position: relative; inset: auto; display: flex; flex: 1; flex-direction: column; min-height: 0; padding: 0; container-type: normal; }
+  .stageWrap { flex: none; align-self: stretch; width: auto; aspect-ratio: auto; height: min(44dvh, 420px); padding-top: var(--demo-strip); }
   .stageWrap > div:first-child { border-radius: 0 0 var(--radius-xl) var(--radius-xl); }
   .brand { top: calc(var(--safe-top) + var(--demo-strip) + var(--space-3)); left: max(var(--space-4), var(--safe-left)); }
   .back { height: var(--tap); padding: 0 var(--space-4); font-size: 13px; }

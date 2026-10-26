@@ -60,8 +60,14 @@ describe('device actions', () => {
 
   it('starts the room on the devices chosen in the lobby', () => {
     const devices = { cameraId: 'c', micId: 'm', speakerId: 's', facing: 'environment' as const }
-    const state = run(createInitialState(), { type: 'joinRoom', name: 'Sari', micOn: true, camOn: true, quality: 'mid', devices })
+    const state = run(createInitialState(), { type: 'joinRoom', name: 'Sari', micOn: true, camOn: true, quality: 'mid', devices, background: { mode: 'blur', level: 2 } })
     expect(state.settings.devices).toEqual(devices)
+    expect(state.settings.background).toEqual({ mode: 'blur', level: 2 })
+  })
+
+  it('changes the background from the camera menu', () => {
+    const state = run(createInitialState(), { type: 'setBackground', background: { mode: 'image', id: 'kafe' } })
+    expect(state.settings.background).toEqual({ mode: 'image', id: 'kafe' })
   })
 
   it('keeps the chosen devices through "Mulai ulang demo"', () => {

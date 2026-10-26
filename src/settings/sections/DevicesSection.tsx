@@ -1,3 +1,5 @@
+import { BackgroundPicker } from '../../background/BackgroundPicker'
+import { useCustomBackground } from '../../background/useCustomBackground'
 import { CAMERA_QUALITIES } from '../../room/cameraQuality'
 import type { CameraQuality } from '../../room/cameraQuality'
 import { DeviceField } from '../../room/devices/DeviceField'
@@ -19,6 +21,7 @@ const SPEAKER_PICK = typeof HTMLMediaElement !== 'undefined' && 'setSinkId' in H
 /** The devices the lobby starts on. They can still be changed for a single meeting. */
 export function DevicesSection({ prefs, quality, onPrefs, onQuality }: DevicesSectionProps) {
   const { devices, namesHidden, blocked, reveal } = useDeviceList()
+  const custom = useCustomBackground()
   const nothing = devices.cameras.length === 0 && devices.mics.length === 0
   const hint = CAMERA_QUALITIES.find((q) => q.id === quality)
 
@@ -58,6 +61,9 @@ export function DevicesSection({ prefs, quality, onPrefs, onQuality }: DevicesSe
           <span className={styles.static}>Bawaan sistem</span>
         </SettingRow>
       )}
+      <SettingRow label="Latar" description="Dipakai sebagai awal di lobby. Pratinjau langsung ada di lobby dan di menu kamera saat rapat." wide>
+        <BackgroundPicker choice={prefs.background} onChange={(background) => onPrefs({ background })} custom={custom} />
+      </SettingRow>
       <SettingRow label="Kualitas kamera" description={hint ? `${hint.resolution} · ${hint.fps} fps · ${hint.bitrate}. ${hint.hint}` : undefined} wide>
         <Segmented
           label="Kualitas kamera"

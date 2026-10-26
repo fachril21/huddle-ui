@@ -1,4 +1,5 @@
 import { ALL_PARTICIPANTS, VISIBLE_COUNT } from '../demo/participants'
+import { NO_BACKGROUND } from '../background/backgrounds'
 import { DEFAULT_CAMERA_QUALITY } from '../room/cameraQuality'
 import { DEFAULT_DEVICES } from '../room/devices/deviceSettings'
 import type { BreakoutOptions, BreakoutState, ChatMessage, RoomState, Settings, VoiceSource } from './types'
@@ -15,7 +16,7 @@ const SEED_CHAT: readonly ChatMessage[] = [
   { id: 3, fromId: 'dewi', toId: 'anda', text: '@Anda boleh tolong ingatkan tim soal agenda rilis nanti?', at: -45 },
 ]
 
-export const DEFAULT_SETTINGS: Settings = { fx: 'full', cameraQuality: DEFAULT_CAMERA_QUALITY, devices: DEFAULT_DEVICES, layout: { mode: 'gallery', pinnedId: null, hideNoVideo: false }, simulateReduced: false }
+export const DEFAULT_SETTINGS: Settings = { fx: 'full', cameraQuality: DEFAULT_CAMERA_QUALITY, devices: DEFAULT_DEVICES, background: NO_BACKGROUND, layout: { mode: 'gallery', pinnedId: null, hideNoVideo: false }, simulateReduced: false }
 
 export const DEFAULT_BREAKOUT_OPTIONS: BreakoutOptions = { autoMove: false, allowReturn: true, autoCloseMin: null, showTimer: true }
 

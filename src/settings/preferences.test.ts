@@ -20,4 +20,11 @@ describe('parsePreferences', () => {
   it('ignores an effects tier it does not know', () => {
     expect(parsePreferences(JSON.stringify({ fx: 'ultra' })).fx).toBeNull()
   })
+
+  it('remembers the background and falls back to none for anything else', () => {
+    expect(parsePreferences(JSON.stringify({ background: { mode: 'blur', level: 3 } })).background).toEqual({ mode: 'blur', level: 3 })
+    expect(parsePreferences(JSON.stringify({ background: { mode: 'image', id: 'kafe' } })).background).toEqual({ mode: 'image', id: 'kafe' })
+    expect(parsePreferences(JSON.stringify({ background: 'blur' })).background).toEqual({ mode: 'none' })
+    expect(parsePreferences(JSON.stringify({ cameraId: 'x' })).background).toEqual({ mode: 'none' })
+  })
 })

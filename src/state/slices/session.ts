@@ -123,8 +123,10 @@ export const sessionSlice: Slice = (state, action) => {
       return createInitialState(state.settings)
     case 'joinRoom': {
       const joined = mapParticipant(state, SELF_ID, (p) => ({ ...p, name: action.name, micOn: action.micOn, camOn: action.camOn }))
-      return { ...joined, settings: { ...joined.settings, cameraQuality: action.quality, devices: action.devices } }
+      return { ...joined, settings: { ...joined.settings, cameraQuality: action.quality, devices: action.devices, background: action.background } }
     }
+    case 'setBackground':
+      return { ...state, settings: { ...state.settings, background: action.background } }
     case 'setFx':
       return { ...state, settings: { ...state.settings, fx: action.fx } }
     case 'setCameraQuality':

@@ -1,5 +1,5 @@
 import { VideoOff } from 'lucide-react'
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { MediaStatus } from '../../prejoin/mediaState'
 import type { PaletteName } from '../../state/types'
 import styles from './DevicePopover.module.css'
@@ -14,23 +14,30 @@ interface CameraPreviewProps {
   onTurnOn: () => void
 }
 
-/** "1280×720" as the camera really delivers it, or null while no frames flow. */
-function deliveredSize(stream: MediaStream | null): string | null {
-  const { width, height } = stream?.getVideoTracks()[0]?.getSettings() ?? {}
-  return width && height ? `${width}×${height}` : null
+/** "1280×720" as the picture really arrives on screen, or null while no frames flow. */
+function shownSize(video: HTMLVideoElement): string | null {
+  return video.videoWidth && video.videoHeight ? `${video.videoWidth}×${video.videoHeight}` : null
 }
 
 /** Live picture from the chosen camera. Off means no stream at all, so the camera light stays dark. */
 export function CameraPreview({ stream, camOn, status, palette, mirrored, onTurnOn }: CameraPreviewProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const showVideo = camOn && status === 'granted' && stream !== null
-  const size = useMemo(() => deliveredSize(stream), [stream])
+  const [size, setSize] = useState<string | null>(null)
 
   useEffect(() => {
     const video = videoRef.current
     if (!video) return
+    const update = () => setSize(shownSize(video))
+    video.addEventListener('loadedmetadata', update)
+    video.addEventListener('resize', update)
     video.srcObject = stream
     if (stream) void video.play().catch(() => undefined)
+    update()
+    return () => {
+      video.removeEventListener('loadedmetadata', update)
+      video.removeEventListener('resize', update)
+    }
   }, [stream, showVideo])
 
   return (

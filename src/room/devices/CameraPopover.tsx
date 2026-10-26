@@ -1,5 +1,8 @@
 import { SwitchCamera } from 'lucide-react'
 import { motion } from 'motion/react'
+import { BackgroundPicker } from '../../background/BackgroundPicker'
+import type { BackgroundChoice } from '../../background/backgrounds'
+import { useBackground } from '../../background/useBackground'
 import { CAMERA_QUALITIES, qualityOption } from '../cameraQuality'
 import type { CameraQuality } from '../cameraQuality'
 import { useMediaPreview } from '../../prejoin/useMediaPreview'
@@ -15,12 +18,14 @@ interface CameraPopoverProps {
   camOn: boolean
   palette: PaletteName
   devices: DeviceSettings
+  background: BackgroundChoice
   /** Own connection is poor or reconnecting */
   weakConnection: boolean
   /** Phones get a front/back switch */
   phone: boolean
   onQuality: (quality: CameraQuality) => void
   onDevice: (id: string) => void
+  onBackground: (background: BackgroundChoice) => void
   onFlip: () => void
   onTurnOn: () => void
 }
@@ -29,8 +34,9 @@ interface CameraPopoverProps {
  * Camera settings next to the camera button: a live picture, which camera to use, and how sharp (and how heavy)
  * the outgoing video is. The picture only runs while the camera is on in the meeting.
  */
-export function CameraPopover({ quality, camOn, palette, devices, weakConnection, phone, onQuality, onDevice, onFlip, onTurnOn }: CameraPopoverProps) {
+export function CameraPopover({ quality, camOn, palette, devices, background, weakConnection, phone, onQuality, onDevice, onBackground, onFlip, onTurnOn }: CameraPopoverProps) {
   const media = useMediaPreview({ camOn, micOn: false, quality, cameraId: devices.cameraId, micId: '', facing: devices.facing })
+  const backdrop = useBackground(media.videoStream, background)
   const { cameras } = media.devices
   useDeviceFallback(devices.cameraId, cameras, () => onDevice(''))
   const current = qualityOption(quality)
@@ -47,7 +53,7 @@ export function CameraPopover({ quality, camOn, palette, devices, weakConnection
     >
       <section className={styles.group} aria-labelledby="cam-device-title">
         <h2 id="cam-device-title">Kamera</h2>
-        <CameraPreview stream={media.videoStream} camOn={camOn} status={media.cameraStatus} palette={palette} mirrored={devices.facing === 'user' || devices.cameraId !== ''} onTurnOn={onTurnOn} />
+        <CameraPreview stream={backdrop.stream} camOn={camOn} status={media.cameraStatus} palette={palette} mirrored={devices.facing === 'user' || devices.cameraId !== ''} onTurnOn={onTurnOn} />
         <DeviceField label="Pilih kamera" options={cameras} value={devices.cameraId} onChange={onDevice} />
         {phone && cameras.length > 1 && (
           <button type="button" className={styles.pill} data-quiet="true" data-self="start" onClick={onFlip}>
@@ -56,6 +62,11 @@ export function CameraPopover({ quality, camOn, palette, devices, weakConnection
           </button>
         )}
         {camOn && <DeviceIssue status={media.cameraStatus} onRetry={() => media.retry('camera')} />}
+      </section>
+
+      <section className={styles.group} aria-labelledby="cam-background-title">
+        <h3 id="cam-background-title">Latar</h3>
+        <BackgroundPicker choice={background} onChange={onBackground} custom={backdrop.custom} status={backdrop.status} failure={backdrop.failure} camOn={camOn} />
       </section>
 
       <section className={styles.group} aria-labelledby="cam-quality-title">

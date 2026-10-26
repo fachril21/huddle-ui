@@ -1,6 +1,7 @@
 import { ArrowLeft, CalendarClock, CircleCheck, Hourglass, Lock, Send, TimerOff, UserX } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import { useBackground } from '../background/useBackground'
 import { useNow } from '../dashboard/useNow'
 import type { JoinTarget } from '../dashboard/types'
 import type { JoinChoice } from '../prejoin/PreJoin'
@@ -55,6 +56,7 @@ export function WaitingRoom({ meeting, choice, admission, onEnter, onTick, onAsk
   const { cameraId, micId, facing } = choice.devices
   const media = useMediaPreview({ camOn, micOn, quality: choice.cameraQuality, cameraId, micId, facing })
   const mic = useMicLevel(media.audioStream)
+  const backdrop = useBackground(media.videoStream, choice.background)
 
   const { status, since } = admission
   const pending = isPending(status)
@@ -87,7 +89,7 @@ export function WaitingRoom({ meeting, choice, admission, onEnter, onTick, onAsk
       <Ambient />
       <main className={prejoin.frame}>
         <div className={prejoin.stageWrap}>
-          <PreviewStage videoStream={media.videoStream} camOn={camOn} cameraStatus={media.cameraStatus} micOn={micOn} name={choice.name} mic={mic} mirrored={facing === 'user'} />
+          <PreviewStage videoStream={backdrop.stream} camOn={camOn} cameraStatus={media.cameraStatus} micOn={micOn} name={choice.name} mic={mic} mirrored={facing === 'user'} />
           <div className={styles.halo} aria-hidden="true" />
           <div className={prejoin.brand}>
             <span className={prejoin.wordmark}>Huddle</span>

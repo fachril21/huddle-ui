@@ -68,7 +68,7 @@
 }
 
 /* phone: the mirror on top, the status under it, the way out pinned to the bottom edge */
-@media (max-width: 767px) {
+@media (max-width: 767px), (max-width: 1099px) and (orientation: portrait) {
   .screen .halo { border-radius: 0 0 var(--radius-xl) var(--radius-xl); }
   .screen .card {
     position: relative;

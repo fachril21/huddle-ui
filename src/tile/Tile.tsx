@@ -2,6 +2,7 @@ import { MicOff, Pin, PinOff } from 'lucide-react'
 import type { Participant } from '../state/types'
 import { useFx } from '../room/MotionContext'
 import { useTileRegistration } from '../voice/VoiceContext'
+import type { BackgroundChoice } from '../background/backgrounds'
 import type { CameraQuality } from '../room/cameraQuality'
 import { Aurora } from './Aurora'
 import { Avatar } from './Avatar'
@@ -29,6 +30,8 @@ interface TileProps {
   soundPlaying: boolean
   /** Outgoing camera quality; only passed for the user's own tile */
   cameraQuality?: CameraQuality
+  /** Only set on the user's own tile */
+  background?: BackgroundChoice
   /** Sorotan: this person is the pinned one */
   pinned?: boolean
   /** Toggles the pin; omitted while sharing a screen */
@@ -36,7 +39,7 @@ interface TileProps {
 }
 
 /** Participant card. Layer order follows Design.md 7.1: base, media, aurora/glow, neon, overlays, label. */
-export function Tile({ participant, tileW, tileH, lit, dominant, mutedSpeaking, isSelf, offer, compact, soundPlaying, cameraQuality, pinned = false, onPin }: TileProps) {
+export function Tile({ participant, tileW, tileH, lit, dominant, mutedSpeaking, isSelf, offer, compact, soundPlaying, cameraQuality, background, pinned = false, onPin }: TileProps) {
   const { id, name, palette, camOn, micOn, status } = participant
   const registerTile = useTileRegistration(id)
   const { fx } = useFx()
@@ -61,7 +64,7 @@ export function Tile({ participant, tileW, tileH, lit, dominant, mutedSpeaking, 
       <div className={styles.media}>
         {camOn || (softGlow && !showAurora) ? (
           <>
-            {camOn && <VideoPlaceholder quality={cameraQuality} />}
+            {camOn && <VideoPlaceholder quality={cameraQuality} background={background} />}
             {lit && <div className={styles.glowIn} aria-hidden="true" />}
             {!camOn && <Avatar name={name} />}
           </>

@@ -16,6 +16,14 @@
   will-change: transform;
 }
 
+/* the chosen picture sits behind the silhouette, like a virtual background */
+.scene { position: absolute; inset: 0; background-position: center; background-size: cover; }
+
+/* a blurred room: the wash softens, the silhouette stays sharp */
+.video[data-blur] .wash { filter: blur(10px); }
+.video[data-blur='1'] .wash { filter: blur(5px); }
+.video[data-blur='3'] .wash { filter: blur(16px); }
+
 .figure {
   position: absolute;
   left: 50%;

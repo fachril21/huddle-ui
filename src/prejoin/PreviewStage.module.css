@@ -27,12 +27,12 @@
   inset: 0;
 }
 
-.auroraArea { position: absolute; inset: 0 var(--panel-offset, 392px) 0 0; }
+.auroraArea { position: absolute; inset: 0; }
 
 .avatar {
   --size: clamp(96px, 22cqh, 168px);
   position: absolute;
-  left: calc((100% - var(--panel-offset, 392px)) / 2);
+  left: 50%;
   top: 46%;
   width: var(--size);
   height: var(--size);
@@ -62,7 +62,7 @@
 
 .caption {
   position: absolute;
-  left: calc((100% - var(--panel-offset, 392px)) / 2);
+  left: 50%;
   top: calc(46% + clamp(48px, 11cqh, 84px) + 24px);
   transform: translateX(-50%);
   margin: 0;

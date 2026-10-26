@@ -1,6 +1,8 @@
 import { ArrowLeft, ChevronDown, Mic, Video, Volume2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
+import type { BackgroundChoice } from '../background/backgrounds'
+import { useBackground } from '../background/useBackground'
 import type { JoinTarget } from '../dashboard/types'
 import { useKeyboardInset, useViewport } from '../mobile/useViewport'
 import { CAMERA_QUALITIES, loadCameraQuality } from '../room/cameraQuality'
@@ -9,6 +11,7 @@ import type { DeviceSettings } from '../room/devices/deviceSettings'
 import { Ambient } from '../room/Ambient'
 import { useFx } from '../room/MotionContext'
 import { canPickSpeaker } from './audioTests'
+import { BackgroundSection } from './BackgroundSection'
 import { CheckRow } from './CheckRow'
 import { MicTest, SpeakerTest } from './DeviceTests'
 import { loadPreferences } from '../settings/preferences'
@@ -31,6 +34,8 @@ export interface JoinChoice {
   readonly cameraQuality: CameraQuality
   /** The devices picked in the lobby, so the room starts on the same ones */
   readonly devices: DeviceSettings
+  /** What sits behind the person; the room starts with the same one */
+  readonly background: BackgroundChoice
 }
 
 /** The lobby: a full-screen mirror with a glass panel to check devices, name yourself, and enter. */
@@ -46,6 +51,7 @@ export function PreJoin({ meeting, onJoin, onBack }: { meeting: JoinTarget; onJo
   const [micId, setMicId] = useState(() => loadPreferences().micId)
   const [speakerId, setSpeakerId] = useState(() => loadPreferences().speakerId)
   const [speakerHeard, setSpeakerHeard] = useState(false)
+  const [background, setBackground] = useState<BackgroundChoice>(() => loadPreferences().background)
   // phone only: front or back camera, and whether the device checklist is unfolded (null = follow whether anything needs attention)
   const [facing, setFacing] = useState<'user' | 'environment'>('user')
   const [checksOpen, setChecksOpen] = useState<boolean | null>(null)
@@ -56,6 +62,7 @@ export function PreJoin({ meeting, onJoin, onBack }: { meeting: JoinTarget; onJo
 
   const media = useMediaPreview({ camOn, micOn, quality, cameraId, micId, facing })
   const mic = useMicLevel(media.audioStream)
+  const backdrop = useBackground(media.videoStream, background)
   const { cameras, mics, speakers } = media.devices
 
   const nameOk = isValidName(name)
@@ -105,6 +112,7 @@ export function PreJoin({ meeting, onJoin, onBack }: { meeting: JoinTarget; onJo
       camOn: camOn && media.cameraStatus === 'granted',
       cameraQuality: quality,
       devices: { cameraId, micId, speakerId, facing },
+      background: backdrop.applied,
     })
   }
 
@@ -133,7 +141,7 @@ export function PreJoin({ meeting, onJoin, onBack }: { meeting: JoinTarget; onJo
       <Ambient />
       <main className={styles.frame}>
         <div className={styles.stageWrap}>
-          <PreviewStage videoStream={media.videoStream} camOn={camOn} cameraStatus={media.cameraStatus} micOn={micOn} name={name} mic={mic} mirrored={facing === 'user'} />
+          <PreviewStage videoStream={backdrop.stream} camOn={camOn} cameraStatus={media.cameraStatus} micOn={micOn} name={name} mic={mic} mirrored={facing === 'user'} />
           <div className={styles.brand}>
             <span className={styles.wordmark}>Huddle</span>
             <button type="button" className={styles.back} onClick={onBack}>
@@ -251,6 +259,8 @@ export function PreJoin({ meeting, onJoin, onBack }: { meeting: JoinTarget; onJo
               </CheckRow>
             </ul>
           </section>
+
+          <BackgroundSection choice={background} onChange={setBackground} background={backdrop} camOn={camOn} />
 
           <div className={styles.cta}>
             {needsAttention && <p className={styles.soft}>Perangkat bisa diatur nanti. Anda tetap bisa masuk dulu.</p>}

@@ -1,0 +1,159 @@
+.picker { display: grid; gap: var(--space-3); width: 100%; min-width: 0; }
+
+/* one idiom for every choice: a real radio hidden inside its label, the label draws the state */
+.mode input,
+.level input,
+.tile input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.modes { display: flex; gap: var(--space-1); padding: 3px; border-radius: var(--radius-lg); background: var(--hairline); }
+.mode {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 52px;
+  padding: var(--space-2) var(--space-1);
+  border-radius: calc(var(--radius-lg) - 3px);
+  color: var(--text-2);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.mode:hover { color: var(--text-1); }
+.mode:has(input:checked) { background: var(--primary); color: var(--on-primary); }
+.mode:has(input:focus-visible) { box-shadow: var(--focus-ring); }
+
+.levels { display: flex; gap: var(--space-1); }
+.level {
+  position: relative;
+  display: grid;
+  flex: 1;
+  place-items: center;
+  min-height: 36px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  background: var(--veil-hover);
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 600;
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+}
+.level:hover { background: var(--veil-press); color: var(--text-1); }
+.level:has(input:checked) { border-color: var(--aurora-cyan); background: color-mix(in srgb, var(--aurora-cyan) 16%, transparent); color: var(--text-1); }
+.level:has(input:focus-visible) { box-shadow: var(--focus-ring); }
+
+.grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--space-2); }
+.tile {
+  position: relative;
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+  border-radius: var(--radius-md);
+  color: var(--text-2);
+}
+.thumb {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  box-shadow: 0 0 0 1px var(--glass-border), 0 2px 6px var(--shadow-ink);
+  transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+}
+.thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.name { overflow: hidden; font-size: 11px; line-height: 16px; font-weight: 600; text-align: center; text-overflow: ellipsis; white-space: nowrap; }
+.tile:hover .thumb { transform: translateY(-1px); box-shadow: 0 0 0 1px var(--text-3), 0 6px 12px var(--shadow-ink); }
+.tile:has(input:checked) { color: var(--text-1); }
+.tile:has(input:checked) .thumb { box-shadow: 0 0 0 2px var(--ink-900), 0 0 0 4px var(--aurora-cyan); }
+.tile:has(input:focus-visible) .thumb { box-shadow: 0 0 0 2px var(--ink-900), var(--focus-ring); }
+
+.tick {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  display: none;
+  box-sizing: content-box;
+  padding: 3px;
+  border-radius: 50%;
+  background: var(--aurora-cyan);
+  color: var(--on-aurora);
+}
+.tile:has(input:checked) .tick { display: block; }
+
+.upload { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.file { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.uploadButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 var(--space-4);
+  border: 1px dashed var(--text-3);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-1);
+  font-size: 12px;
+  font-weight: 600;
+  transition: background-color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+}
+.uploadButton:hover:not(:disabled) { border-color: var(--text-1); background: var(--veil-hover); }
+.uploadButton:focus-visible { box-shadow: var(--focus-ring); }
+.uploadButton:disabled { color: var(--text-2); cursor: progress; }
+
+.linkButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 28px;
+  padding: 0 var(--space-2);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-1);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.linkButton:hover { color: var(--aurora-cyan); }
+.linkButton:focus-visible { box-shadow: var(--focus-ring); }
+
+.hint { margin: 0; color: var(--text-2); font-size: 12px; line-height: 18px; }
+.error { margin: 0; color: var(--warning); font-size: 12px; line-height: 18px; }
+
+.status { display: flex; flex-wrap: wrap; align-items: center; gap: 6px var(--space-2); min-height: 18px; color: var(--text-2); font-size: 12px; line-height: 18px; }
+.status:empty { display: none; }
+.status svg { flex: none; color: var(--success); }
+.status[data-tone='warn'] { color: var(--text-1); }
+
+.spin { animation: spin 1s linear infinite; color: var(--text-2); }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .mode,
+  .level,
+  .thumb,
+  .uploadButton { transition: none; }
+  .tile:hover .thumb { transform: none; }
+  .spin { animation: none; }
+}
+
+@media (pointer: coarse) {
+  .level,
+  .uploadButton { min-height: var(--tap); }
+  .linkButton { min-height: var(--tap); }
+  .name { font-size: 12px; }
+}

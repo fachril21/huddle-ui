@@ -1,3 +1,4 @@
+import type { BackgroundChoice } from '../background/backgrounds'
 import type { CameraQuality } from '../room/cameraQuality'
 import type { DeviceKind, DeviceSettings } from '../room/devices/deviceSettings'
 import type {
@@ -117,7 +118,8 @@ export type RoomAction =
   | { type: 'setCameraQuality'; quality: CameraQuality }
   | { type: 'setDevice'; kind: DeviceKind; id: string }
   | { type: 'flipCamera' }
-  | { type: 'joinRoom'; name: string; micOn: boolean; camOn: boolean; quality: CameraQuality; devices: DeviceSettings }
+  | { type: 'setBackground'; background: BackgroundChoice }
+  | { type: 'joinRoom'; name: string; micOn: boolean; camOn: boolean; quality: CameraQuality; devices: DeviceSettings; background: BackgroundChoice }
   | { type: 'setLayoutMode'; mode: LayoutMode }
   | { type: 'pinParticipant'; id: string | null }
   | { type: 'setHideNoVideo'; on: boolean }

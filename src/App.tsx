@@ -109,7 +109,7 @@ function AuthedApp({ session, invite, onSignOut, onGuestDone }: AuthedAppProps) 
   }, [])
 
   const join = (choice: JoinChoice) => {
-    dispatch({ type: 'joinRoom', name: choice.name, micOn: choice.micOn, camOn: choice.camOn, quality: choice.cameraQuality, devices: choice.devices })
+    dispatch({ type: 'joinRoom', name: choice.name, micOn: choice.micOn, camOn: choice.camOn, quality: choice.cameraQuality, devices: choice.devices, background: choice.background })
     setAsking(null)
     admissionDispatch({ type: 'cancel' })
     setJoinedAt(performance.now())

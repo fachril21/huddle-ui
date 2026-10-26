@@ -3,6 +3,7 @@ import { AnimatePresence, animate, motion, useMotionValue } from 'motion/react'
 import { useMemo, useRef, useState } from 'react'
 import type { Dispatch, KeyboardEvent } from 'react'
 import type { RoomAction } from '../state/roomReducer'
+import type { BackgroundChoice } from '../background/backgrounds'
 import type { CameraQuality } from './cameraQuality'
 import { SELF_ID } from '../state/types'
 import type { HighFiveOffer, LayoutSettings, Participant } from '../state/types'
@@ -29,6 +30,8 @@ interface TileGridProps {
   soundPlayers: ReadonlySet<string>
   /** Outgoing camera quality, shown on the user's own tile */
   cameraQuality: CameraQuality
+  /** Behind the user's own picture */
+  background: BackgroundChoice
   layoutSettings: LayoutSettings
   dispatch: Dispatch<RoomAction>
   /** Upright phone: tall layouts, swipe between pages, no drag-to-reorder */
@@ -49,7 +52,7 @@ const TILE_RADIUS = 20
  * Positions every tile absolutely from computed rectangles. The same elements stay mounted when the layout
  * switches between grid and share-screen, so Motion can animate each box (FLIP) without reloading anything.
  */
-export function TileGrid({ participants, offers, sharerId, gridPage, soundPlayers, cameraQuality, layoutSettings, dispatch, phone = false, onGridPage, speakingElsewhere = false }: TileGridProps) {
+export function TileGrid({ participants, offers, sharerId, gridPage, soundPlayers, cameraQuality, background, layoutSettings, dispatch, phone = false, onGridPage, speakingElsewhere = false }: TileGridProps) {
   const [stageRef, size] = useElementSize<HTMLDivElement>()
   const reduced = useReducedMotion()
   const voice = useVoiceSnapshot()
@@ -218,6 +221,7 @@ export function TileGrid({ participants, offers, sharerId, gridPage, soundPlayer
                   compact={rect.h < 160}
                   soundPlaying={soundPlayers.has(p.id)}
                   cameraQuality={p.id === SELF_ID ? cameraQuality : undefined}
+                  background={p.id === SELF_ID ? background : undefined}
                   pinned={mode === 'spotlight' && pinnedId === p.id}
                   onPin={sharerId || (coarse && mode !== 'spotlight') ? undefined : () => dispatch({ type: 'pinParticipant', id: mode === 'spotlight' && pinnedId === p.id ? null : p.id })}
                 />

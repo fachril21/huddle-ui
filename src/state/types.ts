@@ -1,3 +1,4 @@
+import type { BackgroundChoice } from '../background/backgrounds'
 import type { CameraQuality } from '../room/cameraQuality'
 import type { DeviceSettings } from '../room/devices/deviceSettings'
 
@@ -277,6 +278,8 @@ export interface Settings {
   readonly cameraQuality: CameraQuality
   /** Chosen camera, microphone and speaker; empty ids follow the system default */
   readonly devices: DeviceSettings
+  /** What sits behind the person on camera */
+  readonly background: BackgroundChoice
   readonly layout: LayoutSettings
   readonly simulateReduced: boolean
 }

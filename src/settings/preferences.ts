@@ -1,3 +1,5 @@
+import { NO_BACKGROUND, parseBackground } from '../background/backgrounds'
+import type { BackgroundChoice } from '../background/backgrounds'
 import type { FxTier } from '../state/types'
 
 const STORAGE_KEY = 'huddle.preferences.v1'
@@ -13,6 +15,8 @@ export interface Preferences {
   readonly expiryReminder: boolean
   /** Short sounds for room events: someone joins, a message arrives */
   readonly notifySounds: boolean
+  /** What the lobby starts with behind the person */
+  readonly background: BackgroundChoice
 }
 
 export const DEFAULT_PREFERENCES: Preferences = {
@@ -22,6 +26,7 @@ export const DEFAULT_PREFERENCES: Preferences = {
   speakerId: '',
   expiryReminder: true,
   notifySounds: true,
+  background: NO_BACKGROUND,
 }
 
 const FX_TIERS: readonly FxTier[] = ['full', 'lite', 'off']
@@ -42,6 +47,7 @@ export function parsePreferences(json: string | null): Preferences {
       speakerId: text(d.speakerId, ''),
       expiryReminder: flag(d.expiryReminder, DEFAULT_PREFERENCES.expiryReminder),
       notifySounds: flag(d.notifySounds, DEFAULT_PREFERENCES.notifySounds),
+      background: parseBackground(d.background),
     }
   } catch {
     return DEFAULT_PREFERENCES

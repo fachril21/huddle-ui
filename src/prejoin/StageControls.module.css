@@ -1,6 +1,6 @@
 .wrap {
   position: absolute;
-  left: calc((100% - var(--panel-offset, 392px)) / 2);
+  left: 50%;
   bottom: var(--space-6);
   transform: translateX(-50%);
   z-index: var(--z-chrome);

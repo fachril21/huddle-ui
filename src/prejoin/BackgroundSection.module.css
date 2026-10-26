@@ -1,0 +1,32 @@
+.section { display: grid; gap: var(--space-3); }
+
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 36px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+.toggle h2 { margin: 0; flex: 1; font-family: var(--font-display); font-size: 15px; line-height: 20px; font-weight: 600; }
+.toggle:focus-visible { box-shadow: var(--focus-ring); border-radius: var(--radius-sm); }
+
+.summary { font-size: 12px; line-height: 16px; font-weight: 600; color: var(--text-2); }
+.summary[data-on] { color: var(--aurora-cyan); }
+
+.chevron { color: var(--text-2); transition: transform var(--dur-base) var(--ease-out); }
+.toggle[aria-expanded='true'] .chevron { transform: rotate(180deg); }
+
+.body[hidden] { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .chevron { transition: none; }
+}
+
+@media (pointer: coarse) {
+  .toggle { min-height: var(--tap); }
+}
