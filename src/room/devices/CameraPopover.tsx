@@ -1,14 +1,11 @@
-import { SwitchCamera } from 'lucide-react'
 import { motion } from 'motion/react'
-import { BackgroundPicker } from '../../background/BackgroundPicker'
 import type { BackgroundChoice } from '../../background/backgrounds'
 import { useBackground } from '../../background/useBackground'
-import { CAMERA_QUALITIES, qualityOption } from '../cameraQuality'
 import type { CameraQuality } from '../cameraQuality'
 import { useMediaPreview } from '../../prejoin/useMediaPreview'
 import type { PaletteName } from '../../state/types'
 import { CameraPreview } from './CameraPreview'
-import { DeviceField, DeviceIssue } from './DeviceField'
+import { CameraSettingsBody } from './CameraSettingsBody'
 import type { DeviceSettings } from './deviceSettings'
 import { useDeviceFallback } from './useDeviceFallback'
 import styles from './DevicePopover.module.css'
@@ -39,7 +36,6 @@ export function CameraPopover({ quality, camOn, palette, devices, background, we
   const backdrop = useBackground(media.videoStream, background)
   const { cameras } = media.devices
   useDeviceFallback(devices.cameraId, cameras, () => onDevice(''))
-  const current = qualityOption(quality)
 
   return (
     <motion.div
@@ -51,48 +47,23 @@ export function CameraPopover({ quality, camOn, palette, devices, background, we
       exit={{ opacity: 0, y: 6, scale: 0.97, transition: { duration: 0.12 } }}
       transition={{ type: 'spring', stiffness: 380, damping: 30 }}
     >
-      <section className={styles.group} aria-labelledby="cam-device-title">
-        <h2 id="cam-device-title">Kamera</h2>
-        <CameraPreview stream={backdrop.stream} camOn={camOn} status={media.cameraStatus} palette={palette} mirrored={devices.facing === 'user' || devices.cameraId !== ''} onTurnOn={onTurnOn} />
-        <DeviceField label="Pilih kamera" options={cameras} value={devices.cameraId} onChange={onDevice} />
-        {phone && cameras.length > 1 && (
-          <button type="button" className={styles.pill} data-quiet="true" data-self="start" onClick={onFlip}>
-            <SwitchCamera size={16} strokeWidth={1.75} aria-hidden="true" />
-            Balik kamera
-          </button>
-        )}
-        {camOn && <DeviceIssue status={media.cameraStatus} onRetry={() => media.retry('camera')} />}
-      </section>
-
-      <section className={styles.group} aria-labelledby="cam-background-title">
-        <h3 id="cam-background-title">Latar</h3>
-        <BackgroundPicker choice={background} onChange={onBackground} custom={backdrop.custom} status={backdrop.status} failure={backdrop.failure} camOn={camOn} />
-      </section>
-
-      <section className={styles.group} aria-labelledby="cam-quality-title">
-        <h3 id="cam-quality-title">Kualitas kirim</h3>
-        <div className={styles.segment} role="group" aria-labelledby="cam-quality-title">
-          {CAMERA_QUALITIES.map((q) => (
-            <button key={q.id} type="button" aria-pressed={quality === q.id} onClick={() => onQuality(q.id)}>
-              <span>{q.label}</span>
-              <small>{q.resolution}</small>
-            </button>
-          ))}
-        </div>
-        <p className={styles.spec}>
-          {current.resolution} · {current.fps} fps · {current.bitrate}
-        </p>
-        <p className={styles.hint}>{current.hint}</p>
-        {!camOn && <p className={styles.hint}>Berlaku saat kamera dinyalakan.</p>}
-        {weakConnection && quality !== 'low' && (
-          <div className={styles.callout} role="status">
-            <span>Koneksi Anda sedang lemah. Kualitas Rendah mengurangi buffering di sisi peserta lain.</span>
-            <button type="button" onClick={() => onQuality('low')}>
-              Pakai Rendah
-            </button>
-          </div>
-        )}
-      </section>
+      <CameraSettingsBody
+        cameraId={devices.cameraId}
+        cameras={cameras}
+        cameraStatus={media.cameraStatus}
+        camOn={camOn}
+        quality={quality}
+        background={background}
+        backdrop={backdrop}
+        weakConnection={weakConnection}
+        phone={phone}
+        preview={<CameraPreview stream={backdrop.stream} camOn={camOn} status={media.cameraStatus} palette={palette} mirrored={devices.facing === 'user' || devices.cameraId !== ''} onTurnOn={onTurnOn} />}
+        onDevice={onDevice}
+        onQuality={onQuality}
+        onBackground={onBackground}
+        onFlip={onFlip}
+        onRetry={() => media.retry('camera')}
+      />
     </motion.div>
   )
 }

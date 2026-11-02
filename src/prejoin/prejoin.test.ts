@@ -1,7 +1,7 @@
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
-import { MAX_NAME_LENGTH, isValidName, normalizeName } from './displayName'
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { MAX_NAME_LENGTH, isValidName, loadName, loadRemember, normalizeName, persistName } from './displayName'
 import { SPEAKING_THRESHOLD, levelFromRms, litBars, rmsFromBytes, smoothLevel } from './micLevel'
-import { cameraCheck, canRetry, micCheck, speakerCheck, statusFromError, summarize } from './mediaState'
+import { cameraCheck, canRetry, deviceLine, deviceProblems, micCheck, speakerCheck, statusFromError, summarize } from './mediaState'
 import { matchPrejoinShortcut } from './prejoinShortcuts'
 
 const key = (code: string, extra: Partial<KeyboardEvent> = {}, target: EventTarget | null = null) => ({
@@ -64,6 +64,32 @@ describe('device checks', () => {
   })
 })
 
+describe('lobby device status', () => {
+  const ok = { camOn: true, cameraStatus: 'granted', micOn: true, micStatus: 'granted' } as const
+
+  it('has no problems when both devices work', () => {
+    expect(deviceProblems(ok)).toEqual([])
+  })
+
+  it('names each device that needs attention', () => {
+    const found = deviceProblems({ ...ok, cameraStatus: 'denied', micStatus: 'in-use' })
+    expect(found).toEqual([
+      { kind: 'camera', title: 'Izin ditolak' },
+      { kind: 'mic', title: 'Perangkat sedang dipakai' },
+    ])
+  })
+
+  it('does not call a device still asking for permission a problem', () => {
+    expect(deviceProblems({ ...ok, cameraStatus: 'requesting', micStatus: 'idle' })).toEqual([])
+  })
+
+  it('says what the person arrives with', () => {
+    expect(deviceLine(ok)).toBe('Kamera dan mikrofon siap')
+    expect(deviceLine({ ...ok, micOn: false })).toBe('Kamera siap · Mikrofon mati')
+    expect(deviceLine({ ...ok, camOn: false, micStatus: 'requesting' })).toBe('Kamera mati · Mikrofon disiapkan')
+  })
+})
+
 describe('mic level', () => {
   it('reads silence as zero', () => {
     expect(rmsFromBytes(new Uint8Array(64).fill(128))).toBe(0)
@@ -106,6 +132,45 @@ describe('display name', () => {
 
   it('caps the length', () => {
     expect(normalizeName('x'.repeat(100)).length).toBe(MAX_NAME_LENGTH)
+  })
+})
+
+describe('remembering the name', () => {
+  const store = new Map<string, string>()
+  beforeAll(() =>
+    vi.stubGlobal('window', {
+      localStorage: {
+        getItem: (k: string) => store.get(k) ?? null,
+        setItem: (k: string, v: string) => void store.set(k, v),
+        removeItem: (k: string) => void store.delete(k),
+      },
+    }),
+  )
+  afterAll(() => vi.unstubAllGlobals())
+  beforeEach(() => store.clear())
+
+  it('remembers by default', () => {
+    expect(loadRemember()).toBe(true)
+  })
+
+  it('keeps the name when asked to', () => {
+    persistName('Budi', true)
+    expect(loadName()).toBe('Budi')
+    expect(loadRemember()).toBe(true)
+  })
+
+  it('wipes the name and keeps the choice when asked not to', () => {
+    persistName('Budi', true)
+    persistName('Budi', false)
+    expect(loadName()).toBe('')
+    expect(loadRemember()).toBe(false)
+  })
+
+  it('turns remembering back on', () => {
+    persistName('Budi', false)
+    persistName('Ani', true)
+    expect(loadName()).toBe('Ani')
+    expect(loadRemember()).toBe(true)
   })
 })
 

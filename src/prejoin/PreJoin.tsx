@@ -1,27 +1,27 @@
-import { ArrowLeft, ChevronDown, Mic, Video, Volume2 } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
 import type { BackgroundChoice } from '../background/backgrounds'
 import { useBackground } from '../background/useBackground'
 import type { JoinTarget } from '../dashboard/types'
 import { useKeyboardInset, useViewport } from '../mobile/useViewport'
-import { CAMERA_QUALITIES, loadCameraQuality } from '../room/cameraQuality'
+import { loadCameraQuality } from '../room/cameraQuality'
 import type { CameraQuality } from '../room/cameraQuality'
+import { CameraSettingsBody } from '../room/devices/CameraSettingsBody'
 import type { DeviceSettings } from '../room/devices/deviceSettings'
+import { MicSettingsBody } from '../room/devices/MicSettingsBody'
 import { Ambient } from '../room/Ambient'
 import { useFx } from '../room/MotionContext'
-import { canPickSpeaker } from './audioTests'
-import { BackgroundSection } from './BackgroundSection'
-import { CheckRow } from './CheckRow'
-import { MicTest, SpeakerTest } from './DeviceTests'
 import { loadPreferences } from '../settings/preferences'
-import { isValidName, loadName, normalizeName, MAX_NAME_LENGTH, saveName } from './displayName'
+import { MicTest } from './DeviceTests'
+import { DeviceStatus } from './DeviceStatus'
+import { isValidName, loadName, normalizeName, MAX_NAME_LENGTH, loadRemember, persistName } from './displayName'
 import { MeetingInfo } from './MeetingInfo'
-import { MicMeter } from './MicMeter'
-import { cameraCheck, micCheck, speakerCheck, summarize } from './mediaState'
+import { deviceProblems } from './mediaState'
 import { PreviewStage } from './PreviewStage'
 import { PREJOIN_KEYS, matchPrejoinShortcut } from './prejoinShortcuts'
 import { StageControls } from './StageControls'
+import type { DevicePanel } from './StageControls'
 import { useMediaPreview } from './useMediaPreview'
 import { useMicLevel } from './useMicLevel'
 import styles from './PreJoin.module.css'
@@ -43,6 +43,7 @@ export function PreJoin({ meeting, onJoin, onBack }: { meeting: JoinTarget; onJo
   const { fx, reduced } = useFx()
   const [name, setName] = useState(loadName)
   const [nameTouched, setNameTouched] = useState(false)
+  const [remember, setRemember] = useState(loadRemember)
   const [micOn, setMicOn] = useState(true)
   const [camOn, setCamOn] = useState(true)
   const [quality, setQuality] = useState<CameraQuality>(loadCameraQuality)
@@ -52,9 +53,10 @@ export function PreJoin({ meeting, onJoin, onBack }: { meeting: JoinTarget; onJo
   const [speakerId, setSpeakerId] = useState(() => loadPreferences().speakerId)
   const [speakerHeard, setSpeakerHeard] = useState(false)
   const [background, setBackground] = useState<BackgroundChoice>(() => loadPreferences().background)
-  // phone only: front or back camera, and whether the device checklist is unfolded (null = follow whether anything needs attention)
+  // phone only: front or back camera
   const [facing, setFacing] = useState<'user' | 'environment'>('user')
-  const [checksOpen, setChecksOpen] = useState<boolean | null>(null)
+  // which device menu is open on the stage; the status line beside the form can open one too
+  const [panel, setPanel] = useState<DevicePanel | null>(null)
   const { sizeClass } = useViewport()
   const phone = sizeClass === 'phone'
   const keyboard = useKeyboardInset()
@@ -66,15 +68,8 @@ export function PreJoin({ meeting, onJoin, onBack }: { meeting: JoinTarget; onJo
   const { cameras, mics, speakers } = media.devices
 
   const nameOk = isValidName(name)
-  const camStatus = camOn || media.cameraStatus !== 'granted' ? media.cameraStatus : 'granted'
-  const checks = [
-    cameraCheck({ status: camOn ? camStatus : 'idle' }),
-    micCheck({ status: micOn ? media.micStatus : 'idle', heardSignal: mic.heardSignal }),
-    speakerCheck({ confirmed: speakerHeard }),
-  ]
-  const summary = summarize(checks)
-  const needsAttention = checks.includes('attention')
-  const checksVisible = !phone || (checksOpen ?? needsAttention)
+  const facts = { camOn, cameraStatus: media.cameraStatus, micOn, micStatus: media.micStatus }
+  const problems = deviceProblems(facts)
   const keyboardOpen = phone && keyboard > 0
   const flipCamera =
     cameras.length > 1
@@ -105,7 +100,7 @@ export function PreJoin({ meeting, onJoin, onBack }: { meeting: JoinTarget; onJo
       return
     }
     const clean = normalizeName(name)
-    saveName(clean)
+    persistName(clean, remember)
     onJoin({
       name: clean,
       micOn: micOn && media.micStatus === 'granted',
@@ -136,30 +131,81 @@ export function PreJoin({ meeting, onJoin, onBack }: { meeting: JoinTarget; onJo
 
   const showNameError = nameTouched && !nameOk
 
+  const micPanel = (
+    <MicSettingsBody
+      micOn={micOn}
+      micId={micId}
+      speakerId={speakerId}
+      mics={mics}
+      speakers={speakers}
+      micStatus={media.micStatus}
+      level={mic}
+      speakerHeard={speakerHeard}
+      onSpeakerHeard={setSpeakerHeard}
+      onMicDevice={setMicId}
+      onSpeakerDevice={setSpeakerId}
+      onRetry={() => media.retry('mic')}
+      onTurnOn={() => setMicOn(true)}
+      extra={<MicTest stream={micOn ? media.audioStream : null} speakerId={speakerId} />}
+    />
+  )
+  const cameraPanel = (
+    <CameraSettingsBody
+      cameraId={cameraId}
+      cameras={cameras}
+      cameraStatus={media.cameraStatus}
+      camOn={camOn}
+      quality={quality}
+      background={background}
+      backdrop={backdrop}
+      weakConnection={false}
+      phone={phone}
+      onDevice={setCameraId}
+      onQuality={setQuality}
+      onBackground={setBackground}
+      onFlip={() => flipCamera?.()}
+      onRetry={() => media.retry('camera')}
+    />
+  )
+
   return (
     <div className={styles.screen} data-motion={reduced ? 'reduced' : 'full'} data-fx={fx} data-keyboard={keyboardOpen || undefined} style={{ '--kb': `${keyboard}px` } as CSSProperties}>
       <Ambient />
       <main className={styles.frame}>
-        <div className={styles.stageWrap}>
-          <PreviewStage videoStream={backdrop.stream} camOn={camOn} cameraStatus={media.cameraStatus} micOn={micOn} name={name} mic={mic} mirrored={facing === 'user'} />
-          <div className={styles.brand}>
+        <div className={styles.brand}>
+          <div className={styles.brandRow}>
             <span className={styles.wordmark}>Huddle</span>
             <button type="button" className={styles.back} onClick={onBack}>
               <ArrowLeft size={14} strokeWidth={1.75} aria-hidden="true" />
               Beranda
             </button>
           </div>
+          {/* the picture alone looks like being in the room; this says it is only a mirror */}
+          <p className={`glass-1 ${styles.preview}`}>
+            <i aria-hidden="true" />
+            Pratinjau · belum terlihat peserta lain
+          </p>
+        </div>
+        <div className={styles.stageWrap}>
+          <PreviewStage videoStream={backdrop.stream} camOn={camOn} cameraStatus={media.cameraStatus} micOn={micOn} name={name} mic={mic} mirrored={facing === 'user'} />
           {!keyboardOpen && (
-          <StageControls
-            micOn={micOn}
-            camOn={camOn}
-            micStatus={media.micStatus}
-            cameraStatus={media.cameraStatus}
-            heard={mic.heardSignal}
-            onToggleMic={toggleMic}
-            onToggleCam={toggleCam}
-            onFlipCamera={flipCamera}
-          />
+            <StageControls
+              micOn={micOn}
+              camOn={camOn}
+              micStatus={media.micStatus}
+              cameraStatus={media.cameraStatus}
+              heard={mic.heardSignal}
+              open={panel}
+              onOpenChange={setPanel}
+              asSheet={sizeClass !== 'desktop'}
+              micPanel={micPanel}
+              cameraPanel={cameraPanel}
+              micProblem={problems.some((p) => p.kind === 'mic')}
+              cameraProblem={problems.some((p) => p.kind === 'camera')}
+              onToggleMic={toggleMic}
+              onToggleCam={toggleCam}
+              onFlipCamera={flipCamera}
+            />
           )}
         </div>
 
@@ -189,83 +235,18 @@ export function PreJoin({ meeting, onJoin, onBack }: { meeting: JoinTarget; onJo
                 Isi nama dulu supaya peserta lain tahu siapa Anda.
               </p>
             )}
+            <label className={styles.remember}>
+              <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} />
+              Ingat nama untuk meeting berikutnya
+            </label>
           </div>
 
-          <section className={styles.checks} aria-labelledby="checks-title">
-            {phone ? (
-              <button type="button" className={styles.checksToggle} aria-expanded={checksVisible} aria-controls="checks-list" onClick={() => setChecksOpen(!checksVisible)}>
-                <h2 id="checks-title">Cek perangkat</h2>
-                <span className={styles.summary} data-ready={summary.allReady}>
-                  {summary.label}
-                </span>
-                <ChevronDown size={18} strokeWidth={1.75} aria-hidden="true" className={styles.chevron} />
-              </button>
-            ) : (
-              <div className={styles.checksHead}>
-                <h2 id="checks-title">Cek perangkat</h2>
-                <span className={styles.summary} data-ready={summary.allReady}>
-                  {summary.label}
-                </span>
-              </div>
-            )}
-            <ul id="checks-list" hidden={!checksVisible}>
-              <CheckRow
-                icon={<Video size={16} strokeWidth={1.75} />}
-                title="Kamera"
-                state={checks[0]}
-                options={cameras}
-                value={cameraId}
-                onChange={setCameraId}
-                issue={camOn ? media.cameraStatus : undefined}
-                onRetry={() => media.retry('camera')}
-              >
-                <div className={styles.segment} role="group" aria-label="Kualitas kamera">
-                  {CAMERA_QUALITIES.map((q) => (
-                    <button key={q.id} type="button" aria-pressed={quality === q.id} onClick={() => setQuality(q.id)}>
-                      {q.label}
-                      <small>{q.resolution}</small>
-                    </button>
-                  ))}
-                </div>
-              </CheckRow>
-              <CheckRow
-                icon={<Mic size={16} strokeWidth={1.75} />}
-                title="Mikrofon"
-                state={checks[1]}
-                options={mics}
-                value={micId}
-                onChange={setMicId}
-                issue={micOn ? media.micStatus : undefined}
-                onRetry={() => media.retry('mic')}
-              >
-                <div className={styles.meterLine}>
-                  <MicMeter mic={mic} active={micOn && media.micStatus === 'granted'} />
-                </div>
-                <MicTest stream={micOn ? media.audioStream : null} speakerId={speakerId} />
-              </CheckRow>
-              <CheckRow
-                icon={<Volume2 size={16} strokeWidth={1.75} />}
-                title="Speaker"
-                state={checks[2]}
-                options={speakers}
-                value={speakerId}
-                onChange={(id) => {
-                  setSpeakerId(id)
-                  setSpeakerHeard(false)
-                }}
-                hidePicker={!canPickSpeaker() || speakers.length === 0}
-              >
-                <SpeakerTest speakerId={speakerId} confirmed={speakerHeard} onConfirm={setSpeakerHeard} />
-              </CheckRow>
-            </ul>
-          </section>
-
-          <BackgroundSection choice={background} onChange={setBackground} background={backdrop} camOn={camOn} />
+          <DeviceStatus facts={facts} onOpen={setPanel} />
 
           <div className={styles.cta}>
-            {needsAttention && <p className={styles.soft}>Perangkat bisa diatur nanti. Anda tetap bisa masuk dulu.</p>}
+            {problems.length > 0 && <p className={styles.soft}>Perangkat bisa diatur nanti. Anda tetap bisa masuk dulu.</p>}
             <button type="submit" className={styles.join} aria-disabled={!nameOk || undefined} aria-keyshortcuts={PREJOIN_KEYS.join}>
-              {meeting.needsApproval ? 'Minta bergabung' : 'Masuk'}
+              {meeting.needsApproval ? 'Minta masuk ke ruangan' : 'Masuk ke ruangan'}
               <kbd className="keycap" aria-hidden="true">
                 Enter
               </kbd>

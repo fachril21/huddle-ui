@@ -18,7 +18,7 @@ export function insideSummary(): string {
 export function MeetingInfo({ meeting }: { meeting: JoinTarget }) {
   return (
     <header className={styles.info}>
-      <h1>Siap bergabung?</h1>
+      <h1>Siap masuk?</h1>
       <p className={styles.title}>
         {meeting.title} <span className={styles.code}>{meeting.code}</span>
       </p>

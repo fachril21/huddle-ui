@@ -65,6 +65,40 @@ export const STATUS_COPY: Record<Exclude<MediaStatus, 'idle' | 'requesting' | 'g
   error: { title: 'Perangkat tidak bisa dibuka', hint: 'Coba lagi, atau pilih perangkat lain.' },
 }
 
+export interface DeviceFacts {
+  readonly camOn: boolean
+  readonly cameraStatus: MediaStatus
+  readonly micOn: boolean
+  readonly micStatus: MediaStatus
+}
+
+export interface DeviceProblem {
+  readonly kind: 'camera' | 'mic'
+  /** What is wrong, in a few words ("Izin ditolak") */
+  readonly title: string
+}
+
+/** Devices the user has to do something about, so the lobby can point at them instead of listing every device. */
+export function deviceProblems({ cameraStatus, micStatus }: DeviceFacts): DeviceProblem[] {
+  const problems: DeviceProblem[] = []
+  if (cameraStatus in STATUS_COPY) problems.push({ kind: 'camera', title: STATUS_COPY[cameraStatus as keyof typeof STATUS_COPY].title })
+  if (micStatus in STATUS_COPY) problems.push({ kind: 'mic', title: STATUS_COPY[micStatus as keyof typeof STATUS_COPY].title })
+  return problems
+}
+
+function stateWord(on: boolean, status: MediaStatus): string {
+  if (!on) return 'mati'
+  return status === 'granted' ? 'siap' : 'disiapkan'
+}
+
+/** The calm one-liner for when nothing is wrong: what the person will arrive with. */
+export function deviceLine({ camOn, cameraStatus, micOn, micStatus }: DeviceFacts): string {
+  const cam = stateWord(camOn, cameraStatus)
+  const mic = stateWord(micOn, micStatus)
+  if (cam === 'siap' && mic === 'siap') return 'Kamera dan mikrofon siap'
+  return `Kamera ${cam} · Mikrofon ${mic}`
+}
+
 /** One summary line for the checklist header. */
 export function summarize(states: readonly CheckState[]): { label: string; allReady: boolean } {
   if (states.every((s) => s === 'ready')) return { label: 'Semua siap', allReady: true }

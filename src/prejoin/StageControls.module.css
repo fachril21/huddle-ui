@@ -17,6 +17,50 @@
   border-radius: var(--radius-dock);
 }
 
+/* mic and camera, each with its menu chevron attached (same pairing as the room's dock) */
+.split { display: flex; align-items: center; }
+.chevron {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 36px;
+  margin-left: -4px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-2);
+  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.chevron:hover { background: var(--veil-hover); color: var(--text-1); }
+.chevron[aria-expanded='true'] { background: var(--primary); color: var(--on-primary); }
+.chevron:focus-visible { box-shadow: var(--focus-ring); }
+/* a device that needs attention says so from the dock */
+.chevron[data-alert]::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  right: 3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--aurora-amber);
+  box-shadow: 0 0 0 2px var(--ink-900);
+}
+
+/* the menu opens above the dock, centred on its chevron group; it is a sibling of the dock so the dock's blur does not flatten it */
+.slot {
+  position: absolute;
+  bottom: calc(100% + var(--space-3));
+  width: 0;
+  z-index: var(--z-popover);
+}
+
+@media (pointer: coarse) {
+  .chevron { width: 28px; height: var(--tap); }
+}
+
 .hint {
   margin: 0;
   padding: var(--space-1) var(--space-4);

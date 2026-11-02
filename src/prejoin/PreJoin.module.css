@@ -1,5 +1,6 @@
 .screen {
-  --panel-w: 360px;
+  --panel-w: 340px;
+  --stage-max: 560px;
   --frame-gap: var(--space-6);
   position: relative;
   width: 100%;
@@ -15,29 +16,52 @@
   z-index: var(--z-stage);
   padding: var(--frame-gap);
   display: grid;
-  grid-template-columns: minmax(0, 1fr) var(--panel-w);
-  gap: var(--space-6);
+  grid-template-columns: minmax(0, var(--stage-max)) var(--panel-w);
+  justify-content: center;
+  align-content: center;
+  align-items: stretch;
+  gap: var(--space-4) var(--space-6);
   container-type: size;
 }
 
-/* the whole picture, never cropped: a 16:9 box as large as the column allows, centred */
+/* a small mirror as tall as the form beside it, so the two read as one doorway and not as the room itself */
 .stageWrap {
+  grid-column: 1;
+  grid-row: 2;
   position: relative;
-  justify-self: center;
-  align-self: center;
-  width: min(100%, calc(100cqh * 16 / 9));
-  aspect-ratio: 16 / 9;
+  min-height: 240px;
 }
 
+/* above the mirror, not on it: the picture stays clean */
 .brand {
-  position: absolute;
-  top: var(--space-6);
-  left: var(--space-6);
+  grid-column: 1;
+  grid-row: 1;
+  position: relative;
   z-index: var(--z-chrome);
   display: flex;
   align-items: center;
-  gap: var(--space-4);
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  min-width: 0;
 }
+.brandRow { display: flex; align-items: center; gap: var(--space-4); }
+
+/* says this is a mirror, not the room: nobody inside can see it yet */
+.preview {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  max-width: calc(100vw - var(--space-8));
+  margin: 0;
+  padding: 4px var(--space-3);
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 600;
+  color: var(--text-1);
+  text-shadow: var(--glass-text-shadow);
+}
+.preview i { flex: none; width: 6px; height: 6px; border-radius: 50%; background: var(--aurora-amber); }
 
 .back {
   display: inline-flex;
@@ -68,9 +92,12 @@
 }
 
 .panel {
+  grid-column: 2;
+  grid-row: 2;
   position: relative;
   z-index: var(--z-chrome);
   align-self: stretch;
+  max-height: 100%;
   min-width: 0;
   min-height: 0;
   display: flex;
@@ -101,41 +128,11 @@
 .field input:hover { background: var(--veil-press); }
 .field input:focus-visible { box-shadow: var(--focus-ring); border-color: var(--aurora-cyan); }
 .field input[aria-invalid='true'] { border-color: var(--warning); }
+.remember { display: flex; align-items: center; gap: var(--space-2); width: fit-content; font-size: 13px; line-height: 20px; font-weight: 400; color: var(--text-2); cursor: pointer; }
+.remember input { width: 16px; height: 16px; margin: 0; padding: 0; accent-color: var(--primary); cursor: pointer; }
+.remember:hover { color: var(--text-1); }
+.remember input:focus-visible { outline: none; box-shadow: var(--focus-ring); border-radius: 3px; }
 .error { margin: 0; font-size: 12px; line-height: 18px; color: var(--warning); }
-
-/* checklist */
-.checks { display: grid; gap: var(--space-3); }
-.checks ul { margin: 0; padding: 0; list-style: none; }
-.checksHead { display: flex; align-items: baseline; justify-content: space-between; }
-.checksHead h2 { margin: 0; font-family: var(--font-display); font-size: 15px; line-height: 20px; font-weight: 600; }
-.summary { font-size: 12px; line-height: 16px; font-weight: 600; color: var(--text-2); }
-.summary[data-ready='true'] { color: var(--success); }
-
-.meterLine { display: flex; align-items: center; min-height: 20px; }
-
-/* camera quality, same segmented control as the room's camera menu */
-.segment { display: flex; gap: var(--space-1); padding: 3px; border-radius: var(--radius-md); background: var(--hairline); }
-.segment button {
-  display: flex;
-  flex: 1;
-  align-items: baseline;
-  justify-content: center;
-  gap: 6px;
-  height: 30px;
-  padding: 0;
-  border: 0;
-  border-radius: calc(var(--radius-md) - 3px);
-  background: transparent;
-  color: var(--text-2);
-  font-size: 12px;
-  font-weight: 600;
-  align-items: center;
-  transition: background-color var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
-}
-.segment button small { font-family: var(--font-mono); font-size: 10px; font-weight: 500; opacity: 0.85; }
-.segment button:hover { color: var(--text-1); }
-.segment button[aria-pressed='true'] { background: var(--primary); color: var(--on-primary); }
-.segment button:focus-visible { box-shadow: var(--focus-ring); }
 
 /* the way in */
 .cta { margin-top: auto; display: grid; gap: var(--space-2); }
@@ -171,20 +168,12 @@
 }
 
 /* ---- touch screens ---- */
-.checksToggle { display: flex; align-items: center; gap: var(--space-3); width: 100%; min-height: var(--tap); padding: 0; border: 0; background: transparent; color: inherit; text-align: left; }
-.checksToggle h2 { margin: 0; flex: 1; font-family: var(--font-display); font-size: 15px; line-height: 20px; font-weight: 600; }
-.chevron { color: var(--text-2); transition: transform var(--dur-base) var(--ease-out); }
-.checksToggle[aria-expanded='true'] .chevron { transform: rotate(180deg); }
-.checksToggle:focus-visible { box-shadow: var(--focus-ring); border-radius: var(--radius-sm); }
-.checks ul[hidden] { display: none; }
-
 /* phone portrait and tablet portrait: the mirror on top, the form below it, Masuk always reachable */
 @media (max-width: 767px), (max-width: 1099px) and (orientation: portrait) {
   .screen { display: flex; flex-direction: column; }
   .frame { position: relative; inset: auto; display: flex; flex: 1; flex-direction: column; min-height: 0; padding: 0; container-type: normal; }
-  .stageWrap { flex: none; align-self: stretch; width: auto; aspect-ratio: auto; height: min(44dvh, 420px); padding-top: var(--demo-strip); }
-  .stageWrap > div:first-child { border-radius: 0 0 var(--radius-xl) var(--radius-xl); }
-  .brand { top: calc(var(--safe-top) + var(--demo-strip) + var(--space-3)); left: max(var(--space-4), var(--safe-left)); }
+  .stageWrap { flex: none; align-self: stretch; width: auto; aspect-ratio: auto; height: min(30dvh, 250px); margin: 0 max(var(--space-4), var(--safe-left)); }
+  .brand { flex: none; padding: calc(var(--safe-top) + var(--demo-strip) + var(--space-3)) max(var(--space-4), var(--safe-left)) var(--space-3); }
   .back { height: var(--tap); padding: 0 var(--space-4); font-size: 13px; }
 
   form.panel {
@@ -204,7 +193,6 @@
   form.panel::after { display: none; }
 
   .field input { height: var(--tap); font-size: 16px; }
-  .segment button { height: 40px; }
 
   /* the way in sticks to the bottom edge while the checklist scrolls under it */
   .cta {
@@ -216,7 +204,7 @@
   }
 
   /* with the keyboard up, the picture shrinks to a strip so the name field and Masuk stay in view */
-  .screen[data-keyboard] .stageWrap { height: calc(104px + var(--demo-strip)); }
+  .screen[data-keyboard] .stageWrap { height: 104px; }
 }
 
 /* a phone turned sideways: the desktop arrangement, tightened */
