@@ -1,0 +1,55 @@
+.picker { display: grid; gap: var(--space-3); min-width: 0; }
+.picker[data-disabled] { opacity: 0.55; }
+
+.head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
+.month { margin: 0; font-family: var(--font-display); font-size: 16px; line-height: 24px; font-weight: 600; text-transform: capitalize; }
+.nav { display: flex; gap: var(--space-1); }
+
+.grid { display: grid; gap: 2px; }
+.row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+
+.weekday { padding: var(--space-1) 0 var(--space-2); color: var(--text-3); font-size: 11px; line-height: 16px; font-weight: 600; letter-spacing: 0.04em; text-align: center; text-transform: uppercase; }
+
+.day {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  min-height: 40px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-1);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  transition: background-color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+}
+.day:hover:not(:disabled) { background: var(--veil-press); }
+.day:active:not(:disabled) { transform: scale(0.94); }
+.day:focus-visible { box-shadow: var(--focus-ring); border-color: var(--aurora-cyan); }
+.day:disabled { color: var(--text-3); opacity: 0.45; cursor: not-allowed; }
+
+/* today is outlined, not filled, so it never looks selected */
+.day[data-today] { border-color: var(--glass-border); font-weight: 700; }
+.day[aria-selected='true'] {
+  border-color: transparent;
+  background: var(--primary);
+  color: var(--on-primary);
+  font-weight: 700;
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--primary-glow) 40%, transparent);
+}
+.day[aria-selected='true']:focus-visible { box-shadow: var(--focus-ring); }
+
+/* a dot under the number: the day already has a meeting */
+.day[data-marked]::after { content: ''; position: absolute; bottom: 5px; left: 50%; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: var(--aurora-cyan); }
+.day[aria-selected='true'][data-marked]::after { background: var(--on-primary); }
+
+@media (prefers-reduced-motion: reduce) {
+  .day { transition: none; }
+  .day:active:not(:disabled) { transform: none; }
+}
+
+@media (max-width: 767px) {
+  .day { min-height: var(--tap); aspect-ratio: auto; }
+}

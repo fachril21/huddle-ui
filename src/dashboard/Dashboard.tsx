@@ -290,7 +290,7 @@ export function Dashboard({ meetings, dispatch, onEnter, initialView = 'home', r
         </div>
       </main>
 
-      {dialog?.kind === 'schedule' && <ScheduleDialog mode={dialog.mode} now={now} source={dialog.source} onClose={closeDialog} onSave={save} />}
+      {dialog?.kind === 'schedule' && <ScheduleDialog mode={dialog.mode} now={now} meetings={meetings} source={dialog.source} onClose={closeDialog} onSave={save} />}
       {dialog?.kind === 'share' && (
         <ShareDialog
           heading={dialog.heading}

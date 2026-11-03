@@ -3,8 +3,24 @@
 .field { min-width: 0; }
 .field p[hidden] { display: none; }
 
-.when { display: grid; grid-template-columns: 1.4fr 1fr 1.2fr; gap: var(--space-4); }
-.pair { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+.stage { display: grid; gap: var(--space-5); animation: step-in var(--dur-slow) var(--ease-out); }
+@keyframes step-in { from { opacity: 0; transform: translateX(10px); } }
+
+/* two stops; the current one is bold with an underline, the finished one goes back when pressed */
+.steps { display: flex; gap: var(--space-5); margin: calc(var(--space-2) * -1) 0 0; padding: 0; list-style: none; }
+.steps li { position: relative; padding-bottom: var(--space-2); color: var(--text-3); font-size: 13px; line-height: 20px; font-weight: 600; }
+.steps li[aria-current='step'] { color: var(--text-1); }
+.steps li[aria-current='step']::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; border-radius: var(--radius-pill); background: var(--primary-glow); }
+.steps button { padding: 0; border: 0; background: none; color: var(--text-2); font: inherit; text-decoration: underline; text-underline-offset: 3px; }
+.steps button:hover { color: var(--text-1); }
+.steps button:focus-visible { box-shadow: var(--focus-ring); border-radius: var(--radius-sm); }
+
+.whenCard { display: grid; gap: var(--space-5); padding: var(--space-4); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); background: var(--hairline); }
+.whenSummary { display: flex; align-items: center; gap: var(--space-4); }
+.whenSummary > svg { flex: none; color: var(--aurora-cyan); }
+.whenSummary > div { display: grid; flex: 1; gap: 2px; min-width: 0; }
+.whenSummary strong { font-family: var(--font-display); font-size: 16px; line-height: 24px; font-weight: 600; text-transform: capitalize; }
+.whenSummary span { color: var(--text-2); font-size: 13px; line-height: 20px; font-variant-numeric: tabular-nums; }
 
 .scope,
 .group { margin: 0; padding: 0; border: 0; min-width: 0; }
@@ -54,14 +70,13 @@
 
 @media (prefers-reduced-motion: reduce) {
   .choice, .switch, .switch span[aria-hidden] { transition: none; }
+  .stage { animation: none; }
 }
 
 @media (max-width: 767px) {
   .form { gap: var(--space-4); }
-  /* date and time side by side, duration on its own line */
-  .when { grid-template-columns: 1fr 1fr; gap: var(--space-3); }
-  .when > :nth-child(3) { grid-column: 1 / -1; }
-  .pair { grid-template-columns: 1fr; gap: var(--space-4); }
+  .stage { gap: var(--space-4); }
+  .whenCard { padding: var(--space-3); }
   .scope { gap: var(--space-4); }
   .scope legend { float: none; flex: 1 1 100%; margin: 0; }
   .scope label { min-height: var(--tap); }
