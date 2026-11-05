@@ -2,6 +2,7 @@ import { motion } from 'motion/react'
 import { useState } from 'react'
 import { getGroupVolume, isGroupMuted, setGroupMuted, setGroupVolume } from '../audio/audioEngine'
 import type { SoundGroup } from '../audio/audioEngine'
+import { MiniWindowControl } from '../pip/MiniWindowControl'
 import { PresenceControl } from '../presence/PresenceControl'
 import type { FxTier, Participant } from '../state/types'
 import { PUSH_TO_TALK, SHORTCUTS } from './shortcuts'
@@ -16,6 +17,8 @@ interface MorePopoverProps {
   /** Whether the keyboard shortcut list is expanded; lifted so the "?" key can open it */
   shortcutsOpen: boolean
   onShortcutsOpen: (open: boolean) => void
+  /** Present only where the browser can open a mini window */
+  miniWindow?: { isOpen: boolean; onOpen: () => void; onClose: () => void }
 }
 
 const TIERS: readonly { fx: FxTier; label: string; hint: string }[] = [
@@ -31,7 +34,7 @@ const GROUPS: readonly { group: SoundGroup; label: string }[] = [
 ]
 
 /** "Lainnya": my status, effects tier (Design.md 19.1) and the three sound volume groups (Design.md 17). */
-export function MorePopover({ self, onPresenceStart, onPresenceBack, fx, onFx, shortcutsOpen, onShortcutsOpen }: MorePopoverProps) {
+export function MorePopover({ self, onPresenceStart, onPresenceBack, fx, onFx, shortcutsOpen, onShortcutsOpen, miniWindow }: MorePopoverProps) {
   return (
     <motion.div
       className={`glass-2 ${styles.popover}`}
@@ -43,6 +46,8 @@ export function MorePopover({ self, onPresenceStart, onPresenceBack, fx, onFx, s
       transition={{ type: 'spring', stiffness: 380, damping: 30 }}
     >
       <PresenceControl self={self} onStart={onPresenceStart} onBack={onPresenceBack} />
+
+      {miniWindow && <MiniWindowControl {...miniWindow} />}
 
       <section aria-label="Efek visual">
         <h2>Efek visual</h2>

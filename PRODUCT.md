@@ -19,6 +19,7 @@ Huddle adalah aplikasi video meeting. Repo ini adalah prototype UI/UX untuk laya
 - Lobby memakai media sungguhan (getUserMedia, enumerateDevices, AnalyserNode); room tetap simulasi.
 - Cakupan lobby: preview kamera, level mic, tes speaker, pilih perangkat, nama tampilan bebas, toggle mic/kamera, penanganan izin ditolak / tanpa perangkat / perangkat dipakai aplikasi lain / perangkat dicabut, kualitas kamera, aurora reaktif di preview, info meeting, shortcut, checklist status.
 - Latar kamera (blur dan gambar, termasuk unggahan sendiri) sudah ada di lobby, menu kamera room, dan Pengaturan. Ditunda: noise cancellation, cek jaringan, layar menunggu admit host.
+- Mini window (Document Picture-in-Picture, Chrome/Edge desktop): saat berbagi layar, jendela kecil selalu-di-atas menampilkan peserta dan kontrol (mic, kamera, angkat tangan, reaction, berhenti berbagi, keluar). Tanpa popover perangkat; disembunyikan di browser yang tidak mendukung.
 - Desktop (1440 x 900), tablet (768-1099 px), HP portrait (320-430 px) dan HP landscape didukung di dashboard, lobby, dan room. Di HP kontrol room ada di bilah bawah dan semua popover/panel menjadi lembar dari bawah.
 - Stack: React + TypeScript + Vite, CSS Modules, Vitest, npm.
 

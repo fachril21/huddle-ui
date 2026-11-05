@@ -1,0 +1,98 @@
+.root {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  background:
+    radial-gradient(120% 55% at 0% 0%, color-mix(in srgb, var(--aurora-violet) 24%, transparent), transparent 62%),
+    radial-gradient(100% 50% at 100% 100%, color-mix(in srgb, var(--aurora-cyan) 14%, transparent), transparent 60%),
+    var(--ink-900);
+  color: var(--text-1);
+}
+
+/* Hemat and Mati make the glass solid, the same as in the room */
+.root[data-fx='off'] { --glass-2-bg: var(--ink-800); --glass-3-bg: var(--ink-800); }
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: var(--radius-pill);
+  background: var(--glass-2-bg);
+  border: 1px solid var(--glass-border);
+}
+
+.dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-3);
+}
+.dot[data-live] {
+  background: var(--success);
+  animation: live 1.8s var(--ease-out) infinite;
+}
+@keyframes live {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--success) 55%, transparent); }
+  70%, 100% { box-shadow: 0 0 0 7px transparent; }
+}
+
+.status {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.count {
+  flex: none;
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.grid {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: 2px;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-content: start;
+  grid-auto-rows: 80px;
+  gap: 8px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.more {
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  border: 1px dashed var(--glass-border);
+  background: var(--veil-hover);
+  color: var(--text-2);
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+/* a narrow window drops to one column, a short one lets the roster scroll */
+@media (max-width: 299px) {
+  .grid { grid-template-columns: minmax(0, 1fr); grid-auto-rows: 72px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dot[data-live] { animation: none; }
+}

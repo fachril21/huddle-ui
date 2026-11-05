@@ -17,6 +17,12 @@ describe('parsePreferences', () => {
     expect(got.expiryReminder).toBe(true)
   })
 
+  it('opens the mini window by itself unless told not to', () => {
+    expect(parsePreferences(null).autoMiniWindow).toBe(true)
+    expect(parsePreferences(JSON.stringify({ autoMiniWindow: false })).autoMiniWindow).toBe(false)
+    expect(parsePreferences(JSON.stringify({ autoMiniWindow: 'no' })).autoMiniWindow).toBe(true)
+  })
+
   it('ignores an effects tier it does not know', () => {
     expect(parsePreferences(JSON.stringify({ fx: 'ultra' })).fx).toBeNull()
   })

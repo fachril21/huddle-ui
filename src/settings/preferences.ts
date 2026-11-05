@@ -15,6 +15,8 @@ export interface Preferences {
   readonly expiryReminder: boolean
   /** Short sounds for room events: someone joins, a message arrives */
   readonly notifySounds: boolean
+  /** Open the always-on-top mini window when I start sharing my screen */
+  readonly autoMiniWindow: boolean
   /** What the lobby starts with behind the person */
   readonly background: BackgroundChoice
 }
@@ -26,6 +28,7 @@ export const DEFAULT_PREFERENCES: Preferences = {
   speakerId: '',
   expiryReminder: true,
   notifySounds: true,
+  autoMiniWindow: true,
   background: NO_BACKGROUND,
 }
 
@@ -47,6 +50,7 @@ export function parsePreferences(json: string | null): Preferences {
       speakerId: text(d.speakerId, ''),
       expiryReminder: flag(d.expiryReminder, DEFAULT_PREFERENCES.expiryReminder),
       notifySounds: flag(d.notifySounds, DEFAULT_PREFERENCES.notifySounds),
+      autoMiniWindow: flag(d.autoMiniWindow, DEFAULT_PREFERENCES.autoMiniWindow),
       background: parseBackground(d.background),
     }
   } catch {

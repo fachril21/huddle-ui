@@ -1,0 +1,92 @@
+.tile {
+  position: relative;
+  overflow: hidden;
+  /* row height is set by the grid: an aspect-ratio plus overflow lets rows collapse and the tiles pile up */
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background:
+    radial-gradient(90% 90% at 20% 10%, color-mix(in srgb, var(--c1) 26%, transparent), transparent 70%),
+    linear-gradient(160deg, color-mix(in srgb, var(--c2) 14%, var(--ink-800)), var(--ink-900));
+  box-shadow: inset 0 0 0 1px var(--hairline);
+  transition:
+    box-shadow var(--dur-base) var(--ease-out),
+    opacity var(--dur-base) var(--ease-out);
+}
+
+/* a camera that is off reads quieter than one that is on */
+.tile:not([data-cam]) { opacity: 0.86; }
+
+/* someone talking gets a ring in their own palette plus a soft lift */
+.tile[data-speaking] {
+  opacity: 1;
+  box-shadow:
+    0 0 0 2px var(--c1),
+    0 6px 16px color-mix(in srgb, var(--c1) 38%, transparent);
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  align-self: start;
+  margin-top: 12px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, var(--c1), var(--c2));
+  color: var(--on-aurora);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.corner {
+  position: absolute;
+  inset: 6px 6px auto 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+}
+.corner > :only-child { margin-left: auto; }
+
+.muted,
+.hand,
+.away {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+.muted { background: var(--danger); color: var(--on-danger); padding: 0 5px; }
+.hand { background: var(--warning); color: var(--on-aurora); margin-left: auto; }
+.away { background: var(--ink-700); color: var(--text-1); letter-spacing: 0.04em; }
+
+.name {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  bottom: 6px;
+  padding: 3px 8px;
+  border-radius: 8px;
+  background: var(--scrim);
+  color: var(--text-1);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.name em { font-style: normal; color: var(--text-2); font-weight: 500; }
+
+@media (prefers-reduced-motion: reduce) {
+  .tile { transition: none; }
+}

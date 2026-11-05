@@ -23,6 +23,10 @@ import { buildInviteUrl } from '../features/invite/inviteLink'
 import { Flat } from '../mobile/Flat'
 import { Sheet } from '../mobile/Sheet'
 import { useViewport } from '../mobile/useViewport'
+import { MiniMeeting } from '../pip/MiniMeeting'
+import { PipPortal } from '../pip/PipPortal'
+import { usePictureInPicture } from '../pip/usePictureInPicture'
+import { loadPreferences } from '../settings/preferences'
 import { Ambient } from './Ambient'
 import { AnnouncementBanner } from './AnnouncementBanner'
 import { CameraPopover } from './devices/CameraPopover'
@@ -163,6 +167,39 @@ export function Room({ state, all, dispatch }: RoomProps) {
 
   const annotation = useAnnotationController(state, dispatch, canManage)
   const tell = useCallback((text: string) => dispatch({ type: 'notice', text, now: performance.now() }), [dispatch])
+
+  // Mini window: opens when I start sharing, closes when I stop. It can also be opened by hand from "Lainnya".
+  const pip = usePictureInPicture(MEETING_TITLE)
+  const { supported: pipSupported, open: openPip, close: closePip } = pip
+  const selfSharing = state.sharerId === SELF_ID
+  const wasSharing = useRef(false)
+  useEffect(() => {
+    const started = selfSharing && !wasSharing.current
+    const stopped = !selfSharing && wasSharing.current
+    wasSharing.current = selfSharing
+    if (stopped) closePip()
+    if (started && pipSupported && loadPreferences().autoMiniWindow) {
+      void openPip().then((opened) => {
+        if (!opened) tell('Mini window tidak bisa dibuka otomatis. Buka dari menu Lainnya.')
+      })
+    }
+  }, [selfSharing, pipSupported, openPip, closePip, tell])
+  // Chrome asks for the mini window itself when a sharing tab is hidden
+  useEffect(() => {
+    if (!selfSharing || !pipSupported) return
+    try {
+      navigator.mediaSession.setActionHandler('enterpictureinpicture' as MediaSessionAction, () => void openPip())
+    } catch {
+      // This browser has no such action; the menu still opens the window
+    }
+    return () => {
+      try {
+        navigator.mediaSession.setActionHandler('enterpictureinpicture' as MediaSessionAction, null)
+      } catch {
+        // nothing to undo
+      }
+    }
+  }, [selfSharing, pipSupported, openPip])
   useShortcuts(
     {
       mic: () => dispatch({ type: 'toggleMic', id: SELF_ID }),
@@ -246,7 +283,7 @@ export function Room({ state, all, dispatch }: RoomProps) {
     dispatch({ type: 'setPresence', id: SELF_ID, status: 'none', now: performance.now() })
     dispatch({ type: 'closeDock', key: 'more' })
   }
-  const moreNode = <MorePopover key="more" self={self} onPresenceStart={stepAway} onPresenceBack={stepBack} fx={state.settings.fx} onFx={(next) => dispatch({ type: 'setFx', fx: next })} shortcutsOpen={shortcutsOpen} onShortcutsOpen={setShortcutsOpen} />
+  const moreNode = <MorePopover key="more" self={self} onPresenceStart={stepAway} onPresenceBack={stepBack} fx={state.settings.fx} onFx={(next) => dispatch({ type: 'setFx', fx: next })} shortcutsOpen={shortcutsOpen} onShortcutsOpen={setShortcutsOpen} miniWindow={pip.supported ? { isOpen: pip.window !== null, onOpen: () => void pip.open(), onClose: pip.close } : undefined} />
   const leaveNode = (
     <LeaveMenu
       key="leave"
@@ -444,6 +481,23 @@ export function Room({ state, all, dispatch }: RoomProps) {
           )}
         </>
       )}
+      <PipPortal target={pip.window}>
+        <MiniMeeting
+          title={MEETING_TITLE}
+          participants={state.participants}
+          speaking={voice.speaking}
+          sharerName={state.participants.find((p) => p.id === state.sharerId)?.name ?? null}
+          selfSharing={selfSharing}
+          shareDisabledReason={shareDisabledReason}
+          fx={fx}
+          onToggleMic={() => dispatch({ type: 'toggleMic', id: SELF_ID })}
+          onToggleCam={() => dispatch({ type: 'toggleCam', id: SELF_ID })}
+          onToggleHand={() => dispatch({ type: 'toggleHand', id: SELF_ID })}
+          onReact={onReact}
+          onShare={onShare}
+          onLeave={() => dispatch({ type: 'leave', phase: 'left' })}
+        />
+      </PipPortal>
       {setupOpen && canManage && <BreakoutSetup state={all} now={breakoutNow} dispatch={dispatch} onClose={() => setSetupOpen(false)} />}
       {needsConsent && <RecordingConsent onAgree={() => dispatch({ type: 'recordingConsent' })} onLeave={() => dispatch({ type: 'leave', phase: 'left' })} />}
     </div>
